@@ -204,70 +204,78 @@ class ReservasController {
             const inicioDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate()).toISOString();
             const fimDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 23, 59, 59).toISOString();
 
-            // 1. KPIs do Mês
-            const { data: reservasMes } = await supabase
-                .from('Reserva')
-                .select('*')
-                .in('status', ['CONFIRMADA', 'CHECK_IN', 'CHECK_OUT'])
-                .gte('data_check_in', inicioMes)
-                .lte('data_check_in', fimMes);
-
-            const receitaMes = reservasMes?.reduce((sum, r) => sum + Number(r.valor_total || 0), 0) || 0;
-
-            // 2. Quartos Ativos
-            const { count: quartosAtivos } = await supabase
-                .from('Quarto')
-                .select('*', { count: 'exact', head: true })
-                .eq('ativo', true);
-
-            // 3. Reservas Hoje (Check-ins ativos)
-            const { data: reservasHoje } = await supabase
-                .from('Reserva')
-                .select('*, Quarto(*), Hospede(*)')
-                .in('status', ['CONFIRMADA', 'CHECK_IN'])
-                .lte('data_check_in', fimDia)
-                .gte('data_check_out', inicioDia);
-
-            // 4. Próximos Check-ins (7 dias)
             const hoje = new Date();
             const seteDias = new Date(hoje.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-            const { data: proximosCheckins } = await supabase
-                .from('Reserva')
-                .select('*, Quarto(*), Hospede(*)')
-                .eq('status', 'CONFIRMADA')
-                .gte('data_check_in', inicioDia)
-                .lte('data_check_in', seteDias)
-                .order('data_check_in', { ascending: true });
 
-            // 5. Próximos Check-outs (7 dias)
-            const { data: proximosCheckouts } = await supabase
-                .from('Reserva')
-                .select('*, Quarto(*), Hospede(*)')
-                .in('status', ['CHECK_IN', 'CONFIRMADA'])
-                .gte('data_check_out', inicioDia)
-                .lte('data_check_out', seteDias)
-                .order('data_check_out', { ascending: true });
-
-            // 6. Calendário e Bloqueios
             const { ano, mes } = req.query;
             const anoCal = parseInt(ano) || agora.getFullYear();
             const mesCal = parseInt(mes) || (agora.getMonth() + 1);
             const inicioCal = new Date(anoCal, mesCal - 1, 1).toISOString();
             const fimCal = new Date(anoCal, mesCal, 0, 23, 59, 59).toISOString();
 
-            const { data: reservasCalendario } = await supabase
-                .from('Reserva')
-                .select('*, Quarto(*), Hospede(*)')
-                .neq('status', 'CANCELADA')
-                .or(`data_check_in.gte.${inicioCal},data_check_out.gte.${inicioCal}`);
+            // Executar consultas concorrentemente para melhorar performance
+            const [
+                { data: reservasMes },
+                { count: quartosAtivos },
+                { data: reservasHoje },
+                { data: proximosCheckins },
+                { data: proximosCheckouts },
+                { data: reservasCalendario },
+                { data: bloqueios },
+                { data: canais }
+            ] = await Promise.all([
+                // 1. KPIs do Mês
+                supabase.from('Reserva')
+                    .select('*')
+                    .in('status', ['CONFIRMADA', 'CHECK_IN', 'CHECK_OUT'])
+                    .gte('data_check_in', inicioMes)
+                    .lte('data_check_in', fimMes),
 
-            const { data: bloqueios } = await supabase
-                .from('Bloqueio')
-                .select('*, Quarto(*)')
-                .or(`data_inicio.gte.${inicioCal},data_fim.gte.${inicioCal}`);
+                // 2. Quartos Ativos
+                supabase.from('Quarto')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('ativo', true),
 
-            // 7. Distribuição por Canal
-            const { data: canais } = await supabase.from('Canal').select('*');
+                // 3. Reservas Hoje (Check-ins ativos)
+                supabase.from('Reserva')
+                    .select('*, Quarto(*), Hospede(*)')
+                    .in('status', ['CONFIRMADA', 'CHECK_IN'])
+                    .lte('data_check_in', fimDia)
+                    .gte('data_check_out', inicioDia),
+
+                // 4. Próximos Check-ins (7 dias)
+                supabase.from('Reserva')
+                    .select('*, Quarto(*), Hospede(*)')
+                    .eq('status', 'CONFIRMADA')
+                    .gte('data_check_in', inicioDia)
+                    .lte('data_check_in', seteDias)
+                    .order('data_check_in', { ascending: true }),
+
+                // 5. Próximos Check-outs (7 dias)
+                supabase.from('Reserva')
+                    .select('*, Quarto(*), Hospede(*)')
+                    .in('status', ['CHECK_IN', 'CONFIRMADA'])
+                    .gte('data_check_out', inicioDia)
+                    .lte('data_check_out', seteDias)
+                    .order('data_check_out', { ascending: true }),
+
+                // 6. Calendário
+                supabase.from('Reserva')
+                    .select('*, Quarto(*), Hospede(*)')
+                    .neq('status', 'CANCELADA')
+                    .or(`data_check_in.gte.${inicioCal},data_check_out.gte.${inicioCal}`),
+
+                // 6.b Bloqueios
+                supabase.from('Bloqueio')
+                    .select('*, Quarto(*)')
+                    .or(`data_inicio.gte.${inicioCal},data_fim.gte.${inicioCal}`),
+
+                // 7. Canais
+                supabase.from('Canal').select('*')
+            ]);
+
+            const receitaMes = reservasMes?.reduce((sum, r) => sum + Number(r.valor_total || 0), 0) || 0;
+
             const porCanal = {};
             for (const r of (reservasMes || [])) {
                 const canal = canais?.find(c => c.id === r.canal_id);
