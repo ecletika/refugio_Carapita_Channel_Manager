@@ -2,7 +2,7 @@
 import React from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
-    BarChart2, Calendar, Home, TrendingUp, Lock, ArrowRight, Sparkles, RefreshCw, Terminal
+    BarChart2, Calendar, Home, TrendingUp, Lock, ArrowRight, Sparkles, RefreshCw, Terminal, MapPin, Settings
 } from 'lucide-react';
 
 export default function AdminSidebar() {
@@ -18,7 +18,8 @@ export default function AdminSidebar() {
         { icon: Lock, label: 'Bloqueios', path: '/admin/bloqueios' },
         { icon: Sparkles, label: 'Extras', path: '/admin/extras' },
         { icon: BarChart2, label: 'Relatórios', path: '/admin/relatorios' },
-        { icon: Terminal, label: 'Simulador', path: '/admin/webhook-simulator' },
+        { icon: MapPin, label: 'Passeios', path: '/admin/passeios' },
+        { icon: Settings, label: 'Contactos & Redes', path: '/admin/configuracoes' },
     ];
 
     return (

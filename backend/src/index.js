@@ -28,6 +28,7 @@ const uploadRoutes = require('./routes/upload.routes');
 
 const extraRoutes = require('./routes/extras.routes');
 const relatoriosRoutes = require('./routes/relatorios.routes');
+const siteRoutes = require('./routes/site.routes');
 
 // Montando as rotas da API
 app.use('/api/auth', authRoutes);
@@ -40,6 +41,7 @@ app.use('/api/bloqueios', bloqueiosRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/extras', extraRoutes);
 app.use('/api/relatorios', relatoriosRoutes);
+app.use('/api/site', siteRoutes);
 
 // Rota de Healthcheck
 app.get('/api/health', (req, res) => {

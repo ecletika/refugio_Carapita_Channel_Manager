@@ -20,7 +20,7 @@ class QuartosController {
     // 2. Criar novo quarto
     static async criar(req, res) {
         try {
-            const { nome, tipo, descricao, capacidade, precoBase, fotos, icalUrl, icalAirbnb, icalBooking, comodidades } = req.body;
+            const { nome, tipo, descricao, capacidade, precoBase, fotos, icalUrl, icalAirbnb, icalBooking, comodidades, videoUrl } = req.body;
 
             if (!nome || !capacidade || !precoBase) {
                 return res.status(400).json({ error: 'Nome, capacidade e preço base são obrigatórios' });
@@ -39,6 +39,7 @@ class QuartosController {
                     ical_url: icalUrl,
                     ical_airbnb: icalAirbnb,
                     ical_booking: icalBooking,
+                    video_url: videoUrl,
                     ativo: true
                 }])
                 .select()
@@ -56,7 +57,7 @@ class QuartosController {
     static async atualizar(req, res) {
         try {
             const { id } = req.params;
-            const { nome, tipo, descricao, capacidade, precoBase, fotos, icalUrl, icalAirbnb, icalBooking, ativo, comodidades } = req.body;
+            const { nome, tipo, descricao, capacidade, precoBase, fotos, icalUrl, icalAirbnb, icalBooking, ativo, comodidades, videoUrl } = req.body;
 
             const { data: quartoAtualizado, error } = await supabase
                 .from('Quarto')
@@ -71,6 +72,7 @@ class QuartosController {
                     ical_url: icalUrl,
                     ical_airbnb: icalAirbnb,
                     ical_booking: icalBooking,
+                    video_url: videoUrl,
                     ativo
                 })
                 .eq('id', id)

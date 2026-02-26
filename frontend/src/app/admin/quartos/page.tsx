@@ -12,6 +12,7 @@ interface Quarto {
     preco_base: number;
     fotos: string;
     comodidades: string; // JSON array of strings
+    video_url?: string;
     ical_url: string;
     ativo: boolean;
 }
@@ -200,6 +201,7 @@ export default function AdminQuartos() {
                     fotos: serializeFotos(fotosEdit),
                     comodidades: JSON.stringify(comodidadesEdit),
                     ativo: editQuarto?.ativo ?? true,
+                    videoUrl: editQuarto?.video_url,
                     ical_url: editQuarto?.ical_url
                 })
 
@@ -430,6 +432,14 @@ export default function AdminQuartos() {
                                 <textarea rows={3} value={editQuarto.descricao} onChange={e => setEditQuarto({ ...editQuarto, descricao: e.target.value })} className="w-full border border-gray-100 p-5 outline-none focus:border-carapita-gold transition-colors font-light text-sm bg-gray-50/30" placeholder="Descreva os diferenciais deste alojamento..." />
                             </div>
 
+                            <div className="space-y-2 group">
+                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted group-focus-within:text-carapita-gold transition-colors block">Link de Vídeo (YouTube, Vimeo...)</label>
+                                <div className="flex items-center gap-3 border-b border-gray-200 focus-within:border-carapita-gold transition-colors pb-1">
+                                    <Link size={14} className="text-carapita-muted" />
+                                    <input type="url" value={editQuarto.video_url || ''} onChange={e => setEditQuarto({ ...editQuarto, video_url: e.target.value })} className="w-full py-2 outline-none font-medium text-sm bg-transparent" placeholder="https://youtube.com/watch?v=..." />
+                                </div>
+                            </div>
+
                             {/* ===== GALERIA DE FOTOS ===== */}
                             <div className="space-y-4">
                                 <label className="text-[10px] uppercase tracking-widest text-carapita-muted block font-bold">
@@ -536,8 +546,8 @@ export default function AdminQuartos() {
                                                         type="button"
                                                         onClick={() => toggleComodidade(item)}
                                                         className={`text-[10px] px-3 py-1.5 border transition-all duration-200 rounded-sm ${selected
-                                                                ? 'bg-carapita-dark text-white border-carapita-dark'
-                                                                : 'bg-white text-carapita-muted border-gray-200 hover:border-carapita-gold hover:text-carapita-gold'
+                                                            ? 'bg-carapita-dark text-white border-carapita-dark'
+                                                            : 'bg-white text-carapita-muted border-gray-200 hover:border-carapita-gold hover:text-carapita-gold'
                                                             }`}
                                                     >
                                                         {selected && <span className="mr-1">✓</span>}

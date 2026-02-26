@@ -402,7 +402,7 @@ export default function Home() {
                     <div className="hidden xl:flex items-center gap-6 mr-4 opacity-60 hover:opacity-100 transition-opacity">
                         <button onClick={() => router.push('/admin/reservas')} className="text-[9px] uppercase tracking-widest font-bold hover:text-carapita-gold transition-colors">Reservas</button>
                         <button onClick={() => router.push('/admin/quartos')} className="text-[9px] uppercase tracking-widest font-bold hover:text-carapita-gold transition-colors">Quartos</button>
-                        <button onClick={() => router.push('/admin/tarifas')} className="text-[9px] uppercase tracking-widest font-bold hover:text-carapita-gold transition-colors">Tarifas</button>
+                        <button onClick={() => router.push('/tarifas')} className="text-[9px] uppercase tracking-widest font-bold hover:text-carapita-gold transition-colors">Tarifas</button>
                     </div>
 
                     <button
@@ -458,89 +458,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Booking Bar */}
-            <section id="motor" className="w-full relative z-20 bg-white">
-                <div className="w-full max-w-7xl mx-auto px-6 md:px-16 py-10 flex flex-col md:flex-row items-center justify-between gap-8 border-b border-carapita-border">
-                    <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="flex flex-col gap-2 w-full cursor-pointer" onClick={() => setShowCalendar(!showCalendar)}>
-                            <label className="text-[10px] text-carapita-muted tracking-mega uppercase font-medium">Data de Chegada</label>
-                            <div className="flex items-center gap-3 border-b border-carapita-border pb-2 focus-within:border-carapita-dark transition-colors">
-                                <Calendar className="text-carapita-gold" size={14} />
-                                <span className="w-full bg-transparent outline-none text-carapita-dark text-sm font-light uppercase tracking-widest">{checkIn || 'Selecionar'}</span>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2 w-full cursor-pointer" onClick={() => setShowCalendar(!showCalendar)}>
-                            <label className="text-[10px] text-carapita-muted tracking-mega uppercase font-medium">Data de Partida</label>
-                            <div className="flex items-center gap-3 border-b border-carapita-border pb-2 focus-within:border-carapita-dark transition-colors">
-                                <Calendar className="text-carapita-gold" size={14} />
-                                <span className="w-full bg-transparent outline-none text-carapita-dark text-sm font-light uppercase tracking-widest">{checkOut || 'Selecionar'}</span>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2 w-full">
-                            <label className="text-[10px] text-carapita-muted tracking-mega uppercase font-medium">Ocupação</label>
-                            <div className="flex items-center gap-3 border-b border-carapita-border pb-2 focus-within:border-carapita-dark transition-colors">
-                                <Users className="text-carapita-gold" size={14} />
-                                <select value={hospedes} onChange={(e) => setHospedes(Number(e.target.value))} className="w-full bg-transparent outline-none text-carapita-dark text-sm font-light uppercase tracking-widest cursor-pointer appearance-none">
-                                    <option value={1}>1 Adulto</option>
-                                    <option value={2}>2 Adultos</option>
-                                    <option value={3}>3 Adultos</option>
-                                    <option value={4}>4 Adultos</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <button onClick={buscarDisponibilidade} disabled={loading} className="w-full md:w-auto px-12 py-4 bg-carapita-gold hover:bg-carapita-dark text-white text-xs tracking-mega uppercase font-medium transition-colors duration-500 disabled:opacity-50">
-                        {loading ? 'Pesquisando...' : 'Verificar'}
-                    </button>
-                </div>
 
-                {showCalendar && (
-                    <div className="bg-white border-b border-carapita-border">
-                        <SeletorCalendario
-                            quartoId="8de6abb4-d7e9-488d-ba06-29e26259321f" // ID da Suíte Master atualizado
-                            onSelect={(start, end) => {
-                                setCheckIn(start);
-                                setCheckOut(end);
-                                setShowCalendar(false);
-                            }}
-                        />
-                    </div>
-                )}
-            </section>
-
-            {/* Resultados da Busca */}
-            {quartosEncontrados && (
-                <section id="resultados-busca" className="py-24 px-6 md:px-16 max-w-7xl mx-auto w-full border-b border-gray-100">
-                    <div className="text-center mb-16">
-                        <span className="text-carapita-gold uppercase tracking-mega text-[10px] font-semibold">Reserva Direta</span>
-                        <h3 className="text-4xl font-serif text-carapita-dark font-light mt-4">Disponibilidade Encontrada</h3>
-                    </div>
-                    {quartosEncontrados.length === 0 ? (
-                        <p className="text-center text-carapita-muted font-light uppercase tracking-widest text-sm">Não há habitações disponíveis para este período.</p>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                            {quartosEncontrados.map((quarto) => (
-                                <div key={quarto.id} className="group border border-gray-100 p-6 flex flex-col hover:border-carapita-gold transition-colors duration-500">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h4 className="text-2xl font-serif text-carapita-dark">{quarto.nome}</h4>
-                                        <span className="text-xl font-light text-carapita-gold">€{quarto.preco_base}/Noite</span>
-                                    </div>
-                                    <p className="text-sm text-carapita-muted font-light mb-8 flex-grow">{quarto.descricao} • Suporta {quarto.capacidade} pessoas.</p>
-                                    <button
-                                        onClick={() => iniciarReserva(quarto.id)}
-                                        disabled={loading}
-                                        className="bg-[#1E3932] hover:bg-carapita-dark text-white rounded-full uppercase text-[10px] tracking-mega px-10 py-4 transition-all duration-300 w-full mb-4 disabled:opacity-50"
-                                    >
-                                        {loading ? 'Processando...' : 'Reservar Agora'}
-                                    </button>
-
-                                    <p className="text-[10px] text-center text-carapita-muted font-light uppercase tracking-widest">Via Conexão Segura Stripe</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
-            )}
 
             {/* A Essência - "Um Lugar Mágico" (Estilo Casa da Calçada) */}
             <section id="a-essencia" className="w-full bg-[#141414] text-white py-32 px-4 md:px-12 lg:px-24 overflow-hidden relative">
