@@ -275,6 +275,10 @@ class ReservasController {
                 porCanal[nome] = (porCanal[nome] || 0) + 1;
             }
 
+            // Normalização para o frontend
+            const normRes = (r) => ({ ...r, quarto: r.Quarto, hospede: r.Hospede });
+            const normBloq = (b) => ({ ...b, quarto: b.Quarto });
+
             return res.json({
                 status: 'success',
                 data: {
@@ -285,10 +289,10 @@ class ReservasController {
                         quartosTotalAtivos: quartosAtivos || 0,
                         reservasHoje: reservasHoje?.length || 0
                     },
-                    proximosCheckins: proximosCheckins || [],
-                    proximosCheckouts: proximosCheckouts || [],
-                    reservasCalendario: reservasCalendario || [],
-                    bloqueiosCalendario: bloqueios || [],
+                    proximosCheckins: (proximosCheckins || []).map(normRes),
+                    proximosCheckouts: (proximosCheckouts || []).map(normRes),
+                    reservasCalendario: (reservasCalendario || []).map(normRes),
+                    bloqueiosCalendario: (bloqueios || []).map(normBloq),
                     porCanal: porCanal,
                     calendarioMes: { ano: anoCal, mes: mesCal }
                 }
