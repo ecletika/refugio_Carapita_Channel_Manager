@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id            String   @id @default(uuid())
+  nome          String
+  email         String   @unique
+  senha_hash    String
+  role          String   @default("RECEPCAO")
+  criado_em     DateTime @default(now())
+  atualizado_em DateTime @updatedAt
+}
+
+model Quarto {
+  id               String          @id @default(uuid())
+  nome             String
+  tipo             String
+  capacidade       Int
+  preco_base       Decimal
+  descricao        String?
+  fotos            String?
+  comodidades      String?
+  ical_url         String?
+  ativo            Boolean         @default(true)
+  criado_em        DateTime        @default(now())
+  reservas         Reserva[]
+  tarifas_sazonais TarifaSazonal[]
+  bloqueios        Bloqueio[]
+}
+
+model Hospede {
+  id            String   @id @default(uuid())
+  prefixo       String?
+  nome          String
+  sobrenome     String?
+  email         String   @unique
+  senha_hash    String?
+  telefone      String?
+  pais          String?
+  endereco1     String?
+  endereco2     String?
+  cidade        String?
+  cep           String?
+  nif           String?
+  passaporte    String?
+  criado_em     DateTime @default(now())
+  atualizado_em DateTime @updatedAt
+  reservas      Reserva[]
+}
+
+model Canal {
+  id                  String    @id @default(uuid())
+  nome_canal          String    @unique
+  comissao_percentual Decimal   @default(0.0)
+  reservas            Reserva[]
+}
+
+model Extra {
+  id          String   @id @default(uuid())
+  nome        String
+  descricao   String?
+  preco       Decimal  @default(0)
+  ativo       Boolean  @default(true)
+  icone       String?
+  criado_em   DateTime @default(now())
+}
+
+model Reserva {
+  id                     String   @id @default(uuid())
+  quarto_id              String
+  hospede_id             String
+  canal_id               String
+  status                 String   @default("PENDENTE")
+  data_check_in          DateTime
+  data_check_out         DateTime
+  valor_total            Decimal
+  metodo_pagamento       String?
+  codigo_reserva_externo String?
+  extras_ids             String?
+  requerimentos_especiais String?
+  criado_em              DateTime @default(now())
+  atualizado_em          DateTime @updatedAt
+
+  quarto  Quarto  @relation(fields: [quarto_id], references: [id])
+  hospede Hospede @relation(fields: [hospede_id], references: [id])
+  canal   Canal   @relation(fields: [canal_id], references: [id])
+}
+
+model TarifaSazonal {
+  id          String   @id @default(uuid())
+  quarto_id   String
+  data_inicio DateTime
+  data_fim    DateTime
+  preco_noite Decimal
+  motivo      String?
+  quarto      Quarto   @relation(fields: [quarto_id], references: [id], onDelete: Cascade)
+}
+
+model Bloqueio {
+  id          String   @id @default(uuid())
+  quarto_id   String
+  data_inicio DateTime
+  data_fim    DateTime
+  motivo      String?
+  quarto      Quarto   @relation(fields: [quarto_id], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,338 @@
+const supabase = require('../config/supabase');
+const EmailService = require('../services/email.service');
+
+class ReservasController {
+
+    // 1. Listar Disponibilidade Real
+    static async listarDisponibilidade(req, res) {
+        try {
+            const { checkIn, checkOut, capacidade } = req.query;
+            if (!checkIn || !checkOut) return res.status(400).json({ error: 'Check-in e Check-out são obrigatórios' });
+
+            const dataInicio = new Date(checkIn).toISOString();
+            const dataFim = new Date(checkOut).toISOString();
+
+            let { data: quartos, error: errQ } = await supabase
+                .from('Quarto')
+                .select('*')
+                .eq('ativo', true)
+                .gte('capacidade', parseInt(capacidade || 1));
+
+            if (errQ) throw errQ;
+
+            const { data: reservasConflito } = await supabase
+                .from('Reserva')
+                .select('quarto_id')
+                .in('status', ['CONFIRMADA', 'CHECK_IN', 'PENDENTE'])
+                .or(`data_check_in.lt.${dataFim},data_check_out.gt.${dataInicio}`);
+
+            const { data: bloqueiosConflito } = await supabase
+                .from('Bloqueio')
+                .select('quarto_id')
+                .or(`data_inicio.lt.${dataFim},data_fim.gt.${dataInicio}`);
+
+            const idsOcupados = new Set([
+                ...(reservasConflito?.map(r => r.quarto_id) || []),
+                ...(bloqueiosConflito?.map(b => b.quarto_id) || [])
+            ]);
+
+            const disponiveis = quartos.filter(q => !idsOcupados.has(q.id));
+            return res.json({ status: 'success', data: disponiveis });
+        } catch (error) {
+            console.error("Erro ListarDisponibilidade:", error.message);
+            return res.status(500).json({ error: 'Erro ao buscar disponibilidade' });
+        }
+    }
+
+    // 2. Criar Reserva
+    static async criarReserva(req, res) {
+        try {
+            const { quartoId, hospede, checkIn, checkOut, canalNome, metodoPagamento, requerimentosEspeciais } = req.body;
+            if (!quartoId || !hospede || !checkIn || !checkOut) return res.status(400).json({ error: 'Dados incompletos' });
+
+            const dataInicio = new Date(checkIn).toISOString();
+            const dataFim = new Date(checkOut).toISOString();
+
+            // Buscar/Criar Hóspede
+            let { data: hospedeDB } = await supabase.from('Hospede').select('*').eq('email', hospede.email).single();
+            if (!hospedeDB) {
+                const { data: novoH } = await supabase
+                    .from('Hospede')
+                    .insert([{ nome: hospede.nome, email: hospede.email, telefone: hospede.telefone || null }])
+                    .select().single();
+                hospedeDB = novoH;
+            }
+
+            // Buscar/Criar Canal
+            let { data: canalDB } = await supabase.from('Canal').select('*').eq('nome_canal', canalNome || 'SITE').single();
+            if (!canalDB) {
+                const { data: novoC } = await supabase
+                    .from('Canal')
+                    .insert([{ nome_canal: canalNome || 'SITE', comissao_percentual: 0 }])
+                    .select().single();
+                canalDB = novoC;
+            }
+
+            // Calcular Preço
+            const { data: quarto } = await supabase.from('Quarto').select('*').eq('id', quartoId).single();
+            const { data: tarifas } = await supabase.from('TarifaSazonal').select('*').eq('quarto_id', quartoId);
+
+            let valorTotal = 0;
+            let d = new Date(checkIn);
+            while (d < new Date(checkOut)) {
+                const t = tarifas?.find(tf => d >= new Date(tf.data_inicio) && d <= new Date(tf.data_fim));
+                valorTotal += Number(t ? t.preco_noite : quarto.preco_base);
+                d.setDate(d.getDate() + 1);
+            }
+
+            // Salvar
+            const { data: novaReserva, error } = await supabase
+                .from('Reserva')
+                .insert([{
+                    quarto_id: quartoId,
+                    hospede_id: hospedeDB.id,
+                    canal_id: canalDB.id,
+                    data_check_in: dataInicio,
+                    data_check_out: dataFim,
+                    status: (canalNome === 'SITE' || !canalNome) ? 'PENDENTE' : 'CONFIRMADA',
+                    valor_total: valorTotal,
+                    metodo_pagamento: metodoPagamento,
+                    requerimentos_especiais: requerimentosEspeciais
+                }])
+                .select('*, Quarto(*), Hospede(*)')
+                .single();
+
+            if (error) throw error;
+
+            const normalizedReserva = {
+                ...novaReserva,
+                quarto: novaReserva.Quarto,
+                hospede: novaReserva.Hospede
+            };
+
+            if (canalNome === 'SITE' || !canalNome) {
+                try { await EmailService.enviarEmailProcessamento(hospedeDB, normalizedReserva); } catch (e) { console.error("Erro email:", e); }
+            }
+
+            return res.status(201).json({ status: 'success', data: normalizedReserva });
+        } catch (error) {
+            console.error("Erro criarReserva:", error.message);
+            return res.status(500).json({ error: 'Erro ao criar reserva' });
+        }
+    }
+
+    // 2.1 Listar minhas reservas (Hóspede)
+    static async listarMinhasReservas(req, res) {
+        try {
+            const hospedeId = req.usuarioId;
+            const { data: reservas, error } = await supabase
+                .from('Reserva')
+                .select('*, Quarto(*)')
+                .eq('hospede_id', hospedeId)
+                .order('data_check_in', { ascending: false });
+
+            if (error) throw error;
+            return res.json({ status: 'success', data: reservas });
+        } catch (error) {
+            return res.status(500).json({ error: 'Erro ao listar reservas' });
+        }
+    }
+
+    // 3. Status Management
+    static async updateStatus(id, novoStatus, res) {
+        try {
+            const { data, error } = await supabase
+                .from('Reserva')
+                .update({ status: novoStatus })
+                .eq('id', id)
+                .select('*, Hospede(*), Quarto(*)')
+                .single();
+
+            if (error) throw error;
+
+            const normalizedData = {
+                ...data,
+                quarto: data.Quarto,
+                hospede: data.Hospede
+            };
+
+            if (novoStatus === 'CONFIRMADA' && normalizedData.hospede) {
+                await EmailService.enviarEmailConfirmacao(normalizedData.hospede, normalizedData);
+            }
+
+            return res.json({ status: 'success', message: `Status alterado para ${novoStatus}`, data: normalizedData });
+        } catch (error) {
+            return res.status(500).json({ error: `Erro ao alterar status: ${error.message}` });
+        }
+    }
+
+    static async cancelarReserva(req, res) { return ReservasController.updateStatus(req.params.id, 'CANCELADA', res); }
+    static async confirmarReserva(req, res) { return ReservasController.updateStatus(req.params.id, 'CONFIRMADA', res); }
+    static async checkIn(req, res) { return ReservasController.updateStatus(req.params.id, 'CHECK_IN', res); }
+    static async checkOut(req, res) { return ReservasController.updateStatus(req.params.id, 'CHECK_OUT', res); }
+
+    // 7. Admin List
+    static async listarTodas(req, res) {
+        try {
+            const { data: reservas, error } = await supabase
+                .from('Reserva')
+                .select('*, Quarto(*), Hospede(*), Canal(*)')
+                .order('criado_em', { ascending: false });
+
+            if (error) throw error;
+
+            // Normalizar chaves para o frontend (Hospede -> hospede, etc)
+            const normalized = (reservas || []).map(r => ({
+                ...r,
+                quarto: r.Quarto,
+                hospede: r.Hospede,
+                canal: r.Canal
+            }));
+
+            return res.json({ status: 'success', data: normalized });
+        } catch (error) {
+            return res.status(500).json({ error: 'Erro ao listar reservas' });
+        }
+    }
+
+    // 8. Dashboard
+    static async getDashboardStats(req, res) {
+        try {
+            const agora = new Date();
+            const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1).toISOString();
+            const fimMes = new Date(agora.getFullYear(), agora.getMonth() + 1, 0, 23, 59, 59).toISOString();
+            const inicioDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate()).toISOString();
+            const fimDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 23, 59, 59).toISOString();
+
+            // 1. KPIs do Mês
+            const { data: reservasMes } = await supabase
+                .from('Reserva')
+                .select('*')
+                .in('status', ['CONFIRMADA', 'CHECK_IN', 'CHECK_OUT'])
+                .gte('data_check_in', inicioMes)
+                .lte('data_check_in', fimMes);
+
+            const receitaMes = reservasMes?.reduce((sum, r) => sum + Number(r.valor_total || 0), 0) || 0;
+
+            // 2. Quartos Ativos
+            const { count: quartosAtivos } = await supabase
+                .from('Quarto')
+                .select('*', { count: 'exact', head: true })
+                .eq('ativo', true);
+
+            // 3. Reservas Hoje (Check-ins ativos)
+            const { data: reservasHoje } = await supabase
+                .from('Reserva')
+                .select('*, Quarto(*), Hospede(*)')
+                .in('status', ['CONFIRMADA', 'CHECK_IN'])
+                .lte('data_check_in', fimDia)
+                .gte('data_check_out', inicioDia);
+
+            // 4. Próximos Check-ins (7 dias)
+            const hoje = new Date();
+            const seteDias = new Date(hoje.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+            const { data: proximosCheckins } = await supabase
+                .from('Reserva')
+                .select('*, Quarto(*), Hospede(*)')
+                .eq('status', 'CONFIRMADA')
+                .gte('data_check_in', inicioDia)
+                .lte('data_check_in', seteDias)
+                .order('data_check_in', { ascending: true });
+
+            // 5. Próximos Check-outs (7 dias)
+            const { data: proximosCheckouts } = await supabase
+                .from('Reserva')
+                .select('*, Quarto(*), Hospede(*)')
+                .in('status', ['CHECK_IN', 'CONFIRMADA'])
+                .gte('data_check_out', inicioDia)
+                .lte('data_check_out', seteDias)
+                .order('data_check_out', { ascending: true });
+
+            // 6. Calendário e Bloqueios
+            const { ano, mes } = req.query;
+            const anoCal = parseInt(ano) || agora.getFullYear();
+            const mesCal = parseInt(mes) || (agora.getMonth() + 1);
+            const inicioCal = new Date(anoCal, mesCal - 1, 1).toISOString();
+            const fimCal = new Date(anoCal, mesCal, 0, 23, 59, 59).toISOString();
+
+            const { data: reservasCalendario } = await supabase
+                .from('Reserva')
+                .select('*, Quarto(*), Hospede(*)')
+                .neq('status', 'CANCELADA')
+                .or(`data_check_in.gte.${inicioCal},data_check_out.gte.${inicioCal}`);
+
+            const { data: bloqueios } = await supabase
+                .from('Bloqueio')
+                .select('*, Quarto(*)')
+                .or(`data_inicio.gte.${inicioCal},data_fim.gte.${inicioCal}`);
+
+            // 7. Distribuição por Canal
+            const { data: canais } = await supabase.from('Canal').select('*');
+            const porCanal = {};
+            for (const r of (reservasMes || [])) {
+                const canal = canais?.find(c => c.id === r.canal_id);
+                const nome = canal?.nome_canal || 'OUTRO';
+                porCanal[nome] = (porCanal[nome] || 0) + 1;
+            }
+
+            return res.json({
+                status: 'success',
+                data: {
+                    kpis: {
+                        receitaMes: receitaMes,
+                        reservasMes: reservasMes?.length || 0,
+                        taxaOcupacao: 0,
+                        quartosTotalAtivos: quartosAtivos || 0,
+                        reservasHoje: reservasHoje?.length || 0
+                    },
+                    proximosCheckins: proximosCheckins || [],
+                    proximosCheckouts: proximosCheckouts || [],
+                    reservasCalendario: reservasCalendario || [],
+                    bloqueiosCalendario: bloqueios || [],
+                    porCanal: porCanal,
+                    calendarioMes: { ano: anoCal, mes: mesCal }
+                }
+            });
+        } catch (error) {
+            console.error('Erro Dashboard:', error.message);
+            return res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+        }
+    }
+
+    static async deletarReserva(req, res) {
+        try {
+            await supabase.from('Reserva').delete().eq('id', req.params.id);
+            return res.json({ status: 'success', message: 'Reserva removida' });
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+
+    // Webhooks placeholders
+    static async webhookBooking(req, res) { return res.send('OK'); }
+    static async webhookAirbnb(req, res) { return res.send('OK'); }
+
+    // Sync methods
+    static async syncIcal(req, res) {
+        try {
+            const IcalService = require('../services/ical.service');
+            const { quartoId, url } = req.body;
+            const result = await IcalService.syncCalendar(quartoId, url);
+            return res.json({ status: 'success', ...result });
+        } catch (error) {
+            return res.status(500).json({ status: 'error', error: error.message });
+        }
+    }
+
+    static async syncAll(req, res) {
+        try {
+            const IcalService = require('../services/ical.service');
+            const resultados = await IcalService.syncAllQuartos();
+            return res.json({ status: 'success', data: resultados });
+        } catch (error) {
+            return res.status(500).json({ status: 'error', error: error.message });
+        }
+    }
+}
+
+module.exports = ReservasController;
