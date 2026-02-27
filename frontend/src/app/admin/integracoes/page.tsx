@@ -24,7 +24,7 @@ export default function IntegracoesOTA() {
 
     const fetchQuartos = async () => {
         try {
-            const resp = await fetch('http://localhost:5000/api/quartos');
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`);
             const json = await resp.json();
             if (json.status === 'success') {
                 setQuartos(json.data);
@@ -41,7 +41,7 @@ export default function IntegracoesOTA() {
     const updateIcal = async (quartoId: string) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`http://localhost:5000/api/quartos/${quartoId}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos/${quartoId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export default function IntegracoesOTA() {
         setSyncing(`${quartoId}-${label}`);
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch('http://localhost:5000/api/reservas/sync', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas/sync`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ export default function IntegracoesOTA() {
         setSyncing('ALL');
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch('http://localhost:5000/api/reservas/sync/all', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas/sync/all`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -249,7 +249,7 @@ export default function IntegracoesOTA() {
                         </div>
                         <h5 className="text-sm font-serif mb-2 text-carapita-dark">Airbnb</h5>
                         <p className="text-[11px] text-gray-400 leading-relaxed italic">
-                            No painel do Airbnb: Calendário > Exportar > Copie o Link .ics e cole aqui.
+                            No painel do Airbnb: Calendário &gt; Exportar &gt; Copie o Link .ics e cole aqui.
                         </p>
                     </div>
                     <div className="p-8 border border-gray-100 bg-white">
@@ -258,7 +258,7 @@ export default function IntegracoesOTA() {
                         </div>
                         <h5 className="text-sm font-serif mb-2 text-carapita-dark">Booking.com</h5>
                         <p className="text-[11px] text-gray-400 leading-relaxed italic">
-                            Na Extranet: Tarifas e Disponibilidade > Sincronizar Calendários > Exportar.
+                            Na Extranet: Tarifas e Disponibilidade &gt; Sincronizar Calendários &gt; Exportar.
                         </p>
                     </div>
                     <div className="p-8 border border-gray-100 bg-white">
