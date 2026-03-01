@@ -1,13 +1,21 @@
 const supabase = require('../config/supabase');
+const crypto = require('crypto');
 
 class QuartosController {
     // 1. Listar todos os quartos
     static async listar(req, res) {
         try {
-            const { data: quartos, error } = await supabase
+            const { ativo } = req.query;
+            let query = supabase
                 .from('Quarto')
                 .select('*')
                 .order('criado_em', { ascending: false });
+
+            if (ativo === 'true') {
+                query = query.eq('ativo', true);
+            }
+
+            const { data: quartos, error } = await query;
 
             if (error) throw error;
             return res.json({ status: 'success', data: quartos });
@@ -29,6 +37,7 @@ class QuartosController {
             const { data: novoQuarto, error } = await supabase
                 .from('Quarto')
                 .insert([{
+                    id: crypto.randomUUID(),
                     nome,
                     tipo: tipo || 'Quarto',
                     descricao,
@@ -45,10 +54,13 @@ class QuartosController {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Quarto Insert Error:', error);
+                throw error;
+            }
             return res.status(201).json({ status: 'success', data: novoQuarto });
         } catch (error) {
-            console.error('Erro criar quarto:', error.message);
+            console.error('Erro criar quarto:', error.message || error);
             return res.status(500).json({ error: 'Erro ao criar quarto' });
         }
     }

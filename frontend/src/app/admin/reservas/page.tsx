@@ -13,6 +13,7 @@ interface Reserva {
     hospede: { nome: string, email: string, telefone: string };
     canal: { nome_canal: string };
     criado_em: string;
+    extras_ids?: string[] | null;
 }
 
 export default function AdminReservas() {
@@ -144,6 +145,11 @@ export default function AdminReservas() {
                                             <Tag size={12} className="text-carapita-gold/40" />
                                             <span className="text-[10px] text-carapita-muted uppercase tracking-widest font-medium">Origem Canal: {res.canal.nome_canal}</span>
                                         </div>
+                                        {res.extras_ids && res.extras_ids.length > 0 && (
+                                            <div className="mt-2 text-[10px] text-carapita-gold font-bold uppercase tracking-widest bg-carapita-gold/10 px-2 py-1 rounded w-fit">
+                                                +{res.extras_ids.length} Extra(s) Selecionados
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

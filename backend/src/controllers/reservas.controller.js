@@ -1,5 +1,6 @@
 const supabase = require('../config/supabase');
 const EmailService = require('../services/email.service');
+const crypto = require('crypto');
 
 class ReservasController {
 
@@ -9,8 +10,16 @@ class ReservasController {
             const { checkIn, checkOut, capacidade } = req.query;
             if (!checkIn || !checkOut) return res.status(400).json({ error: 'Check-in e Check-out são obrigatórios' });
 
-            const dataInicio = new Date(checkIn).toISOString();
-            const dataFim = new Date(checkOut).toISOString();
+            const hoje = new Date();
+            hoje.setUTCHours(0, 0, 0, 0);
+            const dataCheckIn = new Date(`${checkIn}T00:00:00.000Z`);
+
+            if (dataCheckIn < hoje) {
+                return res.status(400).json({ error: 'Não é possível pesquisar disponibilidade para datas passadas' });
+            }
+
+            const dataInicio = dataCheckIn.toISOString();
+            const dataFim = new Date(`${checkOut}T00:00:00.000Z`).toISOString();
 
             let { data: quartos, error: errQ } = await supabase
                 .from('Quarto')
@@ -20,16 +29,18 @@ class ReservasController {
 
             if (errQ) throw errQ;
 
-            const { data: reservasConflito } = await supabase
+            const { data: reservasConflito } = await supabase.supabaseAdmin
                 .from('Reserva')
                 .select('quarto_id')
                 .in('status', ['CONFIRMADA', 'CHECK_IN', 'PENDENTE'])
-                .or(`data_check_in.lt.${dataFim},data_check_out.gt.${dataInicio}`);
+                .lt('data_check_in', dataFim)
+                .gt('data_check_out', dataInicio);
 
-            const { data: bloqueiosConflito } = await supabase
+            const { data: bloqueiosConflito } = await supabase.supabaseAdmin
                 .from('Bloqueio')
                 .select('quarto_id')
-                .or(`data_inicio.lt.${dataFim},data_fim.gt.${dataInicio}`);
+                .lt('data_inicio', dataFim)
+                .gt('data_fim', dataInicio);
 
             const idsOcupados = new Set([
                 ...(reservasConflito?.map(r => r.quarto_id) || []),
@@ -47,48 +58,73 @@ class ReservasController {
     // 2. Criar Reserva
     static async criarReserva(req, res) {
         try {
-            const { quartoId, hospede, checkIn, checkOut, canalNome, metodoPagamento, requerimentosEspeciais } = req.body;
+            console.log('1. INICIANDO CRIAR RESERVA', req.body);
+            const { quartoId, hospede, checkIn, checkOut, canalNome, metodoPagamento, requerimentosEspeciais, extrasIds } = req.body;
             if (!quartoId || !hospede || !checkIn || !checkOut) return res.status(400).json({ error: 'Dados incompletos' });
 
-            const dataInicio = new Date(checkIn).toISOString();
-            const dataFim = new Date(checkOut).toISOString();
+            const dataInicio = new Date(`${checkIn}T00:00:00.000Z`).toISOString();
+            const dataFim = new Date(`${checkOut}T00:00:00.000Z`).toISOString();
 
             // Buscar/Criar Hóspede
             let { data: hospedeDB } = await supabase.from('Hospede').select('*').eq('email', hospede.email).single();
             if (!hospedeDB) {
-                const { data: novoH } = await supabase
+                const now = new Date().toISOString();
+                const { data: novoH, error: errH } = await supabase
                     .from('Hospede')
-                    .insert([{ nome: hospede.nome, email: hospede.email, telefone: hospede.telefone || null }])
+                    .insert([{ id: crypto.randomUUID(), nome: hospede.nome, email: hospede.email, telefone: hospede.telefone || null, criado_em: now, atualizado_em: now }])
                     .select().single();
+                if (errH) { console.error('Hospede Insert Error:', errH); throw errH; }
                 hospedeDB = novoH;
             }
 
             // Buscar/Criar Canal
             let { data: canalDB } = await supabase.from('Canal').select('*').eq('nome_canal', canalNome || 'SITE').single();
             if (!canalDB) {
-                const { data: novoC } = await supabase
+                const now = new Date().toISOString();
+                const { data: novoC, error: errC } = await supabase
                     .from('Canal')
-                    .insert([{ nome_canal: canalNome || 'SITE', comissao_percentual: 0 }])
+                    .insert([{ id: crypto.randomUUID(), nome_canal: canalNome || 'SITE', comissao_percentual: 0, criado_em: now, atualizado_em: now }])
                     .select().single();
+                if (errC) { console.error('Canal Insert Error:', errC); throw errC; }
                 canalDB = novoC;
             }
 
             // Calcular Preço
+            console.log('4. CALCULANDO PRECO');
             const { data: quarto } = await supabase.from('Quarto').select('*').eq('id', quartoId).single();
             const { data: tarifas } = await supabase.from('TarifaSazonal').select('*').eq('quarto_id', quartoId);
 
             let valorTotal = 0;
-            let d = new Date(checkIn);
-            while (d < new Date(checkOut)) {
-                const t = tarifas?.find(tf => d >= new Date(tf.data_inicio) && d <= new Date(tf.data_fim));
+            let d = new Date(`${checkIn}T00:00:00.000Z`);
+            const dFim = new Date(`${checkOut}T00:00:00.000Z`);
+            let limit = 0;
+            while (d < dFim && limit < 1000) {
+                limit++;
+                const currentYmd = d.toISOString().split('T')[0];
+                const t = tarifas?.find(tf => {
+                    const tInStr = tf.data_inicio.split('T')[0];
+                    const tOutStr = tf.data_fim.split('T')[0];
+                    return currentYmd >= tInStr && currentYmd <= tOutStr;
+                });
                 valorTotal += Number(t ? t.preco_noite : quarto.preco_base);
-                d.setDate(d.getDate() + 1);
+                d.setUTCDate(d.getUTCDate() + 1);
+            }
+
+            // Calcular preço dos Extras
+            console.log('5. CALCULANDO EXTRAS');
+            if (extrasIds && extrasIds.length > 0) {
+                const { data: extrasPriceData } = await supabase.from('Extra').select('preco').in('id', extrasIds);
+                if (extrasPriceData) {
+                    valorTotal += extrasPriceData.reduce((sum, e) => sum + Number(e.preco || 0), 0);
+                }
             }
 
             // Salvar
+            const now = new Date().toISOString();
             const { data: novaReserva, error } = await supabase
                 .from('Reserva')
                 .insert([{
+                    id: crypto.randomUUID(),
                     quarto_id: quartoId,
                     hospede_id: hospedeDB.id,
                     canal_id: canalDB.id,
@@ -97,12 +133,18 @@ class ReservasController {
                     status: (canalNome === 'SITE' || !canalNome) ? 'PENDENTE' : 'CONFIRMADA',
                     valor_total: valorTotal,
                     metodo_pagamento: metodoPagamento,
-                    requerimentos_especiais: requerimentosEspeciais
+                    requerimentos_especiais: requerimentosEspeciais,
+                    extras_ids: extrasIds && extrasIds.length > 0 ? extrasIds : null,
+                    criado_em: now,
+                    atualizado_em: now
                 }])
                 .select('*, Quarto(*), Hospede(*)')
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Reserva Insert Error:', error);
+                throw error;
+            }
 
             const normalizedReserva = {
                 ...novaReserva,
@@ -110,14 +152,15 @@ class ReservasController {
                 hospede: novaReserva.Hospede
             };
 
+            console.log('7. EMAIL E RETORNO');
             if (canalNome === 'SITE' || !canalNome) {
                 try { await EmailService.enviarEmailProcessamento(hospedeDB, normalizedReserva); } catch (e) { console.error("Erro email:", e); }
             }
 
             return res.status(201).json({ status: 'success', data: normalizedReserva });
         } catch (error) {
-            console.error("Erro criarReserva:", error.message);
-            return res.status(500).json({ error: 'Erro ao criar reserva' });
+            console.error("Erro criarReserva:", error.message || error);
+            return res.status(500).json({ error: 'Erro ao criar reserva: ' + (error.message || JSON.stringify(error)) });
         }
     }
 

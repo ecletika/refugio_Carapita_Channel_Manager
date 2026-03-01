@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import SplashLoader from "../components/SplashLoader";
 
 export const metadata: Metadata = {
     title: "Refúgio Carapita - Alojamento Local",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="pt-PT">
-            <body>{children}</body>
+            <body>
+                <SplashLoader />
+                {children}
+            </body>
         </html>
     );
 }

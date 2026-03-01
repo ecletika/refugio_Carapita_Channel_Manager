@@ -34,9 +34,20 @@ h6 {
 }
 
 @keyframes pulse-green {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(30, 57, 50, 0.7); }
-  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(30, 57, 50, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(30, 57, 50, 0); }
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(30, 57, 50, 0.7);
+  }
+
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(30, 57, 50, 0);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(30, 57, 50, 0);
+  }
 }
 
 .btn-verde-lago {
@@ -46,4 +57,94 @@ h6 {
 
 .animate-fade-in {
   animation: fadeIn 1s ease-out forwards;
+}
+
+/* Splash Screen Animations */
+@keyframes drawPath {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes drawCircle {
+  from {
+    stroke-dasharray: 0 1000;
+  }
+
+  to {
+    stroke-dasharray: 1000 1000;
+  }
+}
+
+@keyframes logoReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes textReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-draw {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawPath 2s cubic-bezier(0.445, 0.05, 0.55, 0.95) forwards;
+}
+
+.animate-draw-circle {
+  animation: drawCircle 2s cubic-bezier(0.445, 0.05, 0.55, 0.95) forwards;
+}
+
+.animate-logo-reveal {
+  opacity: 0;
+  animation: logoReveal 1.5s cubic-bezier(0.23, 1, 0.32, 1) 0.5s forwards;
+}
+
+.animate-text-reveal {
+  opacity: 0;
+  animation: textReveal 1.2s cubic-bezier(0.23, 1, 0.32, 1) 1.2s forwards;
+}
+
+@keyframes progressReveal {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-progress-reveal {
+  animation: progressReveal 2.2s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.splash-fade-out {
+  animation: fadeOut 0.8s ease-in-out 3.2s forwards;
 }

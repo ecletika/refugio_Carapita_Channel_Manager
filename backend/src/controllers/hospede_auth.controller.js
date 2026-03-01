@@ -1,6 +1,7 @@
 const supabase = require('../config/supabase');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 class HospedeAuthController {
     // 1. Cadastro de Hóspede
@@ -27,15 +28,21 @@ class HospedeAuthController {
             const { data: novoHospede, error } = await supabase
                 .from('Hospede')
                 .insert([{
+                    id: crypto.randomUUID(),
                     nome,
                     email,
                     senha_hash,
-                    telefone
+                    telefone,
+                    criado_em: new Date(),
+                    atualizado_em: new Date()
                 }])
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Hospede Insert Error:', error);
+                throw error;
+            }
 
             return res.status(201).json({
                 status: 'success',
@@ -43,7 +50,7 @@ class HospedeAuthController {
                 hospedeId: novoHospede.id
             });
         } catch (error) {
-            console.error('Erro register hospede:', error.message);
+            console.error('Erro register hospede:', error.message || error);
             return res.status(500).json({ error: 'Erro ao cadastrar hóspede' });
         }
     }

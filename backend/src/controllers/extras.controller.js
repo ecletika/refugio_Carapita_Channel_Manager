@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const crypto = require('crypto');
 
 exports.listar = async (req, res) => {
     try {
@@ -37,16 +38,21 @@ exports.criar = async (req, res) => {
         const { data, error } = await supabase
             .from('Extra')
             .insert([{
+                id: crypto.randomUUID(),
                 nome,
                 descricao: descricao || null,
                 preco: parseFloat(preco) || 0,
                 icone: icone || null,
+                foto: req.body.foto || null,
                 ativo: true
             }])
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Extra Insert Error:', error);
+            throw error;
+        }
         res.json({ status: 'success', data });
     } catch (e) {
         res.status(500).json({ status: 'error', error: e.message });
@@ -65,6 +71,7 @@ exports.atualizar = async (req, res) => {
                 descricao: descricao !== undefined ? descricao : undefined,
                 preco: preco !== undefined ? parseFloat(preco) : undefined,
                 icone: icone !== undefined ? icone : undefined,
+                foto: req.body.foto !== undefined ? req.body.foto : undefined,
                 ativo: ativo !== undefined ? Boolean(ativo) : undefined,
             })
             .eq('id', id)

@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const crypto = require('crypto');
 
 class BloqueiosController {
     static async listar(req, res) {
@@ -27,18 +28,22 @@ class BloqueiosController {
             const { data: bloqueio, error } = await supabase
                 .from('Bloqueio')
                 .insert([{
+                    id: crypto.randomUUID(),
                     quarto_id,
-                    data_inicio: new Date(data_inicio).toISOString(),
-                    data_fim: new Date(data_fim).toISOString(),
+                    data_inicio: new Date(`${data_inicio}T00:00:00.000Z`).toISOString(),
+                    data_fim: new Date(`${data_fim}T00:00:00.000Z`).toISOString(),
                     motivo
                 }])
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase Insert Error [Bloqueio]:', error);
+                throw error;
+            }
             return res.status(201).json({ status: 'success', data: bloqueio });
         } catch (error) {
-            console.error('Erro criar bloqueio:', error.message);
+            console.error('Erro criar bloqueio:', error.message || error);
             return res.status(500).json({ error: 'Erro ao criar bloqueio' });
         }
     }

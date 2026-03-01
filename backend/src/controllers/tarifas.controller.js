@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const crypto = require('crypto');
 
 class TarifasController {
     // 1. Listar Tarifas de um Quarto
@@ -40,6 +41,7 @@ class TarifasController {
             const { data: novaTarifa, error } = await supabase
                 .from('TarifaSazonal')
                 .insert([{
+                    id: crypto.randomUUID(),
                     quarto_id: quartoId,
                     data_inicio: new Date(dataInicio).toISOString(),
                     data_fim: new Date(dataFim).toISOString(),
@@ -49,10 +51,13 @@ class TarifasController {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase Insert Error:', error);
+                throw error;
+            }
             return res.status(201).json({ status: 'success', data: novaTarifa });
         } catch (error) {
-            console.error('Erro salvar tarifa:', error.message);
+            console.error('Erro salvar tarifa:', error.message || error);
             return res.status(500).json({ error: 'Erro ao salvar tarifa' });
         }
     }
@@ -78,11 +83,15 @@ class TarifasController {
                 return res.status(400).json({ error: 'Parâmetros incompletos' });
             }
 
-            const dataInicio = new Date(inicio);
-            const dataFim = new Date(fim);
+            // Normalizar para YYYY-MM-DD para evitar problemas com fuso horário/horas
+            const startStr = inicio.includes('T') ? inicio.split('T')[0] : inicio;
+            const endStr = fim.includes('T') ? fim.split('T')[0] : fim;
 
-            // Buscar Quarto
-            const { data: quarto, error: errQuarto } = await supabase
+            const queryStart = `${startStr}T00:00:00.000Z`;
+            const queryEnd = `${endStr}T23:59:59.999Z`;
+
+            // Buscar Quarto para ter o preco_base
+            const { data: quarto, error: errQuarto } = await supabase.supabaseAdmin
                 .from('Quarto')
                 .select('*')
                 .eq('id', quartoId)
@@ -91,58 +100,67 @@ class TarifasController {
             if (errQuarto || !quarto) return res.status(404).json({ error: 'Quarto não encontrado' });
 
             // Buscar Tarifas
-            const { data: tarifasSazonais } = await supabase
+            const { data: tarifasSazonais } = await supabase.supabaseAdmin
                 .from('TarifaSazonal')
                 .select('*')
                 .eq('quarto_id', quartoId)
-                .lte('data_inicio', dataFim.toISOString())
-                .gte('data_fim', dataInicio.toISOString());
+                .lte('data_inicio', queryEnd)
+                .gte('data_fim', queryStart);
 
-            // Buscar Reservas
-            const { data: reservasExistentes } = await supabase
+            const { data: reservasExistentes } = await supabase.supabaseAdmin
                 .from('Reserva')
                 .select('*')
                 .eq('quarto_id', quartoId)
                 .not('status', 'in', '("CANCELADA","EXPIRADA")')
-                .or(`data_check_in.lte.${dataFim.toISOString()},data_check_out.gte.${dataInicio.toISOString()}`);
+                .lte('data_check_in', queryEnd)
+                .gte('data_check_out', queryStart);
 
-            // Buscar Bloqueios
-            const { data: bloqueiosManuais } = await supabase
+            const { data: bloqueiosManuais } = await supabase.supabaseAdmin
                 .from('Bloqueio')
                 .select('*')
                 .eq('quarto_id', quartoId)
-                .lte('data_inicio', dataFim.toISOString())
-                .gte('data_fim', dataInicio.toISOString());
+                .lte('data_inicio', queryEnd)
+                .gte('data_fim', queryStart);
 
             const calendario = [];
-            let dataAtual = new Date(dataInicio);
+            let dataAtual = new Date(`${startStr}T00:00:00.000Z`);
+            const dataLimite = new Date(`${endStr}T00:00:00.000Z`);
 
-            while (dataAtual <= dataFim) {
+            const hoje = new Date();
+            hoje.setUTCHours(0, 0, 0, 0);
+
+            while (dataAtual <= dataLimite) {
                 const isoData = dataAtual.toISOString().split('T')[0];
 
-                const tarifaSazonal = tarifasSazonais?.find(t =>
-                    new Date(t.data_inicio) <= dataAtual && new Date(t.data_fim) >= dataAtual
-                );
+                const tarifaSazonal = tarifasSazonais?.find(t => {
+                    const tInStr = t.data_inicio.split('T')[0];
+                    const tOutStr = t.data_fim.split('T')[0];
+                    return isoData >= tInStr && isoData <= tOutStr;
+                });
 
                 const estaReservada = reservasExistentes?.some(r => {
-                    const rIn = new Date(r.data_check_in);
-                    const rOut = new Date(r.data_check_out);
-                    return dataAtual >= rIn && dataAtual < rOut;
+                    const rInStr = r.data_check_in.split('T')[0];
+                    const rOutStr = r.data_check_out.split('T')[0];
+                    return isoData >= rInStr && isoData < rOutStr;
                 });
 
                 const estaBloqueado = bloqueiosManuais?.some(b => {
-                    const bIn = new Date(b.data_inicio);
-                    const bOut = new Date(b.data_fim);
-                    return dataAtual >= bIn && dataAtual < bOut;
+                    const bInStr = b.data_inicio.split('T')[0];
+                    const bOutStr = b.data_fim.split('T')[0];
+                    // Se início == fim, bloqueia o dia. Se início < fim, libera o dia de check-out.
+                    if (bInStr === bOutStr) return isoData === bInStr;
+                    return isoData >= bInStr && isoData < bOutStr;
                 });
+
+                const noPassado = dataAtual < hoje;
 
                 calendario.push({
                     data: isoData,
                     preco: tarifaSazonal ? Number(tarifaSazonal.preco_noite) : Number(quarto.preco_base),
-                    disponivel: !estaReservada && !estaBloqueado
+                    disponivel: !estaReservada && !estaBloqueado && !noPassado
                 });
 
-                dataAtual.setDate(dataAtual.getDate() + 1);
+                dataAtual.setUTCDate(dataAtual.getUTCDate() + 1);
             }
 
             return res.json({ status: 'success', data: calendario });

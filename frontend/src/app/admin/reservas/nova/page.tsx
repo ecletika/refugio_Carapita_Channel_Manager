@@ -163,6 +163,32 @@ export default function NovaReservaManual() {
                                         placeholder="123456789"
                                     />
                                 </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">País</label>
+                                    <select
+                                        className="w-full border-b border-gray-100 py-3 outline-none focus:border-carapita-gold transition-colors text-sm bg-transparent appearance-none"
+                                        value={formData.hospede.pais}
+                                        onChange={e => setFormData({ ...formData, hospede: { ...formData.hospede, pais: e.target.value } })}
+                                    >
+                                        <option value="" disabled>Selecione o seu país</option>
+                                        <option value="Portugal">Portugal</option>
+                                        <option value="Brasil">Brasil</option>
+                                        <option value="Espanha">Espanha</option>
+                                        <option value="França">França</option>
+                                        <option value="Reino Unido">Reino Unido</option>
+                                        <option value="Estados Unidos">Estados Unidos</option>
+                                        <option value="Alemanha">Alemanha</option>
+                                        <option value="Itália">Itália</option>
+                                        <option value="Canadá">Canadá</option>
+                                        <option value="Suíça">Suíça</option>
+                                        <option value="Angola">Angola</option>
+                                        <option value="Cabo Verde">Cabo Verde</option>
+                                        <option value="Moçambique">Moçambique</option>
+                                        <option value="Irlanda">Irlanda</option>
+                                        <option value="Bélgica">Bélgica</option>
+                                        <option value="Outro">Outro</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     )}

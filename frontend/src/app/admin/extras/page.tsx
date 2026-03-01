@@ -10,6 +10,7 @@ interface Extra {
     preco: number;
     ativo: boolean;
     icone: string | null;
+    foto?: string | null;
 }
 
 export default function AdminExtras() {
@@ -17,11 +18,35 @@ export default function AdminExtras() {
     const [loading, setLoading] = useState(true);
     const [editingExtra, setEditingExtra] = useState<Extra | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [newExtra, setNewExtra] = useState({ nome: '', descricao: '', preco: 0, icone: '🍷' });
+    const [newExtra, setNewExtra] = useState({ nome: '', descricao: '', preco: 0, icone: '🍷', foto: '' });
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         fetchExtras();
     }, []);
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploading(true);
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        formData.append('foto', file);
+        try {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/upload/`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.url) setNewExtra({ ...newExtra, foto: data.url });
+        } catch (e) {
+            console.error(e);
+            alert('Erro no upload');
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const fetchExtras = async () => {
         setLoading(true);
@@ -53,8 +78,10 @@ export default function AdminExtras() {
             const data = await resp.json();
             if (data.status === 'success') {
                 setShowAddModal(false);
-                setNewExtra({ nome: '', descricao: '', preco: 0, icone: '🍷' });
+                setNewExtra({ nome: '', descricao: '', preco: 0, icone: '🍷', foto: '' });
                 fetchExtras();
+            } else {
+                alert('Erro ao criar: ' + (data.error || 'Desconhecido'));
             }
         } catch (e) {
             console.error(e);
@@ -128,10 +155,14 @@ export default function AdminExtras() {
                                 <tr key={e.id} className="hover:bg-gray-50/50 transition-colors group">
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-4">
-                                            <span className="text-2xl">{e.icone || '✨'}</span>
+                                            {e.foto ? (
+                                                <img src={e.foto} className="w-12 h-12 rounded object-cover border border-gray-100 shadow-sm" alt={e.nome} />
+                                            ) : (
+                                                <span className="text-2xl w-12 h-12 flex items-center justify-center bg-gray-50 rounded border border-gray-100">{e.icone || '✨'}</span>
+                                            )}
                                             <div>
                                                 <p className="text-sm font-medium text-carapita-dark">{e.nome}</p>
-                                                <p className="text-[10px] text-gray-400 font-light">{e.descricao}</p>
+                                                <p className="text-[10px] text-gray-400 font-light max-w-xs">{e.descricao}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -180,9 +211,69 @@ export default function AdminExtras() {
                             </div>
                             <div>
                                 <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1">Preço (€)</label>
-                                <input type="number" className="w-full border border-gray-100 p-3 text-sm" value={newExtra.preco} onChange={e => setNewExtra({ ...newExtra, preco: Number(e.target.value) })} />
+                                <input type="number" className="w-full border border-gray-100 p-3 text-sm" value={newExtra.preco} onChange={e => setNewExtra({ ...newExtra, preco: Number(e.target.value) })} placeholder="0.00" />
                             </div>
-                            <button onClick={handleCreate} className="w-full py-4 bg-carapita-dark text-white text-[10px] uppercase tracking-mega font-bold hover:bg-carapita-gold transition-all mt-4">Gravar Extra</button>
+                            <div>
+                                <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1">Foto do Produto (Bucket)</label>
+                                <input type="file" className="text-[10px] w-full" onChange={handlePhotoUpload} />
+                                {newExtra.foto && <img src={newExtra.foto} className="w-20 h-20 mt-2 rounded object-cover shadow-sm" />}
+                                {uploading && <p className="text-[8px] text-carapita-gold font-bold">A enviar imagem...</p>}
+                            </div>
+                            <button onClick={handleCreate} disabled={uploading} className="w-full py-4 bg-carapita-dark text-white text-[10px] uppercase tracking-mega font-bold hover:bg-carapita-gold transition-all mt-4 disabled:opacity-50">Gravar Extra</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Editar */}
+            {editingExtra && (
+                <div className="fixed inset-0 z-[500] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setEditingExtra(null)} />
+                    <div className="relative bg-white w-full max-w-md p-10 shadow-2xl animate-fade-in border-t-4 border-carapita-gold">
+                        <h3 className="text-2xl font-serif text-carapita-dark mb-6 tracking-widest uppercase">Editar Extra</h3>
+                        <div className="space-y-4 font-sans">
+                            <div>
+                                <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1">Ícone</label>
+                                <input type="text" className="w-full border border-gray-100 p-3 text-2xl" value={editingExtra.icone || ''} onChange={e => setEditingExtra({ ...editingExtra, icone: e.target.value })} />
+                            </div>
+                            <div>
+                                <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1">Nome</label>
+                                <input type="text" className="w-full border border-gray-100 p-3 text-sm" value={editingExtra.nome || ''} onChange={e => setEditingExtra({ ...editingExtra, nome: e.target.value })} />
+                            </div>
+                            <div>
+                                <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1">Descrição</label>
+                                <textarea className="w-full border border-gray-100 p-3 text-sm h-24" value={editingExtra.descricao || ''} onChange={e => setEditingExtra({ ...editingExtra, descricao: e.target.value })} />
+                            </div>
+                            <div>
+                                <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1">Preço (€)</label>
+                                <input type="number" className="w-full border border-gray-100 p-3 text-sm" value={editingExtra.preco || 0} onChange={e => setEditingExtra({ ...editingExtra, preco: Number(e.target.value) })} />
+                            </div>
+                            <div>
+                                <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1">Foto (Nova)</label>
+                                <input type="file" className="text-[10px] w-full" onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    setUploading(true);
+                                    const token = localStorage.getItem('token');
+                                    const formData = new FormData();
+                                    formData.append('foto', file);
+                                    try {
+                                        const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/upload/`, {
+                                            method: 'POST',
+                                            headers: { 'Authorization': `Bearer ${token}` },
+                                            body: formData
+                                        });
+                                        const data = await resp.json();
+                                        if (data.url) setEditingExtra({ ...editingExtra, foto: data.url });
+                                    } catch (e) {
+                                        alert('Erro no upload');
+                                    } finally {
+                                        setUploading(false);
+                                    }
+                                }} />
+                                {editingExtra.foto && <img src={editingExtra.foto} className="w-20 h-20 mt-2 rounded object-cover shadow-sm" />}
+                            </div>
+                            <button onClick={() => handleUpdate(editingExtra.id, editingExtra)} disabled={uploading} className="w-full py-4 bg-carapita-dark text-white text-[10px] uppercase tracking-mega font-bold hover:bg-carapita-gold transition-all mt-4 disabled:opacity-50">Gravar Alterações</button>
                         </div>
                     </div>
                 </div>

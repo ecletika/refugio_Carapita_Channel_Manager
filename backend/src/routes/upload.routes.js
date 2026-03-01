@@ -4,14 +4,14 @@ const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middlewares/auth.middleware');
 
-// Configuração do cliente Supabase
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+// Configuração do cliente Supabase (Usamos a Service Role Key para permitir uploads no bucket se o RLS estiver ativo)
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY);
 
 // Usar Memory Storage para o Multer (não salvar no disco)
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Rota para upload de imagem diretamente para o Supabase Storage
-router.post('/', authMiddleware, upload.single('file'), async (req, res) => {
+router.post('/', authMiddleware, upload.single('foto'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'Nenhum arquivo enviado' });
