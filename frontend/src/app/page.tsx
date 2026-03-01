@@ -304,7 +304,24 @@ export default function Home() {
 
             const data = await resp.json();
             if (data.status === 'success') {
-                alert("Reserva enviada com sucesso! Receberá um e-mail de confirmação em breve.");
+                if (bookingForm.metodoPagamento === 'CARTAO') {
+                    // Start Stripe checkout
+                    const checkoutResp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/pagamentos/checkout`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reservaData: data.data })
+                    });
+                    const checkoutData = await checkoutResp.json();
+                    if (checkoutData.status === 'success' && checkoutData.url) {
+                        window.location.href = checkoutData.url;
+                        return;
+                    } else {
+                        alert("Reserva criada, mas falha ao iniciar pagamento. Verifique seu e-mail.");
+                    }
+                } else {
+                    alert("Reserva enviada com sucesso! Receberá um e-mail de confirmação em breve.");
+                }
+
                 setShowBookingScreen(false);
                 setBookingStep('selection');
                 setSelectedExtras([]);
