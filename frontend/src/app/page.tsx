@@ -427,7 +427,7 @@ export default function Home() {
         <main className="min-h-screen bg-carapita-green flex flex-col font-sans selection:bg-carapita-gold selection:text-white">
 
             {/* Header / Navigation */}
-            <header className={`fixed top-0 w-full z-50 px-6 md:px-12 py-6 flex items-center justify-between transition-all duration-700 ${scrolled ? 'bg-carapita-green shadow-lg py-4 border-b border-white/5 text-white' : 'bg-transparent text-white border-b border-white/20'}`}>
+            <header className={`fixed top-0 w-full z-50 px-4 md:px-12 py-4 md:py-6 flex items-center justify-between transition-all duration-700 ${scrolled ? 'bg-carapita-green shadow-lg py-3 md:py-4 border-b border-white/5 text-white' : 'bg-transparent text-white border-b border-white/20'}`}>
                 {/* Left: Navigation Menu */}
                 <nav className="flex-1 hidden lg:block">
                     <ul className="flex gap-10 text-[10px] uppercase tracking-mega font-medium">
@@ -439,8 +439,8 @@ export default function Home() {
                 </nav>
 
                 {/* Center: Logo (Elegante e Imponente) - Incorporating the new luxury logo */}
-                <div className="flex-shrink-0 text-center mx-4 relative group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                    <div className={`relative w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-2 transition-all duration-700 p-0.5 shadow-2xl ${scrolled ? 'border-carapita-gold bg-carapita-green' : 'border-white/40 bg-white/10 backdrop-blur-sm'}`}>
+                <div className="flex-shrink-0 text-center mx-2 md:mx-4 relative group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                    <div className={`relative w-16 h-16 md:w-28 md:h-28 rounded-full overflow-hidden border-2 transition-all duration-700 p-0.5 shadow-2xl ${scrolled ? 'border-carapita-gold bg-carapita-green' : 'border-white/40 bg-white/10 backdrop-blur-sm'}`}>
                         <img
                             src="/logo.jpg"
                             alt="Refúgio Carapita Logo"
@@ -450,7 +450,7 @@ export default function Home() {
                 </div>
 
                 {/* Right: Admin & Auth */}
-                <div className="flex-1 flex justify-end items-center gap-6">
+                <div className="flex-1 flex justify-end items-center gap-3 md:gap-6">
 
 
                     <button
@@ -467,8 +467,9 @@ export default function Home() {
                         {mounted && isLoggedIn ? 'Minha Conta' : 'Login'}
                     </button>
 
-                    <button onClick={() => setShowBookingScreen(true)} className={`text-[10px] uppercase tracking-mega font-bold rounded-full px-8 py-3 transition-all duration-500 bg-carapita-dark text-white hover:bg-carapita-gold`}>
-                        Reservar Agora
+                    <button onClick={() => setShowBookingScreen(true)} className={`text-[8px] md:text-[10px] uppercase tracking-mega font-bold rounded-full px-4 md:px-8 py-2 md:py-3 transition-all duration-500 bg-carapita-dark text-white hover:bg-carapita-gold text-center`}>
+                        <span className="hidden md:inline">Reservar Agora</span>
+                        <span className="md:hidden">Reservar</span>
                     </button>
                 </div>
             </header>
@@ -509,16 +510,16 @@ export default function Home() {
 
 
             {/* A Essência - "Um Lugar Mágico" (Estilo Casa da Calçada) */}
-            <section id="a-essencia" className="w-full bg-carapita-green text-white py-32 px-4 md:px-12 lg:px-24 overflow-hidden relative border-t border-white/5">
+            <section id="a-essencia" className="w-full bg-carapita-green text-white py-20 lg:py-32 px-4 md:px-8 lg:px-24 overflow-hidden relative border-t border-white/5">
                 <div className="max-w-[1400px] mx-auto flex flex-col items-center">
 
                     {/* Cabeçalho */}
-                    <div className="text-center mb-16 lg:mb-32 z-10 relative">
-                        <div className="flex justify-center mb-8">
-                            <span className="w-[1px] h-12 bg-carapita-gold opacity-50 block"></span>
+                    <div className="text-center mb-16 lg:mb-32 z-10 relative px-4">
+                        <div className="flex justify-center mb-6 lg:mb-8">
+                            <span className="w-[1px] h-8 lg:h-12 bg-carapita-gold opacity-50 block"></span>
                         </div>
-                        <span className="text-carapita-gold uppercase tracking-widest text-[9px] md:text-[10px] font-medium block mb-6"> Refúgio Carapita </span>
-                        <h3 className="text-4xl md:text-6xl lg:text-7xl font-serif text-carapita-goldLight leading-tight font-light uppercase tracking-widest">
+                        <span className="text-carapita-gold uppercase tracking-widest text-[9px] md:text-[10px] font-medium block mb-4 lg:mb-6"> Refúgio Carapita </span>
+                        <h3 className="text-3xl md:text-6xl lg:text-7xl font-serif text-carapita-goldLight leading-tight font-light uppercase tracking-widest">
                             Um Lugar Mágico
                         </h3>
                     </div>
@@ -530,10 +531,10 @@ export default function Home() {
                         <div className="hidden lg:block absolute left-4 xl:-left-8 top-12 w-[65%] h-[110%] border opacity-20 border-carapita-gold z-0 pointer-events-none"></div>
 
                         {/* Coluna das Imagens (Esquerda) */}
-                        <div className="w-full lg:w-[82%] relative min-h-[500px] sm:min-h-[700px] md:min-h-[850px] flex items-center justify-center lg:justify-start">
+                        <div className="w-full lg:w-[82%] relative min-h-[400px] sm:min-h-[600px] md:min-h-[850px] flex items-center justify-center lg:justify-start">
 
                             {/* Imagem Maior (Fundo Direita) */}
-                            <div className="absolute right-0 lg:-right-8 xl:-right-12 top-0 w-[95%] md:w-[85%] lg:w-[75%] h-[420px] sm:h-[580px] md:h-[750px] z-10 overflow-hidden shadow-2xl">
+                            <div className="absolute right-0 lg:-right-8 xl:-right-12 top-0 w-full md:w-[85%] lg:w-[75%] h-[320px] sm:h-[480px] md:h-[750px] z-10 overflow-hidden shadow-2xl">
                                 <img
                                     src="https://a0.muscache.com/im/pictures/hosting/Hosting-1580467683590335058/original/f53992ea-c556-40bf-8ff8-07900f8f79a1.jpeg?im_w=1200"
                                     className="w-full h-full object-cover transform duration-[3s] hover:scale-105 filter brightness-100"
@@ -542,7 +543,7 @@ export default function Home() {
                             </div>
 
                             {/* Imagem Menor Sobreposta (Frente Esquerda) */}
-                            <div className="absolute left-0 lg:-left-12 xl:-left-20 bottom-[-20px] md:bottom-[-40px] w-[60%] md:w-[50%] lg:w-[40%] h-[320px] sm:h-[450px] md:h-[550px] z-20 overflow-hidden group shadow-[20px_20px_50px_rgba(0,0,0,0.5)] border-4 border-carapita-gold">
+                            <div className="hidden md:block absolute left-0 lg:-left-12 xl:-left-20 bottom-[-20px] md:bottom-[-40px] w-[60%] md:w-[50%] lg:w-[40%] h-[320px] sm:h-[450px] md:h-[550px] z-20 overflow-hidden group shadow-[20px_20px_50px_rgba(0,0,0,0.5)] border-4 border-carapita-gold">
                                 <img
                                     src="https://a0.muscache.com/im/pictures/hosting/Hosting-1580467683590335058/original/f0f4a673-77ef-4b5a-ba7a-2888f3e9eebf.jpeg?im_w=960"
                                     className="w-full h-full object-cover transform duration-[3s] group-hover:scale-105"
@@ -552,8 +553,8 @@ export default function Home() {
                         </div>
 
                         {/* Coluna de Texto (Direita) */}
-                        <div className="w-full lg:w-[15%] flex flex-col justify-start text-left z-30 mt-28 lg:mt-0 lg:pt-12 xl:pl-4">
-                            <p className="text-white/70 font-light leading-[2.2] text-xs sm:text-sm tracking-wide text-justify md:text-left mb-12">
+                        <div className="w-full lg:w-[15%] flex flex-col justify-start text-left z-30 mt-12 md:mt-28 lg:mt-0 lg:pt-12 xl:pl-4 px-4 md:px-0">
+                            <p className="text-white/70 font-light leading-[2.2] text-sm tracking-wide text-justify md:text-left mb-12">
                                 Uma propriedade com encanto secular. Um passado intemporal que se mescla com a história de Ourém e de Portugal. Um lugar visionário, recheado de natureza, onde se serviu a comunidade e celebraram vinhos e sonhos.
                                 <br /><br />
                                 Uma casa que ganha fama pelas suas maravilhosas vistas panorâmicas, e volta agora a abrir as portas como alojamento de charme e absoluto requinte.
@@ -561,7 +562,7 @@ export default function Home() {
                             </p>
 
                             {/* Botão Oval Elegante */}
-                            <button onClick={() => scrollTo('alojamento')} className="flex items-center justify-center w-48 h-12 border border-carapita-gold/60 rounded-[30px] text-[9px] uppercase tracking-[0.2em] text-carapita-gold hover:bg-carapita-gold hover:text-white transition-all duration-700 mx-auto md:mx-0">
+                            <button onClick={() => scrollTo('alojamento')} className="flex items-center justify-center w-full md:w-48 h-12 border border-carapita-gold/60 rounded-[30px] text-[9px] uppercase tracking-[0.2em] text-carapita-gold hover:bg-carapita-gold hover:text-white transition-all duration-700 mx-auto md:mx-0">
                                 Descobrir &#10141;
                             </button>
                         </div>
@@ -571,19 +572,19 @@ export default function Home() {
             </section>
 
             {/* Galeria de Alojamento c/ Abas (Fotos Reais do Airbnb) */}
-            <section id="alojamento" className="pb-32 px-4 md:px-12 max-w-[1400px] mx-auto w-full">
-                <div className="text-center mb-16">
+            <section id="alojamento" className="pb-20 lg:pb-32 px-4 md:px-8 max-w-[1400px] mx-auto w-full">
+                <div className="text-center mb-12 lg:mb-16">
                     <span className="text-carapita-gold uppercase tracking-mega text-[10px] font-semibold block mb-4">Alojamento</span>
-                    <h3 className="text-4xl md:text-5xl font-serif text-white font-light mb-12">As Suas Áreas</h3>
+                    <h3 className="text-3xl md:text-5xl font-serif text-white font-light mb-8 lg:mb-12">As Suas Áreas</h3>
 
                     {/* Seletor de Alojamento */}
                     {galleryRooms.length > 1 && (
-                        <div className="flex flex-wrap justify-center gap-3 mb-10">
+                        <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-8 lg:mb-10 px-2">
                             {galleryRooms.map((room) => (
                                 <button
                                     key={room.id}
                                     onClick={() => setActiveGalleryRoom(room.id)}
-                                    className={`px-6 py-2.5 rounded-full text-[10px] uppercase tracking-widest font-bold transition-all border ${activeGalleryRoom === room.id ? 'bg-carapita-gold text-white border-carapita-gold shadow-md' : 'bg-white/5 text-white/40 border-white/10 hover:border-carapita-gold hover:text-carapita-gold'}`}
+                                    className={`px-4 md:px-6 py-2 md:py-2.5 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold transition-all border ${activeGalleryRoom === room.id ? 'bg-carapita-gold text-white border-carapita-gold shadow-md' : 'bg-white/5 text-white/40 border-white/10 hover:border-carapita-gold hover:text-carapita-gold'}`}
                                 >
                                     {room.nome}
                                 </button>
@@ -592,12 +593,12 @@ export default function Home() {
                     )}
 
                     {/* Abas */}
-                    <div className="flex flex-wrap justify-center gap-6 md:gap-12 border-b border-white/10 pb-4 max-w-3xl mx-auto">
+                    <div className="flex overflow-x-auto hide-scrollbars md:flex-wrap justify-start md:justify-center gap-6 md:gap-12 border-b border-white/10 pb-4 max-w-3xl mx-auto px-4 snap-x">
                         {categories.map((cat) => (
                             <button
                                 key={cat}
                                 onClick={() => setActiveTab(cat)}
-                                className={`text-[10px] md:text-xs uppercase tracking-widest font-medium pb-2 transition-all ${activeTab === cat ? 'text-carapita-gold border-b border-carapita-gold' : 'text-white/40 hover:text-white'}`}
+                                className={`snap-start text-[10px] md:text-xs uppercase tracking-widest font-medium pb-2 transition-all whitespace-nowrap ${activeTab === cat ? 'text-carapita-gold border-b border-carapita-gold' : 'text-white/40 hover:text-white'}`}
                             >
                                 {cat}
                             </button>
