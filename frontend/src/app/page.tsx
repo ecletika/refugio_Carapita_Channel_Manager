@@ -761,7 +761,7 @@ export default function Home() {
                                 <input
                                     type="text"
                                     value={formHospede.nome}
-                                    onChange={(e) => setFormHospede({ ...formHospede, name: e.target.value })}
+                                    onChange={(e) => setFormHospede({ ...formHospede, nome: e.target.value })}
                                     className="border-b border-carapita-gold/30 bg-transparent pb-2 outline-none focus:border-carapita-gold text-sm font-light text-white"
                                     placeholder="Como devemos chamá-lo?"
                                 />
