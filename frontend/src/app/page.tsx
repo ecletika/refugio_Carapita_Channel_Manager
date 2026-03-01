@@ -536,7 +536,7 @@ export default function Home() {
                             {/* Imagem Maior (Fundo Direita) */}
                             <div className="absolute right-0 lg:-right-8 xl:-right-12 top-0 w-full md:w-[85%] lg:w-[75%] h-[320px] sm:h-[480px] md:h-[750px] z-10 overflow-hidden shadow-2xl">
                                 <img
-                                    src="https://a0.muscache.com/im/pictures/hosting/Hosting-1580467683590335058/original/f53992ea-c556-40bf-8ff8-07900f8f79a1.jpeg?im_w=1200"
+                                    src="/casa.jpg"
                                     className="w-full h-full object-cover transform duration-[3s] hover:scale-105 filter brightness-100"
                                     alt="Vista Exterior Mágica"
                                 />
