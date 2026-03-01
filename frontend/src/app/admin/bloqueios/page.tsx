@@ -27,8 +27,8 @@ export default function AdminBloqueios() {
         const token = localStorage.getItem('token');
         try {
             const [bResp, qResp] = await Promise.all([
-                fetch('http://localhost:5000/api/bloqueios', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('http://localhost:5000/api/quartos')
+                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/bloqueios`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`)
             ]);
             const bData = await bResp.json();
             const qData = await qResp.json();
@@ -47,7 +47,7 @@ export default function AdminBloqueios() {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch('http://localhost:5000/api/bloqueios', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/bloqueios`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(novo)
@@ -66,7 +66,7 @@ export default function AdminBloqueios() {
         if (!confirm("Remover este bloqueio de agenda? As datas ficarão disponíveis para reserva novamente.")) return;
         const token = localStorage.getItem('token');
         try {
-            await fetch(`http://localhost:5000/api/bloqueios/${id}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/bloqueios/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -150,7 +150,7 @@ export default function AdminBloqueios() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-3 mb-1">
-                                            <h3 className="font-serif text-xl text-carapita-dark truncate capitalize">{b.quarto.nome}</h3>
+                                            <h3 className="font-serif text-xl text-carapita-dark truncate capitalize">{b.quarto?.nome || 'Quarto não encontrado'}</h3>
                                             <span className="text-[10px] text-red-500 font-medium border border-red-100 px-2 py-0.5 rounded uppercase tracking-widest">BLOQUEADO</span>
                                         </div>
                                         <p className="text-xs text-carapita-muted mb-3 font-light italic">" {b.motivo || 'Nenhum motivo indicado'} "</p>

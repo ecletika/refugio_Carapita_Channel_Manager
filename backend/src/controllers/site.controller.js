@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const crypto = require('crypto');
 
 class SiteController {
     // ---- Passeios ----
@@ -12,18 +13,24 @@ class SiteController {
 
     static async criarPasseio(req, res) {
         try {
-            const { nome, dist, img, desc, historia } = req.body;
-            const { data, error } = await supabase.from('Passeio').insert([{ nome, dist, img, desc, historia }]).select().single();
+            const { nome, dist, img, desc, historia, ativo } = req.body;
+            const newId = crypto.randomUUID();
+            const { data, error } = await supabase.from('Passeio').insert([{ id: newId, nome, dist, img, desc, historia, ativo: ativo !== undefined ? ativo : true }]).select().single();
             if (error) throw error;
             return res.json({ status: 'success', data });
-        } catch (error) { return res.status(500).json({ error: 'Erro ao criar passeio' }); }
+        } catch (error) {
+            console.error('Erro criar passeio:', error);
+            return res.status(500).json({ error: 'Erro ao criar passeio' });
+        }
     }
 
     static async atualizarPasseio(req, res) {
         try {
             const { id } = req.params;
-            const { nome, dist, img, desc, historia } = req.body;
-            const { data, error } = await supabase.from('Passeio').update({ nome, dist, img, desc, historia }).eq('id', id).select().single();
+            const { nome, dist, img, desc, historia, ativo } = req.body;
+            const payload = { nome, dist, img, desc, historia };
+            if (ativo !== undefined) payload.ativo = ativo;
+            const { data, error } = await supabase.from('Passeio').update(payload).eq('id', id).select().single();
             if (error) throw error;
             return res.json({ status: 'success', data });
         } catch (error) { return res.status(500).json({ error: 'Erro ao atualizar passeio' }); }
@@ -61,7 +68,8 @@ class SiteController {
                 if (existente) {
                     return supabase.from('Configuracao').update({ valor }).eq('id', existente.id);
                 } else {
-                    return supabase.from('Configuracao').insert([{ chave, valor }]);
+                    const newId = crypto.randomUUID();
+                    return supabase.from('Configuracao').insert([{ id: newId, chave, valor }]);
                 }
             });
             await Promise.all(promises);

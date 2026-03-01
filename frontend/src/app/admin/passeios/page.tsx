@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
-import { Plus, Trash2, Edit2, MapPin, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Edit2, MapPin, Image as ImageIcon, Eye, EyeOff } from 'lucide-react';
 
 interface Passeio {
     id: string;
@@ -10,6 +10,7 @@ interface Passeio {
     img: string;
     desc: string;
     historia: string;
+    ativo: boolean;
 }
 
 export default function AdminPasseios() {
@@ -22,12 +23,13 @@ export default function AdminPasseios() {
         dist: '',
         img: '',
         desc: '',
-        historia: ''
+        historia: '',
+        ativo: true
     });
 
     const fetchPasseios = async () => {
         try {
-            const resp = await fetch('http://localhost:5000/api/site/passeios');
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios`);
             const json = await resp.json();
             if (json.status === 'success') {
                 setPasseios(json.data);
@@ -39,20 +41,33 @@ export default function AdminPasseios() {
 
     const resetForm = () => {
         setEditing(null);
-        setFormData({ nome: '', dist: '', img: '', desc: '', historia: '' });
+        setFormData({ nome: '', dist: '', img: '', desc: '', historia: '', ativo: true });
     };
 
     const handleEdit = (p: Passeio) => {
         setEditing(p);
-        setFormData({ nome: p.nome, dist: p.dist, img: p.img, desc: p.desc, historia: p.historia });
+        setFormData({ nome: p.nome, dist: p.dist, img: p.img, desc: p.desc, historia: p.historia, ativo: p.ativo });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Tem a certeza que deseja remover este passeio?')) return;
+    const handleToggleAtivo = async (p: Passeio) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`http://localhost:5000/api/site/passeios/${id}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios/${p.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ ...p, ativo: !p.ativo })
+            });
+            const json = await resp.json();
+            if (json.status === 'success') fetchPasseios();
+        } catch (e) { alert('Erro ao alterar status'); }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Tem a certeza que deseja remover este passeio?')) return;
+        const token = localStorage.getItem('token');
+        try {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -66,7 +81,7 @@ export default function AdminPasseios() {
         const token = localStorage.getItem('token');
 
         try {
-            const url = editing ? `http://localhost:5000/api/site/passeios/${editing.id}` : 'http://localhost:5000/api/site/passeios';
+            const url = editing ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios/${editing.id}` : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios`;
             const method = editing ? 'PUT' : 'POST';
 
             const resp = await fetch(url, {
@@ -168,12 +183,17 @@ export default function AdminPasseios() {
                                 <p className="text-xs text-gray-500 font-light line-clamp-2 mb-6">{p.desc}</p>
 
                                 <div className="mt-auto flex justify-between items-center border-t border-gray-50 pt-4">
-                                    <button onClick={() => handleEdit(p)} className="text-[10px] uppercase font-bold tracking-widest text-carapita-gold hover:text-carapita-dark flex items-center gap-1">
-                                        <Edit2 size={12} /> Editar
+                                    <button onClick={() => handleToggleAtivo(p)} className={`text-[10px] uppercase font-bold tracking-widest flex items-center gap-1 ${p.ativo ? 'text-green-500 hover:text-green-600' : 'text-gray-400 hover:text-gray-500'}`}>
+                                        {p.ativo ? <><Eye size={12} /> Ativado</> : <><EyeOff size={12} /> Oculto</>}
                                     </button>
-                                    <button onClick={() => handleDelete(p.id)} className="text-red-400 hover:bg-red-50 p-2 rounded transition-colors">
-                                        <Trash2 size={14} />
-                                    </button>
+                                    <div className="flex gap-2 text-carapita-gold">
+                                        <button onClick={() => handleEdit(p)} className="p-2 hover:bg-carapita-gold/10 rounded transition-colors" title="Editar">
+                                            <Edit2 size={14} />
+                                        </button>
+                                        <button onClick={() => handleDelete(p.id)} className="text-red-400 hover:bg-red-50 p-2 rounded transition-colors" title="Remover">
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

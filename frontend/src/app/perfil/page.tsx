@@ -22,7 +22,7 @@ export default function PerfilHospede() {
 
         const fetchReservas = async () => {
             try {
-                const resp = await fetch('http://localhost:5000/api/reservas/minhas-reservas', {
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas/minhas-reservas`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const dados = await resp.json();

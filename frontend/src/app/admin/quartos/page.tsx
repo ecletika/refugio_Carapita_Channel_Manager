@@ -84,11 +84,12 @@ export default function AdminQuartos() {
     const [urlInput, setUrlInput] = useState('');
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [lightbox, setLightbox] = useState<{ fotos: string[], index: number } | null>(null);
 
 
     const fetchQuartos = async () => {
         try {
-            const resp = await fetch('http://localhost:5000/api/quartos');
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`);
             const data = await resp.json();
             if (data.status === 'success') setQuartos(data.data);
         } catch (e) {
@@ -145,7 +146,7 @@ export default function AdminQuartos() {
             const formData = new FormData();
             formData.append('foto', file);
             try {
-                const resp = await fetch('http://localhost:5000/api/upload', {
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/upload`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
@@ -182,8 +183,8 @@ export default function AdminQuartos() {
         const token = localStorage.getItem('token');
         const method = editQuarto?.id ? 'PUT' : 'POST';
         const url = editQuarto?.id
-            ? `http://localhost:5000/api/quartos/${editQuarto.id}`
-            : 'http://localhost:5000/api/quartos';
+            ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos/${editQuarto.id}`
+            : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`;
 
         try {
             const resp = await fetch(url, {
@@ -221,7 +222,7 @@ export default function AdminQuartos() {
         if (!confirm("Tem certeza que deseja apagar este quarto? Todos os dados associados serão perdidos.")) return;
         const token = localStorage.getItem('token');
         try {
-            await fetch(`http://localhost:5000/api/quartos/${id}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -234,7 +235,7 @@ export default function AdminQuartos() {
     const handleSync = async (id: string) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`http://localhost:5000/api/sync/${id}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/sync/${id}`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -273,95 +274,52 @@ export default function AdminQuartos() {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-8">
+                <div className="flex flex-col gap-3">
                     {quartos.map((q) => {
                         const fotos = parseFotos(q.fotos);
                         const mainFoto = fotos[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80';
                         return (
-                            <div key={q.id} className="bg-white border border-gray-100 flex flex-col md:flex-row items-stretch gap-0 hover:shadow-2xl transition-all duration-700 group overflow-hidden">
-                                {/* Imagem Principal + Miniaturas */}
-                                <div className="w-full md:w-80 shrink-0 flex flex-col">
-                                    <div className="flex-1 bg-gray-100 relative overflow-hidden h-52 md:h-auto">
-                                        <img
-                                            src={mainFoto}
-                                            alt={q.nome}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                                        />
-                                        <div className="absolute top-4 left-4">
-                                            {q.ativo ? (
-                                                <div className="flex items-center gap-1.5 bg-green-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-lg">
-                                                    <CheckCircle size={10} /> Ativo
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-1.5 bg-red-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-lg">
-                                                    <XCircle size={10} /> Inativo
-                                                </div>
-                                            )}
-                                        </div>
-                                        {fotos.length > 1 && (
-                                            <div className="absolute bottom-2 right-2 bg-black/50 text-white text-[9px] px-2 py-1 rounded-full">
-                                                +{fotos.length - 1} fotos
-                                            </div>
-                                        )}
+                            <div key={q.id} className="bg-white border border-gray-100 flex items-center p-4 gap-6 hover:shadow-lg transition-all duration-300 rounded-sm">
+                                {/* Thumbnail */}
+                                <div
+                                    className="w-24 h-24 shrink-0 bg-gray-100 relative rounded-sm overflow-hidden cursor-pointer group"
+                                    onClick={() => { if (fotos.length > 0) setLightbox({ fotos, index: 0 }); }}
+                                >
+                                    <img src={mainFoto} alt={q.nome} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                        <Camera size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
                                     </div>
-                                    {/* Miniaturas */}
                                     {fotos.length > 1 && (
-                                        <div className="flex gap-1 p-2 bg-gray-50 overflow-x-auto">
-                                            {fotos.slice(1, 5).map((f, i) => (
-                                                <img key={i} src={f} className="w-12 h-10 object-cover rounded flex-shrink-0 border border-white" />
-                                            ))}
+                                        <div className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-sm text-white text-[8px] px-1.5 py-0.5 rounded-sm font-bold">
+                                            +{fotos.length - 1}
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Detalhes */}
-                                <div className="p-8 flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div>
-                                                <h3 className="font-serif text-2xl text-carapita-dark group-hover:text-carapita-gold transition-colors mb-1">{q.nome}</h3>
-                                                <p className="text-[10px] uppercase tracking-widest text-carapita-gold font-medium">{q.tipo}</p>
-                                            </div>
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold mb-1">Preço Base</span>
-                                                <div className="flex items-baseline gap-1">
-                                                    <span className="text-sm font-serif text-carapita-gold">€</span>
-                                                    <span className="text-3xl font-serif text-carapita-dark">{Number(q.preco_base).toFixed(0)}</span>
-                                                    <span className="text-[10px] text-carapita-muted lowercase">/noite</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <p className="text-xs text-carapita-muted font-light leading-relaxed mb-8 max-w-2xl line-clamp-2">{q.descricao}</p>
-
-                                        <div className="flex flex-wrap gap-8">
-                                            <div className="flex items-center gap-2">
-                                                <Users size={14} className="text-carapita-gold/60" />
-                                                <span className="text-[10px] uppercase tracking-widest font-medium text-carapita-dark">{q.capacidade} Hóspedes</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Camera size={14} className="text-carapita-gold/60" />
-                                                <span className="text-[10px] uppercase tracking-widest font-medium text-carapita-dark">{fotos.length} {fotos.length === 1 ? 'Foto' : 'Fotos'}</span>
-                                            </div>
-                                            {q.ical_url && (
-                                                <div className="flex items-center gap-2">
-                                                    <RefreshCw size={14} className="text-carapita-gold/60" />
-                                                    <span className="text-[10px] uppercase tracking-widest font-medium text-carapita-dark">Airbnb iCal Conectado</span>
-                                                </div>
-                                            )}
-                                        </div>
+                                {/* Info */}
+                                <div className="flex-1 flex flex-col justify-center">
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <h3 className="font-serif text-xl text-carapita-dark">{q.nome}</h3>
+                                        <span className="text-[9px] uppercase tracking-widest bg-gray-50 border border-gray-200 text-gray-600 px-2 py-0.5 rounded-sm">{q.tipo}</span>
+                                        {q.ativo ? (
+                                            <span className="text-[9px] uppercase tracking-widest text-green-600 font-bold flex items-center gap-1"><CheckCircle size={10} /> Ativo</span>
+                                        ) : (
+                                            <span className="text-[9px] uppercase tracking-widest text-red-500 font-bold flex items-center gap-1"><XCircle size={10} /> Inativo</span>
+                                        )}
                                     </div>
-
-                                    <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-50">
-                                        <button onClick={() => handleSync(q.id)} title="Sincronizar Airbnb iCal" className="w-10 h-10 border border-gray-100 flex items-center justify-center text-carapita-gold hover:bg-carapita-gold hover:text-white transition-all duration-300">
-                                            <RefreshCw size={16} />
-                                        </button>
-                                        <button onClick={() => openEdit(q)} title="Editar Configurações" className="w-10 h-10 border border-gray-100 flex items-center justify-center text-carapita-dark hover:bg-carapita-dark hover:text-white transition-all duration-300">
-                                            <Edit2 size={16} />
-                                        </button>
-                                        <button onClick={() => handleDelete(q.id)} title="Remover Alojamento" className="w-10 h-10 border border-gray-100 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-all duration-300">
-                                            <Trash2 size={16} />
-                                        </button>
+                                    <p className="text-xs text-carapita-muted line-clamp-1 mb-3 max-w-3xl leading-relaxed">{q.descricao}</p>
+                                    <div className="flex gap-6">
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><Users size={12} className="text-carapita-gold" /> {q.capacidade} Hóspedes</span>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><Euro size={12} className="text-carapita-gold" /> {q.preco_base} / Noite</span>
+                                        {q.ical_url && <span className="text-[10px] uppercase tracking-widest font-bold text-blue-500 flex items-center gap-1.5"><RefreshCw size={12} /> iCal Sync</span>}
                                     </div>
+                                </div>
+
+                                {/* Ações */}
+                                <div className="flex items-center gap-2 border-l border-gray-100 pl-6 shrink-0">
+                                    <button onClick={() => handleSync(q.id)} title="Sincronizar" className="w-10 h-10 flex items-center justify-center text-carapita-gold hover:bg-carapita-gold hover:text-white rounded-sm transition-all duration-300"><RefreshCw size={14} /></button>
+                                    <button onClick={() => openEdit(q)} title="Editar" className="w-10 h-10 flex items-center justify-center text-carapita-dark hover:bg-carapita-dark hover:text-white rounded-sm transition-all duration-300"><Edit2 size={14} /></button>
+                                    <button onClick={() => handleDelete(q.id)} title="Remover" className="w-10 h-10 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white rounded-sm transition-all duration-300"><Trash2 size={14} /></button>
                                 </div>
                             </div>
                         );
@@ -369,249 +327,201 @@ export default function AdminQuartos() {
                 </div>
             </div>
 
-            {/* Modal de Edição */}
+            {/* Modal de Edição (Sidebar Limpa e Cirúrgica) */}
             {editQuarto && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-carapita-dark/80 backdrop-blur-md" onClick={() => setEditQuarto(null)} />
-                    <div className="relative bg-white w-full max-w-3xl p-12 z-10 shadow-3xl animate-fade-in overflow-y-auto max-h-[90vh]">
-                        <button onClick={() => setEditQuarto(null)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-carapita-dark transition-colors">
-                            <XCircle size={24} strokeWidth={1} />
-                        </button>
+                <div className="fixed inset-0 z-[100] flex justify-end">
+                    <div className="absolute inset-0 bg-carapita-dark/60 backdrop-blur-sm transition-opacity" onClick={() => setEditQuarto(null)} />
+                    <div className="relative bg-white w-full max-w-[550px] h-full z-10 shadow-2xl animate-fade-in flex flex-col">
 
-                        <div className="mb-10">
-                            <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-1">Inventário</span>
-                            <h2 className="text-3xl font-serif text-carapita-dark">{editQuarto.id ? 'Editar Alojamento' : 'Criar Novo Registro'}</h2>
+                        {/* Header Modal */}
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
+                            <div>
+                                <span className="text-carapita-gold text-[9px] uppercase tracking-widest font-bold block mb-1">Inventário</span>
+                                <h2 className="text-2xl font-serif text-carapita-dark">{editQuarto.id ? 'Editar Alojamento' : 'Novo Alojamento'}</h2>
+                            </div>
+                            <button onClick={() => setEditQuarto(null)} className="p-2 text-gray-400 hover:text-carapita-dark hover:bg-gray-50 rounded-full transition-colors">
+                                <X size={20} />
+                            </button>
                         </div>
 
-                        <form onSubmit={handleSave} className="space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                                <div className="space-y-1 group">
-                                    <label className="text-[10px] uppercase tracking-widest text-carapita-muted group-focus-within:text-carapita-gold transition-colors block">Nome do Alojamento</label>
-                                    <div className="flex items-center gap-3 border-b border-gray-200 focus-within:border-carapita-gold transition-colors pb-1">
-                                        <Home size={14} className="text-carapita-muted" />
-                                        <input required value={editQuarto.nome} onChange={e => setEditQuarto({ ...editQuarto, nome: e.target.value })} className="w-full py-2 outline-none font-medium text-sm bg-transparent" placeholder="Ex: Casa Refúgio" />
-                                    </div>
+                        {/* Corpo do Formulário */}
+                        <form onSubmit={handleSave} className="p-6 overflow-y-auto flex-1 space-y-8 pb-32">
+
+                            <div className="space-y-5">
+                                <div className="space-y-1">
+                                    <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Nome do Alojamento</label>
+                                    <input required value={editQuarto.nome} onChange={e => setEditQuarto({ ...editQuarto, nome: e.target.value })} className="w-full border-b border-gray-200 focus:border-carapita-gold pb-2 outline-none text-sm transition-colors text-carapita-dark" placeholder="Ex: Suite Deluxe" />
                                 </div>
-                                <div className="space-y-1 group">
-                                    <label className="text-[10px] uppercase tracking-widest text-carapita-muted group-focus-within:text-carapita-gold transition-colors block">Tipo de Unidade</label>
-                                    <div className="flex items-center gap-3 border-b border-gray-200 focus-within:border-carapita-gold transition-colors pb-1">
-                                        <Info size={14} className="text-carapita-muted" />
-                                        <select value={editQuarto.tipo} onChange={e => setEditQuarto({ ...editQuarto, tipo: e.target.value })} className="w-full py-2 outline-none font-medium text-sm bg-transparent">
-                                            <option value="Quarto">Quarto Luxo</option>
-                                            <option value="Suite">Suite Júnior</option>
-                                            <option value="Casa">Casa Inteira</option>
-                                            <option value="Cabana">Cabana Moderna</option>
+
+                                <div className="grid grid-cols-2 gap-5">
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Tipo</label>
+                                        <select value={editQuarto.tipo} onChange={e => setEditQuarto({ ...editQuarto, tipo: e.target.value })} className="w-full border-b border-gray-200 focus:border-carapita-gold pb-2 outline-none text-sm bg-transparent transition-colors text-carapita-dark">
+                                            <option value="Quarto">Quarto</option>
+                                            <option value="Suite">Suite</option>
+                                            <option value="Casa">Casa</option>
+                                            <option value="Cabana">Cabana</option>
                                         </select>
                                     </div>
-                                </div>
-                                <div className="space-y-1 group">
-                                    <label className="text-[10px] uppercase tracking-widest text-carapita-muted group-focus-within:text-carapita-gold transition-colors block">Preço Base por Noite (€)</label>
-                                    <div className="flex items-center gap-3 border-b border-gray-200 focus-within:border-carapita-gold transition-colors pb-1">
-                                        <Euro size={14} className="text-carapita-muted" />
-                                        <input type="number" required value={editQuarto.preco_base} onChange={e => setEditQuarto({ ...editQuarto, preco_base: parseFloat(e.target.value) })} className="w-full py-2 outline-none font-medium text-sm bg-transparent" />
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Capacidade (Hóspedes)</label>
+                                        <input type="number" required value={editQuarto.capacidade} onChange={e => setEditQuarto({ ...editQuarto, capacidade: parseInt(e.target.value) })} className="w-full border-b border-gray-200 focus:border-carapita-gold pb-2 outline-none text-sm bg-transparent transition-colors text-carapita-dark" min="1" />
                                     </div>
                                 </div>
-                                <div className="space-y-1 group">
-                                    <label className="text-[10px] uppercase tracking-widest text-carapita-muted group-focus-within:text-carapita-gold transition-colors block">Capacidade Máxima</label>
-                                    <div className="flex items-center gap-3 border-b border-gray-200 focus-within:border-carapita-gold transition-colors pb-1">
-                                        <Users size={14} className="text-carapita-muted" />
-                                        <input type="number" required value={editQuarto.capacidade} onChange={e => setEditQuarto({ ...editQuarto, capacidade: parseInt(e.target.value) })} className="w-full py-2 outline-none font-medium text-sm bg-transparent" />
+
+                                <div className="grid grid-cols-2 gap-5">
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Preço Base (€)</label>
+                                        <input type="number" required value={editQuarto.preco_base} onChange={e => setEditQuarto({ ...editQuarto, preco_base: parseFloat(e.target.value) })} className="w-full border-b border-gray-200 focus:border-carapita-gold pb-2 outline-none text-sm bg-transparent transition-colors text-carapita-dark" min="0" step="0.01" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Ativo no Site</label>
+                                        <div className="flex items-center pt-1 border-b border-transparent">
+                                            <div className="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" checked={editQuarto.ativo} onChange={e => setEditQuarto({ ...editQuarto, ativo: e.target.checked })} className="sr-only peer" />
+                                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-carapita-gold"></div>
+                                                <span className="ml-2 text-[10px] uppercase font-bold text-carapita-dark">{editQuarto.ativo ? 'Sim' : 'Não'}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="space-y-1 group md:col-span-2">
-                                    <label className="text-[10px] uppercase tracking-widest text-carapita-muted group-focus-within:text-carapita-gold transition-colors block">Link iCal (Airbnb/Booking)</label>
-                                    <div className="flex items-center gap-3 border-b border-gray-200 focus-within:border-carapita-gold transition-colors pb-1">
-                                        <RefreshCw size={14} className="text-carapita-muted" />
-                                        <input value={editQuarto.ical_url} onChange={e => setEditQuarto({ ...editQuarto, ical_url: e.target.value })} className="w-full py-2 outline-none font-medium text-sm bg-transparent" placeholder="https://..." />
-                                    </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">URL iCal (Sincronização)</label>
+                                    <input value={editQuarto.ical_url} onChange={e => setEditQuarto({ ...editQuarto, ical_url: e.target.value })} className="w-full border-b border-gray-200 focus:border-carapita-gold pb-2 outline-none text-sm transition-colors text-carapita-dark" placeholder="https://..." />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Link Vídeo Promocional</label>
+                                    <input type="url" value={editQuarto.video_url || ''} onChange={e => setEditQuarto({ ...editQuarto, video_url: e.target.value })} className="w-full border-b border-gray-200 focus:border-carapita-gold pb-2 outline-none text-sm transition-colors text-carapita-dark" placeholder="YouTube, Vimeo..." />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Descrição</label>
+                                    <textarea rows={3} value={editQuarto.descricao} onChange={e => setEditQuarto({ ...editQuarto, descricao: e.target.value })} className="w-full border border-gray-200 focus:border-carapita-gold p-3 outline-none text-sm transition-colors text-carapita-dark bg-gray-50/50 rounded-sm" placeholder="Detalhes do quarto..." />
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted block">Descrição Detalhada</label>
-                                <textarea rows={3} value={editQuarto.descricao} onChange={e => setEditQuarto({ ...editQuarto, descricao: e.target.value })} className="w-full border border-gray-100 p-5 outline-none focus:border-carapita-gold transition-colors font-light text-sm bg-gray-50/30" placeholder="Descreva os diferenciais deste alojamento..." />
-                            </div>
+                            {/* Galeria de Fotos */}
+                            <div className="space-y-3 pt-6 border-t border-gray-100">
+                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold block">Fotos ({fotosEdit.length})</label>
 
-                            <div className="space-y-2 group">
-                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted group-focus-within:text-carapita-gold transition-colors block">Link de Vídeo (YouTube, Vimeo...)</label>
-                                <div className="flex items-center gap-3 border-b border-gray-200 focus-within:border-carapita-gold transition-colors pb-1">
-                                    <Link size={14} className="text-carapita-muted" />
-                                    <input type="url" value={editQuarto.video_url || ''} onChange={e => setEditQuarto({ ...editQuarto, video_url: e.target.value })} className="w-full py-2 outline-none font-medium text-sm bg-transparent" placeholder="https://youtube.com/watch?v=..." />
-                                </div>
-                            </div>
-
-                            {/* ===== GALERIA DE FOTOS ===== */}
-                            <div className="space-y-4">
-                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted block font-bold">
-                                    Galeria de Fotos ({fotosEdit.length} foto{fotosEdit.length !== 1 ? 's' : ''})
-                                </label>
-
-                                {/* Fotos actuais */}
                                 {fotosEdit.length > 0 && (
-                                    <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-4 gap-2">
                                         {fotosEdit.map((url, idx) => (
-                                            <div key={idx} className="relative group/foto aspect-square rounded overflow-hidden border border-gray-100">
+                                            <div key={idx} className="relative aspect-square group/foto rounded-sm overflow-hidden border border-gray-100">
                                                 <img src={url} className="w-full h-full object-cover" />
-                                                {/* Overlay com acções */}
-                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/foto:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                                                    <div className="flex gap-1">
-                                                        <button type="button" onClick={() => moveFoto(idx, -1)} disabled={idx === 0} className="p-1.5 bg-white/20 text-white rounded hover:bg-white/40 disabled:opacity-30 transition-all">
-                                                            <ChevronLeft size={14} />
-                                                        </button>
-                                                        <button type="button" onClick={() => moveFoto(idx, 1)} disabled={idx === fotosEdit.length - 1} className="p-1.5 bg-white/20 text-white rounded hover:bg-white/40 disabled:opacity-30 transition-all">
-                                                            <ChevronRight size={14} />
-                                                        </button>
-                                                    </div>
-                                                    <button type="button" onClick={() => removeFoto(idx)} className="p-1.5 bg-red-500/80 text-white rounded hover:bg-red-600 transition-all">
-                                                        <Trash2 size={14} />
-                                                    </button>
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/foto:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                                                    <button type="button" onClick={() => removeFoto(idx)} className="p-1 bg-red-500 text-white rounded"><Trash2 size={12} /></button>
                                                 </div>
-                                                {idx === 0 && (
-                                                    <span className="absolute top-1 left-1 bg-carapita-gold text-white text-[8px] px-1.5 py-0.5 uppercase tracking-widest">Principal</span>
-                                                )}
                                             </div>
                                         ))}
                                     </div>
                                 )}
 
-                                {/* Adicionar via Upload do PC */}
-                                <div className="border-2 border-dashed border-gray-200 hover:border-carapita-gold transition-colors rounded p-6 text-center cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        multiple
-                                        className="hidden"
-                                        onChange={handleFileUpload}
-                                    />
-                                    {uploading ? (
-                                        <div className="flex items-center justify-center gap-2">
-                                            <div className="w-4 h-4 border-2 border-carapita-gold border-t-transparent rounded-full animate-spin" />
-                                            <span className="text-[10px] uppercase tracking-widest text-carapita-muted">A fazer upload...</span>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Upload size={22} className="text-carapita-gold" />
-                                            <p className="text-[10px] uppercase tracking-widest text-carapita-muted">
-                                                Clique para selecionar fotos do PC<br />
-                                                <span className="text-carapita-gold font-bold">Pode selecionar múltiplos ficheiros</span>
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Adicionar via URL */}
-                                <div className="flex gap-3">
-                                    <div className="flex items-center gap-2 flex-1 border-b border-gray-200 focus-within:border-carapita-gold transition-colors pb-1">
-                                        <Link size={14} className="text-carapita-muted shrink-0" />
-                                        <input
-                                            type="url"
-                                            value={urlInput}
-                                            onChange={e => setUrlInput(e.target.value)}
-                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addUrlFoto(); } }}
-                                            placeholder="Cole um link de imagem (https://...)"
-                                            className="w-full py-2 outline-none text-sm bg-transparent"
-                                        />
-                                    </div>
-                                    <button type="button" onClick={addUrlFoto} className="bg-carapita-dark text-white px-6 py-2 text-[10px] uppercase tracking-widest hover:bg-carapita-gold transition-all">
-                                        Adicionar
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* ===== COMODIDADES DO ALOJAMENTO ===== */}
-                            <div className="space-y-5">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-[10px] uppercase tracking-widest text-carapita-muted block font-bold">
-                                        Comodidades & Características
-                                    </label>
-                                    {comodidadesEdit.length > 0 && (
-                                        <span className="text-[9px] bg-carapita-gold/10 text-carapita-gold px-2 py-1 rounded-full font-bold">
-                                            {comodidadesEdit.length} selecionadas
-                                        </span>
-                                    )}
-                                </div>
-
-                                {AMENITY_CATEGORIES.map((cat) => (
-                                    <div key={cat.label}>
-                                        <p className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold mb-2 flex items-center gap-1.5">
-                                            <span>{cat.icon}</span> {cat.label}
-                                        </p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {cat.items.map(item => {
-                                                const selected = comodidadesEdit.includes(item);
-                                                return (
-                                                    <button
-                                                        key={item}
-                                                        type="button"
-                                                        onClick={() => toggleComodidade(item)}
-                                                        className={`text-[10px] px-3 py-1.5 border transition-all duration-200 rounded-sm ${selected
-                                                            ? 'bg-carapita-dark text-white border-carapita-dark'
-                                                            : 'bg-white text-carapita-muted border-gray-200 hover:border-carapita-gold hover:text-carapita-gold'
-                                                            }`}
-                                                    >
-                                                        {selected && <span className="mr-1">✓</span>}
-                                                        {item}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {/* Campo personalizado */}
-                                <div>
-                                    <p className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold mb-2">➕ Adicionar item personalizado</p>
+                                <div className="flex flex-col gap-2">
                                     <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={customComodidade}
-                                            onChange={e => setCustomComodidade(e.target.value)}
-                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomComodidade(); } }}
-                                            placeholder="Ex: Piscina Privativa, Piano..."
-                                            className="flex-1 border-b border-gray-200 focus:border-carapita-gold outline-none py-2 text-sm bg-transparent transition-colors"
-                                        />
-                                        <button type="button" onClick={addCustomComodidade} className="bg-carapita-dark text-white px-4 py-2 text-[10px] uppercase tracking-widest hover:bg-carapita-gold transition-all">
-                                            +
-                                        </button>
+                                        <input type="url" value={urlInput} onChange={e => setUrlInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addUrlFoto(); } }} placeholder="Cole um link de imagem..." className="flex-1 border-b border-gray-200 focus:border-carapita-gold pb-2 outline-none text-xs transition-colors" />
+                                        <button type="button" onClick={addUrlFoto} className="text-carapita-dark font-bold text-[9px] uppercase tracking-widest hover:text-carapita-gold">Adicionar URL</button>
                                     </div>
-                                </div>
 
-                                {/* Resumo dos selecionados */}
-                                {comodidadesEdit.length > 0 && (
-                                    <div className="bg-gray-50 p-4 rounded border border-gray-100">
-                                        <p className="text-[9px] uppercase tracking-widest text-carapita-muted mb-2 font-bold">Selecionadas:</p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {comodidadesEdit.map(c => (
-                                                <span
-                                                    key={c}
-                                                    onClick={() => toggleComodidade(c)}
-                                                    className="text-[9px] bg-carapita-dark text-white px-2 py-1 rounded-sm cursor-pointer hover:bg-red-500 transition-colors flex items-center gap-1"
-                                                    title="Clique para remover"
-                                                >
-                                                    {c} <X size={9} />
-                                                </span>
-                                            ))}
+                                    <div className="mt-2" onClick={() => fileInputRef.current?.click()}>
+                                        <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileUpload} />
+                                        <div className="border border-dashed border-gray-300 hover:border-carapita-gold p-3 text-center cursor-pointer rounded-sm flex justify-center items-center gap-2">
+                                            {uploading ? <div className="w-3 h-3 border-2 border-carapita-gold border-t-transparent rounded-full animate-spin" /> : <Upload size={14} className="text-carapita-muted" />}
+                                            <span className="text-[9px] uppercase tracking-widest text-carapita-muted">Upload do PC</span>
                                         </div>
                                     </div>
-                                )}
-                            </div>
-
-                            <div className="flex items-center gap-4 bg-gray-50/50 p-4 rounded-lg">
-                                <div className="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" checked={editQuarto.ativo} onChange={e => setEditQuarto({ ...editQuarto, ativo: e.target.checked })} className="sr-only peer" id="toggle-ativo" />
-                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-carapita-gold"></div>
-                                    <label htmlFor="toggle-ativo" className="ml-3 text-[10px] uppercase tracking-widest font-bold text-carapita-dark cursor-pointer">Alojamento Disponível no Site</label>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-6 pt-10 border-t border-gray-50">
-                                <button type="button" onClick={() => setEditQuarto(null)} className="text-[10px] uppercase tracking-mega px-6 py-4 text-carapita-muted hover:text-red-500 transition-colors">Descartar</button>
-                                <button type="submit" className="bg-carapita-dark text-white px-12 py-4 text-[10px] uppercase tracking-mega hover:bg-carapita-gold transition-all duration-500 shadow-2xl">
-                                    Gravar Inventário
-                                </button>
+                            {/* Comodidades Minimalista */}
+                            <div className="space-y-4 pt-6 border-t border-gray-100">
+                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold block">Comodidades</label>
+
+                                <div className="max-h-48 overflow-y-auto pr-2 space-y-4 scrollbar-thin">
+                                    {AMENITY_CATEGORIES.map((cat) => (
+                                        <div key={cat.label} className="bg-gray-50/50 p-3 border border-gray-100/50">
+                                            <p className="text-[9px] uppercase tracking-widest text-carapita-dark font-bold mb-2 flex items-center gap-1">{cat.icon} {cat.label}</p>
+                                            <div className="flex flex-wrap gap-1">
+                                                {cat.items.map(item => {
+                                                    const sel = comodidadesEdit.includes(item);
+                                                    return (
+                                                        <button key={item} type="button" onClick={() => toggleComodidade(item)} className={`text-[9px] px-2 py-1 transition-colors rounded-sm border ${sel ? 'bg-carapita-gold text-white border-carapita-gold' : 'bg-white text-gray-500 border-gray-200 hover:border-carapita-gold'}`}>
+                                                            {item}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <input type="text" value={customComodidade} onChange={e => setCustomComodidade(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomComodidade(); } }} placeholder="Personalizado..." className="flex-1 border-b border-gray-200 focus:border-carapita-gold pb-1 outline-none text-xs transition-colors" />
+                                    <button type="button" onClick={addCustomComodidade} className="text-carapita-dark font-bold text-[9px] uppercase tracking-widest">Adicionar</button>
+                                </div>
                             </div>
                         </form>
+
+                        {/* Footer Ações Fixas */}
+                        <div className="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-100 flex justify-end gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+                            <button type="button" onClick={() => setEditQuarto(null)} className="px-6 py-3 border border-gray-200 text-[9px] uppercase tracking-widest text-gray-500 hover:bg-gray-50 transition-colors">Cancelar</button>
+                            <button onClick={handleSave} className="px-8 py-3 bg-carapita-dark text-white text-[9px] uppercase tracking-widest font-bold hover:bg-carapita-gold transition-colors flex items-center gap-2">
+                                <CheckCircle size={14} /> Salvar
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
+            {/* Lightbox de Fotos */}
+            {lightbox && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in" onClick={() => setLightbox(null)}>
+                    <button onClick={() => setLightbox(null)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors z-[210] p-2 bg-black/20 rounded-full hover:bg-black/40">
+                        <X size={24} />
+                    </button>
+
+                    <div className="relative w-full max-w-6xl h-[85vh] flex items-center justify-center overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="absolute inset-0 flex items-center justify-center p-4">
+                            {/* Key react forces re-mount of DOM node for animation trigger */}
+                            <img
+                                src={lightbox.fotos[lightbox.index]}
+                                alt="Galeria"
+                                className="max-w-full max-h-full object-contain shadow-2xl transition-opacity animate-fade-in"
+                                key={`foto-${lightbox.index}`}
+                            />
+                        </div>
+
+                        {lightbox.fotos.length > 1 && (
+                            <>
+                                <button
+                                    onClick={() => setLightbox(prev => prev ? { ...prev, index: prev.index === 0 ? prev.fotos.length - 1 : prev.index - 1 } : null)}
+                                    className="absolute left-6 bg-black/50 hover:bg-carapita-gold text-white p-4 rounded-full transition-all duration-300 flex items-center justify-center backdrop-blur-sm z-[210]"
+                                >
+                                    <ChevronLeft size={24} />
+                                </button>
+                                <button
+                                    onClick={() => setLightbox(prev => prev ? { ...prev, index: (prev.index + 1) % prev.fotos.length } : null)}
+                                    className="absolute right-6 bg-black/50 hover:bg-carapita-gold text-white p-4 rounded-full transition-all duration-300 flex items-center justify-center backdrop-blur-sm z-[210]"
+                                >
+                                    <ChevronRight size={24} />
+                                </button>
+
+                                <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-3 z-[210] bg-black/20 py-3 mx-auto max-w-min rounded-full backdrop-blur-sm px-6 hide-scrollbars overflow-x-auto max-w-[80vw]">
+                                    {lightbox.fotos.map((url, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setLightbox(prev => prev ? { ...prev, index: i } : null)}
+                                            className={`flex-shrink-0 relative w-12 h-12 rounded overflow-hidden border-2 transition-all duration-300 ${i === lightbox.index ? 'border-carapita-gold scale-110 shadow-lg' : 'border-transparent opacity-50 hover:opacity-100'}`}
+                                        >
+                                            <img src={url} className="w-full h-full object-cover" />
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { ChevronRight, Calendar, Users, Menu, MapPin, X, Check } from 'lucide-react';
+import { ChevronRight, Calendar, Users, Menu, MapPin, X, Check, Camera, ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import SeletorCalendario from '../components/SeletorCalendario';
 import { useEffect } from 'react';
@@ -30,6 +30,7 @@ export default function Home() {
     const [formHospede, setFormHospede] = useState({ nome: '', email: '', telefone: '' });
     const [metodoPagamento, setMetodoPagamento] = useState('MBWAY');
     const [passeioSelecionado, setPasseioSelecionado] = useState<any | null>(null);
+    const [passeios, setPasseios] = useState<any[]>([]);
     const [showCalendar, setShowCalendar] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -67,14 +68,33 @@ export default function Home() {
     useEffect(() => {
         const fetchExtras = async () => {
             try {
-                const resp = await fetch('http://localhost:5000/api/extras');
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras?t=${Date.now()}`, {
+                    cache: 'no-store'
+                });
                 const data = await resp.json();
                 if (data.status === 'success') setDisponiveisExtras(data.data);
             } catch (e) {
                 console.error("Erro ao procurar extras", e);
             }
         };
+
+        const fetchPasseiosData = async () => {
+            try {
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios?t=${Date.now()}`, {
+                    cache: 'no-store'
+                });
+                const data = await resp.json();
+                if (data.status === 'success') {
+                    // Filter to only show active ones
+                    setPasseios(data.data.filter((p: any) => p.ativo !== false));
+                }
+            } catch (e) {
+                console.error("Erro ao buscar passeios", e);
+            }
+        };
+
         fetchExtras();
+        fetchPasseiosData();
     }, []);
 
     const heroImages = [
@@ -115,7 +135,7 @@ export default function Home() {
         const senha = (e.target as any).password.value;
 
         try {
-            const resp = await fetch('http://localhost:5000/api/hospede/login', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/hospede/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha })
@@ -153,49 +173,7 @@ export default function Home() {
     const categories = ['Todos', 'Quarto', 'Cozinha', 'Sala', 'Banheiro', 'Exterior'];
     const filteredGallery = activeTab === 'Todos' ? gallery : gallery.filter(f => f.category === activeTab);
 
-    // 10 Passeios pela Região com História Completa
-    const passeios = [
-        {
-            nome: 'Castelo de Ourém', dist: '10 min', img: 'https://turismo.ourem.pt/wp-content/uploads/2023/07/castelo-medieval-ourem-768x384.jpg', desc: 'Um dos mais belos castelos medievais com vista panorâmica da região.',
-            historia: 'Erguido no século XII, o Castelo de Ourém domina o topo de uma colina oferecendo vistas deslumbrantes sobre os vales circundantes. Durante séculos serviu como ponto de defesa crucial durante a Reconquista Cristã. A vila medieval amuralhada que o rodeia, com as suas ruas calcetadas e atmosfera histórica, transporta os visitantes para uma verdadeira viagem no tempo. Reza a lenda que a cidade foi batizada em homenagem a Fátima, uma princesa moura que se converteu ao cristianismo após se apaixonar por um cavaleiro cristão, adotando o nome de Oureana.'
-        },
-        {
-            nome: 'Santuário de Fátima', dist: '15 min', img: 'https://images.unsplash.com/photo-1627933189870-071a9e32ff09?q=80&w=1000&auto=format&fit=crop', desc: 'O maior centro de peregrinação católica de Portugal, conhecido mundialmente.',
-            historia: 'Conhecido globalmente, o Santuário de Fátima é um dos mais importantes locais de peregrinação católica do mundo. Foi neste local, na Cova da Iria, que em 1917 os três pastorinhos (Lúcia, Francisco e Jacinta) relataram as aparições da Virgem Maria. Ao longo do ano, especialmente nos dias 13 de maio e 13 de outubro, milhões de fiéis reúnem-se na gigantesca praça frente à Basílica de Nossa Senhora do Rosário numa imensa e comovente procissão de velas, num ambiente de fé, paz e profunda reflexão.'
-        },
-        {
-            nome: 'Convento de Cristo (Tomar)', dist: '25 min', img: 'https://images.unsplash.com/photo-1517400508447-f8dd518b86e3?q=80&w=1000&auto=format&fit=crop', desc: 'Patrimônio Mundial da UNESCO e antiga sede mística dos Cavaleiros Templários.',
-            historia: 'Classificado como Património Mundial pela UNESCO em 1983, o impressionante Convento de Cristo em Tomar foi originalmente a fortaleza e a sede matriz da misteriosa Ordem dos Cavaleiros Templários em Portugal no século XII. O monumento é uma obra-prima que mistura diferentes estilos arquitetónicos: o românico templário, o gótico inicial, o renascimento e a famosa janela do estilo manuelino. Andar por seus claustros e entrar na Charola (o oratório octogonal) é adentrar uma das maiores relíquias de toda a Europa.'
-        },
-        {
-            nome: 'Praia Fluvial do Agroal', dist: '20 min', img: 'https://images.unsplash.com/photo-1505322022379-7c3353ee6291?q=80&w=1000&auto=format&fit=crop', desc: 'Piscinas naturais com águas cristalinas e terapêuticas na nascente do Rio Nabão.',
-            historia: 'Aninhada no maior aquífero kárstico do país, a Praia Fluvial do Agroal é um verdadeiro oásis de natureza selvagem. Formada na impressionante nascente do Rio Nabão, dispõe de uma piscina biológica e águas correntes incrivelmente geladas e cristalinas durante o Verão inteiro. A sua água, proveniente de grandes profundidades da rocha vulcânica, tem forte fama de conter propriedades minerais terapêuticas, sendo popular há décadas por ajudar no tratamento de doenças de pele e do foro gastrointestinal.'
-        },
-        {
-            nome: 'Mosteiro da Batalha', dist: '30 min', img: 'https://images.unsplash.com/photo-1558368529-6534d0bfe45f?q=80&w=1000&auto=format&fit=crop', desc: 'Gótico imponente e Patrimônio Mundial, símbolo da independência portuguesa.',
-            historia: 'O Mosteiro de Santa Maria da Vitória (vulgo Mosteiro da Batalha) é uma das obras mais imponentes do gótico e manuelino da Península Ibérica. Foi mandado edificar pelo rei D. João I em agradecimento à Virgem Maria pela vitória sobre os castelhanos na épica Batalha de Aljubarrota, em 1385, garantindo a independência de Portugal. Classificado como Património Mundial da Humanidade, destaca-se pelos ricos vitrais góticos coloridos, as famosas Capelas Imperfeitas (sem teto) e a intrincada arquitetura dos túmulos reais.'
-        },
-        {
-            nome: 'Pegadas de Dinossáurios', dist: '25 min', img: 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?q=80&w=1000&auto=format&fit=crop', desc: 'Trilhos que conservam os maiores rastros de saurópodes já encontrados no mundo.',
-            historia: 'Escondido na encosta da Serra de Aire está o Monumento Natural das Pegadas dos Dinossáurios, um verdadeiro tesouro paleontológico mundial de 175 milhões de anos (Período Jurássico Médio). Numa antiga laje calcária enorme (pedreira) de 40 mil metros quadrados, foram descobertos quilômetros de rastos deixados por Saurópodes gigantes herbívoros. O local possui um centro de interpretação, longas trilhas de caminhada entre as pegadas fossilizadas gigantes com até 1 metro de diâmetro e representações em tamanho real dessas magníficas feras!'
-        },
-        {
-            nome: 'Grutas de Mira de Aire', dist: '35 min', img: 'https://images.unsplash.com/photo-1515444744559-7be63e160efe?q=80&w=1000&auto=format&fit=crop', desc: 'Uma maravilha subterrânea e as maiores grutas naturais calcárias de Portugal.',
-            historia: 'Eleitas como uma das 7 Maravilhas Naturais de Portugal, as impressionantes Grutas de Mira de Aire são as maiores cavidades subterrâneas abertas ao público do país. A visita guiada adentra as entranhas frias da terra até mais de 110 metros de profundidade! No trajeto imensamente iluminado descobrirá espetaculares formações calcárias de estalactites e estalagmites com nomes divertidos (Medusa, Órgão, Joia da Mantiqueira), finalizando numa galeria colossal aos pés de um rio subterrâneo enigmático. O local dispõe ainda de um resort de água sazonal.'
-        },
-        {
-            nome: 'Aqueduto dos Pegões', dist: '25 min', img: 'https://images.unsplash.com/photo-1516084439075-842279c09ef9?q=80&w=1000&auto=format&fit=crop', desc: 'Enorme e majestosa obra arquitetônica que levava água ao castelo de Tomar.',
-            historia: 'Esta obra colossal do século XVI é um esplendoroso aqueduto de seis quilómetros de extensão criado por Filippo Terzi (o mesmo arquiteto de El Escorial). O seu propósito era abastecer exclusivamente de água fresca as fontes e lavabos sumptuosos do Convento de Cristo. A parte mais monumental do aqueduto situa-se no Vale dos Pegões Altos, onde o conjunto de 180 imponentes arcos duplos e inteiramente de pedra se eleva a espantosos 30 metros acima do leito selvagem, criando a ilusão fantástica de uma fortaleza a rasgar o horizonte azul e verde profundo.'
-        },
-        {
-            nome: 'Serras de Aire e Candeeiros', dist: '30 min', img: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000&auto=format&fit=crop', desc: 'Parque Natural preservado para realizar agradáveis trilhas (hiking) e fotografia.',
-            historia: 'Este vasto e sereno Parque Natural Maciço Calcário Estremenho abrange uma superfície de centenas de quilómetros, sendo famoso pela aridez mítica da sua vegetação à superfície em brutal contraste com a imensa riqueza das suas bacias e rios todos a circular invisivelmente por debaixo da terra! A paisagem de rochas modeladas naturalmente pela chuva lembra frequentemente superfícies lunares. Ideal para explorar a flora, fazer hiking (caminhadas) e bird-watching. No topo de algumas serrações, há dezenas de impressionantes "moinhos de vento" tradicionais a adornar o topo das montanhas.'
-        },
-        {
-            nome: 'Pia do Urso', dist: '35 min', img: 'https://images.unsplash.com/photo-1601614742617-57ceb10c2266?q=80&w=1000&auto=format&fit=crop', desc: 'Aldeia típica de pedra, tranquilidade e lar do primeiro parque ecossensorial.',
-            historia: 'A mágica Ecoparque e Aldeia da Pia do Urso não é apenas uma requalificada típica aldeia rural de casas em pedra, barrocos e sobreiros. Trata-se do pioneiro ecoparque sensorial inteiramente projetado para invisuais e totalmente acessível de Portugal! Ao passear lentamente por frondosas sombras de carvalhos, pode-se escutar variadas estações de áudio interativas sobre a vida natural da montanha. O próprio nome intrigante "Pia do Urso" conta a lenda antiga na qual vastos e extintos ursos desciam das serranias escondidas em busca de poças naturais de água gelada gravadas nas rochas para beber.'
-        }
-    ];
+    // Os Passeios são carregados dinamicamente no useEffect
 
     const totalEstadia = () => {
         if (!checkIn || !checkOut || !idQuartoParaReserva) return 0;
@@ -213,6 +191,10 @@ export default function Home() {
     };
 
     const iniciarReserva = (quartoId: string) => {
+        if (!checkIn || !checkOut) {
+            alert("Por favor, escolha as datas da sua estadia no calendário antes de prosseguir com a reserva.");
+            return;
+        }
         setIdQuartoParaReserva(quartoId);
         setBookingStep('extras');
         // Smooth scroll to top
@@ -249,7 +231,7 @@ export default function Home() {
                 metodoPagamento: 'CARTAO' // Placeholder
             };
 
-            const resp = await fetch('http://localhost:5000/api/reservas', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
@@ -282,7 +264,7 @@ export default function Home() {
     const buscarDisponibilidade = async () => {
         setLoading(true);
         try {
-            const resp = await fetch(`http://localhost:5000/api/reservas/disponibilidade?checkIn=${checkIn}&checkOut=${checkOut}&capacidade=${hospedes}`);
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas/disponibilidade?checkIn=${checkIn}&checkOut=${checkOut}&capacidade=${hospedes}`);
             const dados = await resp.json();
             if (dados.status === 'success') {
                 setQuartosEncontrados(dados.data);
@@ -303,7 +285,7 @@ export default function Home() {
             const hoje = new Date();
             const fim = new Date();
             fim.setMonth(hoje.getMonth() + 2);
-            const resp = await fetch(`http://localhost:5000/api/tarifas/calendario?quartoId=${quartoId}&inicio=${hoje.toISOString()}&fim=${fim.toISOString()}`);
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${hoje.toISOString()}&fim=${fim.toISOString()}`);
             const data = await resp.json();
             if (data.status === 'success') setCalendarioPrecos(data.data);
         } catch (e) {
@@ -316,7 +298,7 @@ export default function Home() {
             document.body.style.overflow = 'hidden';
             if (!quartosEncontrados) {
                 // Carregar todos os quartos inicialmente
-                fetch('http://localhost:5000/api/quartos')
+                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`)
                     .then(r => r.json())
                     .then(d => {
                         if (d.status === 'success') {
@@ -333,7 +315,7 @@ export default function Home() {
     const efetuarReserva = async (quartoId: string, dadosHospedeManual?: any) => {
         setLoading(true);
         try {
-            const resp = await fetch('http://localhost:5000/api/reservas', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -811,42 +793,79 @@ export default function Home() {
                                         </div>
 
                                         {/* Lista de Quartos */}
-                                        <h2 className="font-serif text-3xl mb-10 text-carapita-dark border-b border-gray-100 pb-4 uppercase tracking-widest">Selecionar Alojamento</h2>
-                                        <div className="space-y-0 divide-y divide-gray-200 border border-gray-200 bg-white">
+                                        <h2 className="font-serif text-3xl mb-10 text-carapita-dark border-b border-gray-100 pb-4 uppercase tracking-widest">Alojamentos Disponíveis</h2>
+                                        <div className="space-y-8">
                                             {(quartosEncontrados || []).length > 0 ? (
                                                 quartosEncontrados?.map((q) => {
                                                     const fotos = parseFotos(q.fotos);
                                                     const mainFoto = fotos[0] || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&auto=format&fit=crop';
                                                     let comodidades: string[] = [];
                                                     try { comodidades = JSON.parse(q.comodidades || '[]'); } catch { }
-                                                    const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²')).slice(0, 4);
-                                                    const noites = checkIn && checkOut ? Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+                                                    const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
 
                                                     return (
-                                                        <div key={q.id} className="bg-white p-6 flex gap-6">
-                                                            <div className="shrink-0 w-52 md:w-64">
-                                                                <div className="relative cursor-pointer h-40 overflow-hidden" onClick={() => { if (fotos.length > 0) { setLightboxFotos(fotos); setLightboxIdx(0); } }}>
-                                                                    <img src={mainFoto} className="w-full h-full object-cover" />
+                                                        <div key={q.id} className="bg-white border border-carapita-gold/30 hover:border-carapita-gold hover:shadow-[0_20px_40px_rgba(212,175,55,0.1)] transition-all duration-700 group flex flex-col md:flex-row overflow-hidden block">
+                                                            {/* Foto Hero */}
+                                                            <div
+                                                                className="w-full md:w-64 h-56 shrink-0 relative overflow-hidden cursor-pointer"
+                                                                onClick={() => { if (fotos.length > 0) { setLightboxFotos(fotos); setLightboxIdx(0); } }}
+                                                            >
+                                                                <img src={mainFoto} alt={q.nome} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center border-r border-carapita-gold/20">
+                                                                    <Camera className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500 drop-shadow-lg" size={28} strokeWidth={1.5} />
                                                                 </div>
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <h3 className="font-serif text-xl text-carapita-dark mb-4 capitalize">{q.nome}</h3>
-                                                                <ul className="space-y-1.5 mb-4 text-sm text-gray-700">
-                                                                    {topBullets.map((c, i) => <li key={i}>• {c}</li>)}
-                                                                </ul>
-                                                                <div className="flex justify-between items-end">
-                                                                    <div>
-                                                                        <div className="text-2xl font-bold text-gray-900">€{Number(q.preco_base).toFixed(2)}</div>
-                                                                        <p className="text-[10px] text-gray-500 uppercase tracking-widest">Por noite</p>
+                                                                {fotos.length > 1 && (
+                                                                    <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white px-2 py-1 text-[8px] uppercase tracking-widest font-bold">
+                                                                        +{fotos.length - 1} Fotos
                                                                     </div>
-                                                                    <button onClick={() => iniciarReserva(q.id)} className="bg-carapita-dark text-white px-8 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-carapita-gold transition-all">Selecionar</button>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Detalhes do Quarto */}
+                                                            <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
+                                                                <div>
+                                                                    <div className="flex justify-between items-start mb-2 border-b border-carapita-gold/10 pb-3">
+                                                                        <div>
+                                                                            <h3 className="font-serif text-2xl text-carapita-dark group-hover:text-carapita-gold transition-colors">{q.nome}</h3>
+                                                                            <p className="text-[9px] uppercase tracking-widest text-carapita-gold font-bold mt-1.5">{q.tipo}</p>
+                                                                        </div>
+                                                                        <div className="text-right flex flex-col items-end">
+                                                                            <div className="flex items-baseline gap-1">
+                                                                                <span className="text-sm font-serif text-carapita-gold">€</span>
+                                                                                <span className="text-3xl font-serif text-carapita-dark group-hover:text-carapita-gold transition-colors">{Number(q.preco_base).toFixed(0)}</span>
+                                                                            </div>
+                                                                            <p className="text-[8px] text-gray-400 uppercase tracking-widest">Por noite</p>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <p className="text-xs text-gray-500 my-4 line-clamp-2 leading-relaxed font-light">{q.descricao}</p>
+
+                                                                    {topBullets.length > 0 && (
+                                                                        <ul className="flex flex-wrap gap-x-5 gap-y-2 mb-6">
+                                                                            {topBullets.map((c, i) => (
+                                                                                <li key={i} className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-gray-500 font-bold">
+                                                                                    <div className="w-1 h-1 bg-carapita-gold rounded-full"></div> {c}
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Call to Action */}
+                                                                <div className="flex justify-start">
+                                                                    <button onClick={() => iniciarReserva(q.id)} className="bg-white border border-carapita-gold text-carapita-gold px-8 py-3 text-[9px] uppercase tracking-widest font-bold hover:bg-carapita-gold hover:text-white transition-all duration-500 flex items-center gap-3 group/btn">
+                                                                        Selecionar Alojamento <ChevronRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     );
                                                 })
                                             ) : (
-                                                <p className="p-10 text-center text-carapita-muted italic">Selecione datas para ver disponibilidade.</p>
+                                                <div className="py-16 text-center border border-dashed border-gray-200 bg-gray-50/50">
+                                                    <p className="text-sm text-carapita-muted font-bold uppercase tracking-widest">Nenhum alojamento disponível</p>
+                                                    <p className="text-xs text-gray-400 mt-2">Por favor, ajuste as datas da sua estadia.</p>
+                                                </div>
                                             )}
                                         </div>
                                     </>
@@ -1125,20 +1144,48 @@ export default function Home() {
             {/* === LIGHTBOX DE FOTOS === */}
             {lightboxFotos.length > 0 && (
                 <div
-                    className="fixed inset-0 z-[1000] bg-black/95 flex items-center justify-center"
+                    className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-md flex items-center justify-center animate-fade-in"
                     onClick={() => setLightboxFotos([])}
                 >
                     <button
-                        className="absolute top-8 right-8 text-white/70 hover:text-white z-10 w-12 h-12 flex items-center justify-center bg-white/10 rounded-full"
+                        className="absolute top-8 right-8 text-white/50 hover:text-white z-[1100] p-3 bg-black/20 rounded-full hover:bg-black/40 transition-all"
                         onClick={() => setLightboxFotos([])}
                     ><X size={24} /></button>
-                    <img src={lightboxFotos[lightboxIdx]} alt="" className="max-h-[85vh] max-w-[90vw] object-contain shadow-2xl" onClick={e => e.stopPropagation()} />
-                    {lightboxFotos.length > 1 && (
-                        <>
-                            <button className="absolute left-8 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/25 text-white flex items-center justify-center rounded-full transition-all" onClick={e => { e.stopPropagation(); setLightboxIdx(i => (i - 1 + lightboxFotos.length) % lightboxFotos.length); }}><ChevronRight size={24} className="rotate-180" /></button>
-                            <button className="absolute right-8 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/25 text-white flex items-center justify-center rounded-full transition-all" onClick={e => { e.stopPropagation(); setLightboxIdx(i => (i + 1) % lightboxFotos.length); }}><ChevronRight size={24} /></button>
-                        </>
-                    )}
+
+                    <div className="relative w-full max-w-6xl h-[85vh] flex items-center justify-center overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="absolute inset-0 flex items-center justify-center p-4">
+                            <img
+                                key={`foto-${lightboxIdx}`}
+                                src={lightboxFotos[lightboxIdx]}
+                                alt="Galeria do Quarto"
+                                className="max-w-full max-h-full object-contain shadow-2xl transition-opacity animate-fade-in"
+                            />
+                        </div>
+                        {lightboxFotos.length > 1 && (
+                            <>
+                                <button
+                                    className="absolute left-6 bg-black/50 hover:bg-carapita-gold text-white p-4 rounded-full transition-all duration-300 flex items-center justify-center backdrop-blur-sm z-[1100]"
+                                    onClick={e => { e.stopPropagation(); setLightboxIdx(i => (i - 1 + lightboxFotos.length) % lightboxFotos.length); }}
+                                ><ChevronLeft size={24} /></button>
+                                <button
+                                    className="absolute right-6 bg-black/50 hover:bg-carapita-gold text-white p-4 rounded-full transition-all duration-300 flex items-center justify-center backdrop-blur-sm z-[1100]"
+                                    onClick={e => { e.stopPropagation(); setLightboxIdx(i => (i + 1) % lightboxFotos.length); }}
+                                ><ChevronRight size={24} /></button>
+
+                                <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-3 z-[1100] bg-black/20 py-3 mx-auto max-w-min rounded-full backdrop-blur-sm px-6 hide-scrollbars overflow-x-auto max-w-[80vw]">
+                                    {lightboxFotos.map((url, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={(e) => { e.stopPropagation(); setLightboxIdx(i); }}
+                                            className={`flex-shrink-0 relative w-12 h-12 rounded overflow-hidden border-2 transition-all duration-300 ${i === lightboxIdx ? 'border-carapita-gold scale-110 shadow-lg' : 'border-transparent opacity-50 hover:opacity-100'}`}
+                                        >
+                                            <img src={url} className="w-full h-full object-cover" />
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
             )}
 

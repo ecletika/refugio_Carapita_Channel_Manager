@@ -27,7 +27,7 @@ export default function AdminExtras() {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const resp = await fetch('http://localhost:5000/api/extras/admin', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras/admin`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await resp.json();
@@ -42,7 +42,7 @@ export default function AdminExtras() {
     const handleCreate = async () => {
         try {
             const token = localStorage.getItem('token');
-            const resp = await fetch('http://localhost:5000/api/extras', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ export default function AdminExtras() {
     const handleUpdate = async (id: string, updates: Partial<Extra>) => {
         try {
             const token = localStorage.getItem('token');
-            const resp = await fetch(`http://localhost:5000/api/extras/${id}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ export default function AdminExtras() {
         if (!confirm('Eliminar este extra?')) return;
         try {
             const token = localStorage.getItem('token');
-            await fetch(`http://localhost:5000/api/extras/${id}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras/${id}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` }
             });

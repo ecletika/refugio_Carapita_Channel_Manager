@@ -29,8 +29,8 @@ export default function AdminTarifas() {
         const token = localStorage.getItem('token');
         try {
             const [tResp, qResp] = await Promise.all([
-                fetch('http://localhost:5000/api/tarifas', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('http://localhost:5000/api/quartos')
+                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`)
             ]);
             const tData = await tResp.json();
             const qData = await qResp.json();
@@ -49,7 +49,7 @@ export default function AdminTarifas() {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch('http://localhost:5000/api/tarifas', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(nova)
@@ -62,10 +62,9 @@ export default function AdminTarifas() {
     };
 
     const handleDeletar = async (id: string) => {
-        if (!confirm("Remover esta tarifa sazonal?")) return;
         const token = localStorage.getItem('token');
         try {
-            await fetch(`http://localhost:5000/api/tarifas/${id}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -153,7 +152,7 @@ export default function AdminTarifas() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-3 mb-1">
-                                            <h3 className="font-serif text-xl text-carapita-dark truncate">{t.quarto.nome}</h3>
+                                            <h3 className="font-serif text-xl text-carapita-dark truncate">{(t.quarto || (t as any).Quarto)?.nome || 'Todos os Quartos'}</h3>
                                             <span className="text-[9px] uppercase tracking-widest font-bold bg-carapita-gold/10 text-carapita-gold px-2 py-0.5 rounded shadow-sm">{t.motivo}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5 text-carapita-muted">

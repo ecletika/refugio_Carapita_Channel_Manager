@@ -11,7 +11,7 @@ export default function CadastroHospede() {
         e.preventDefault();
         setLoading(true);
         try {
-            const resp = await fetch('http://localhost:5000/api/hospede/register', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/hospede/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)

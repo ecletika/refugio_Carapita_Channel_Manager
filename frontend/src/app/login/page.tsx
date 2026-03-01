@@ -16,7 +16,7 @@ export default function LoginHospede() {
 
         try {
             // ── 1. Tenta login como Admin/Staff primeiro ──
-            const respAdmin = await fetch('http://localhost:5000/api/auth/login', {
+            const respAdmin = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha })
@@ -34,7 +34,7 @@ export default function LoginHospede() {
             }
 
             // ── 2. Se falhou como admin, tenta como hóspede ──
-            const respHospede = await fetch('http://localhost:5000/api/hospede/login', {
+            const respHospede = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/hospede/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha })

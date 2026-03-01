@@ -11,7 +11,8 @@ const authMiddleware = require('../middlewares/auth.middleware');
 router.get('/disponibilidade', ReservasController.listarDisponibilidade);
 
 // 8. Dashboard KPIs e Calendário (Admin) - DEVE vir antes de '/:id'
-router.get('/dashboard', authMiddleware, ReservasController.getDashboardStats);
+const adminMiddleware = require('../middlewares/admin.middleware');
+router.get('/dashboard', adminMiddleware, ReservasController.getDashboardStats);
 
 // 1. Listar todas as reservas (Admin)
 router.get('/', authMiddleware, ReservasController.listarTodas);

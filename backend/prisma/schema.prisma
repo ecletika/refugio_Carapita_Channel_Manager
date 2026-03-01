@@ -27,6 +27,9 @@ model Quarto {
   fotos            String?
   comodidades      String?
   ical_url         String?
+  ical_airbnb      String?
+  ical_booking     String?
+  video_url        String?
   ativo            Boolean         @default(true)
   criado_em        DateTime        @default(now())
   reservas         Reserva[]
@@ -109,4 +112,22 @@ model Bloqueio {
   data_fim    DateTime
   motivo      String?
   quarto      Quarto   @relation(fields: [quarto_id], references: [id], onDelete: Cascade)
+}
+
+model Passeio {
+  id        String   @id @default(uuid())
+  nome      String
+  dist      String?
+  img       String?
+  desc      String?
+  historia  String?
+  ativo     Boolean  @default(true)
+  criado_em DateTime @default(now())
+}
+
+model Configuracao {
+  id        String   @id @default(uuid())
+  chave     String   @unique
+  valor     String?
+  criado_em DateTime @default(now())
 }

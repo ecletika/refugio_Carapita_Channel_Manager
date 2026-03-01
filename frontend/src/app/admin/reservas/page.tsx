@@ -22,7 +22,7 @@ export default function AdminReservas() {
     const fetchReservas = async () => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch('http://localhost:5000/api/reservas', {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await resp.json();
@@ -39,7 +39,7 @@ export default function AdminReservas() {
     const updateStatus = async (id: string, endpoint: string) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`http://localhost:5000/api/reservas/${id}/${endpoint}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas/${id}/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

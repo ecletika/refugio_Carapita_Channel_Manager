@@ -13,8 +13,8 @@ export default function TarifasPublicas() {
         const fetchTarifas = async () => {
             try {
                 const [tResp, qResp] = await Promise.all([
-                    fetch('http://localhost:5000/api/tarifas'),
-                    fetch('http://localhost:5000/api/quartos')
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas`),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`)
                 ]);
                 const tData = await tResp.json();
                 const qData = await qResp.json();

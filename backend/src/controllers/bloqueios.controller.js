@@ -5,7 +5,7 @@ class BloqueiosController {
         try {
             const { data: bloqueios, error } = await supabase
                 .from('Bloqueio')
-                .select('*, Quarto:quarto_id(*)')
+                .select('*, quarto:quarto_id(*)')
                 .order('data_inicio', { ascending: false });
 
             if (error) throw error;

@@ -19,7 +19,7 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
             const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0];
             const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0).toISOString().split('T')[0];
             try {
-                const resp = await fetch(`http://localhost:5000/api/tarifas/calendario?quartoId=${quartoId}&inicio=${start}&fim=${end}`);
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${start}&fim=${end}`);
                 const dados = await resp.json();
                 if (dados.status === 'success') {
                     const map: Record<string, { preco: number, disponivel: boolean }> = {};
