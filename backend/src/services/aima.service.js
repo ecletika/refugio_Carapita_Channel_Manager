@@ -19,6 +19,25 @@ class AimaService {
         return d.toISOString().split('T')[0];
     }
 
+    _mapCountryCode(countryName) {
+        if (!countryName) return 'PRT';
+        const c = countryName.toUpperCase().trim();
+        if (c.includes('PORTUG')) return 'PRT';
+        if (c.includes('BRASIL')) return 'BRA';
+        if (c.includes('ESPANHA')) return 'ESP';
+        if (c.includes('FRAN') || c === 'FRANCE') return 'FRA';
+        if (c.includes('ALEMANHA') || c === 'GERMANY') return 'DEU';
+        if (c.includes('REINO UNIDO') || c.includes('INGLATERRA') || c === 'UK') return 'GBR';
+        if (c.includes('ESTADOS UNIDOS') || c === 'USA') return 'USA';
+        if (c.includes('ITX') || c.includes('ITA')) return 'ITA';
+        if (c.includes('SUI') || c.includes('SWISS')) return 'CHE';
+        if (c.includes('HOLANDA') || c.includes('NETHERLANDS')) return 'NLD';
+        if (c.includes('BÉL') || c.includes('BEL')) return 'BEL';
+        if (c.includes('IRLANDA') || c.includes('IRELAND')) return 'IRL';
+        if (c.includes('CANAD') || c === 'CANADA') return 'CAN';
+        return c.substring(0, 3);
+    }
+
     gerarXML(hospede, reserva) {
         // Tabela Unidade_Hoteleira
         // Using environment variables configuration
@@ -41,8 +60,11 @@ class AimaService {
         const apelido = (hospede.sobrenome || hospede.nome).substring(0, 40).replace(/[^A-Za-zÇÃÁÀÉÊÍÕÔÓÚ' \-]/g, '').toUpperCase();
         const nome = (hospede.nome).substring(0, 40).replace(/[^A-Za-zÇÃÁÀÉÊÍÕÔÓÚ' \-]/g, '').toUpperCase();
 
-        let paisCode = (hospede.nacionalidade || 'PRT').substring(0, 3).toUpperCase();
-        let tipoDoc = hospede.tipo_documento === 'PASSAPORTE' ? 'P' : (hospede.tipo_documento === 'BI' || hospede.tipo_documento === 'ID' ? 'B' : 'O');
+        const paisCode = this._mapCountryCode(hospede.nacionalidade);
+        const paisEmissor = hospede.pais_emissor_documento ? this._mapCountryCode(hospede.pais_emissor_documento) : paisCode;
+
+        const tipoDocInput = (hospede.tipo_documento || '').toUpperCase();
+        let tipoDoc = tipoDocInput.includes('PASSAPORTE') ? 'P' : (tipoDocInput.includes('BI') || tipoDocInput.includes('CIDAD') || tipoDocInput.includes('ID') ? 'I' : 'O');
 
         const root = create({ version: '1.0', encoding: 'UTF-8', standalone: 'yes' })
             .ele('MovimentoBAL', { xmlns: 'http://sef.pt/BAws' });
@@ -77,7 +99,7 @@ class AimaService {
 
         ba.ele('Documento_Identificacao').txt((hospede.numero_documento || '00000000').replace(/[^0-9A-Z]/ig, '').substring(0, 16)).up()
             .ele('Tipo_Documento_Identificacao').txt(tipoDoc).up()
-            .ele('Pais_Emissor_Documento').txt((hospede.pais_emissor_documento || paisCode).substring(0, 3).toUpperCase()).up()
+            .ele('Pais_Emissor_Documento').txt(paisEmissor).up()
             .ele('Data_Entrada').txt(this._formatDate(reserva.data_check_in)).up();
 
         if (reserva.data_check_out) {
