@@ -34,6 +34,32 @@ function parseFotos(fotos: string | undefined): FotoObj[] {
 }
 // Translation Dict was moved to i18n/dictionaries.ts;
 
+interface BookingForm {
+    prefixo: string;
+    nome: string;
+    sobrenome: string;
+    email: string;
+    telefone: string;
+    pais: string;
+    endereco1: string;
+    endereco2: string;
+    cidade: string;
+    cep: string;
+    criarConta: boolean;
+    senha: string;
+    confirmarSenha: string;
+    requerimentosEspeciais: string;
+    aceitouTermos: boolean;
+    estrangeiro: boolean;
+    data_nascimento: string;
+    local_nascimento: string;
+    nacionalidade: string;
+    tipo_documento: string;
+    numero_documento: string;
+    pais_emissor_documento: string;
+    metodoPagamento: string;
+}
+
 export default function Home() {
     const [checkIn, setCheckIn] = useState('');
     const [checkOut, setCheckOut] = useState('');
@@ -56,7 +82,7 @@ export default function Home() {
     const [bookingStep, setBookingStep] = useState<'selection' | 'extras' | 'details' | 'payment'>('selection');
     const [disponiveisExtras, setDisponiveisExtras] = useState<any[]>([]);
     const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
-    const [bookingForm, setBookingForm] = useState({
+    const [bookingForm, setBookingForm] = useState<BookingForm>({
         prefixo: 'Mr.',
         nome: '',
         sobrenome: '',
@@ -78,7 +104,8 @@ export default function Home() {
         nacionalidade: '',
         tipo_documento: 'Passaporte',
         numero_documento: '',
-        pais_emissor_documento: ''
+        pais_emissor_documento: '',
+        metodoPagamento: 'CARTAO'
     });
     const [calendarioPrecos, setCalendarioPrecos] = useState<any[]>([]);
     const [galleryRooms, setGalleryRooms] = useState<any[]>([]);
@@ -331,7 +358,7 @@ export default function Home() {
                 },
                 extrasIds: selectedExtras,
                 requerimentosEspeciais: bookingForm.requerimentosEspeciais,
-                metodoPagamento: 'CARTAO' // Placeholder
+                metodoPagamento: bookingForm.metodoPagamento
             };
 
             const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas`, {
@@ -1272,14 +1299,44 @@ export default function Home() {
 
                                         <section className="mb-12">
                                             <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">{t('booking_pagamento_detalhes')}</h4>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                                                {[
+                                                    { id: 'CARTAO', label: 'Cartão / Apple Pay', icon: '💳' },
+                                                    { id: 'MBWAY', label: 'MB WAY', icon: '📱' },
+                                                    { id: 'TRANSFERENCIA', label: 'Transferência', icon: '🏦' }
+                                                ].map((metodo) => (
+                                                    <button
+                                                        key={metodo.id}
+                                                        onClick={() => setBookingForm({ ...bookingForm, metodoPagamento: metodo.id })}
+                                                        className={`p-6 border transition-all flex flex-col items-center gap-3 ${bookingForm.metodoPagamento === metodo.id
+                                                            ? 'border-carapita-gold bg-carapita-gold/10 scale-105 shadow-lg'
+                                                            : 'border-white/10 bg-white/5 hover:border-white/30'
+                                                            }`}
+                                                    >
+                                                        <span className="text-2xl">{metodo.icon}</span>
+                                                        <span className={`text-[9px] uppercase tracking-widest font-bold ${bookingForm.metodoPagamento === metodo.id ? 'text-carapita-gold' : 'text-white/60'}`}>
+                                                            {metodo.label}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+
                                             <div className="bg-white/5 p-10 text-center border border-dashed border-white/10 rounded">
-                                                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-4">{t('booking_pagamento_seguro')}</p>
-                                                <div className="flex justify-center gap-4 opacity-70 items-center">
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" className="h-4 brightness-0 invert" alt="Visa" />
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" className="h-6 brightness-0 invert" alt="Mastercard" />
-                                                    <span className="text-white text-xs font-bold font-sans">MB WAY</span>
-                                                    <span className="text-white text-xs font-bold font-sans">MULTIBANCO</span>
-                                                </div>
+                                                {bookingForm.metodoPagamento === 'CARTAO' ? (
+                                                    <>
+                                                        <p className="text-[10px] uppercase tracking-widest text-white/40 mb-4">{t('booking_pagamento_seguro')}</p>
+                                                        <div className="flex justify-center gap-4 opacity-70 items-center">
+                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" className="h-4 brightness-0 invert" alt="Visa" />
+                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" className="h-6 brightness-0 invert" alt="Mastercard" />
+                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Apple_Pay_logo.svg" className="h-6 brightness-0 invert" alt="Apple Pay" />
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <p className="text-[10px] uppercase tracking-widest text-carapita-gold mb-2 font-bold">
+                                                        {bookingForm.metodoPagamento === 'MBWAY' ? 'Pagar via MB WAY no próximo passo' : 'Dados para transferência serão enviados por e-mail'}
+                                                    </p>
+                                                )}
                                             </div>
                                         </section>
 
