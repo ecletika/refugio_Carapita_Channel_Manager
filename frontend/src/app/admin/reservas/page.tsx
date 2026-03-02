@@ -55,6 +55,24 @@ export default function AdminReservas() {
         }
     };
 
+    const sendAIMA = async (id: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/${id}/enviar-aima`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await resp.json();
+            if (data.status === 'success') {
+                alert('AIMA: ' + data.message);
+            } else {
+                alert('Erro AIMA: ' + data.error);
+            }
+        } catch (e) {
+            alert('Falha ao comunicar com o servidor');
+        }
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'CONFIRMADA': return 'bg-green-100 text-green-800';
@@ -179,11 +197,14 @@ export default function AdminReservas() {
                                     {res.status === 'CHECK_IN' && (
                                         <button onClick={() => updateStatus(res.id, 'checkout')} className="w-full py-2 bg-purple-600 text-white text-[9px] uppercase tracking-widest font-bold hover:bg-purple-700 transition-colors">Check-out</button>
                                     )}
+                                    {(res.status === 'CHECK_IN' || res.status === 'CHECK_OUT') && (
+                                        <button onClick={() => sendAIMA(res.id)} className="w-full py-2 bg-yellow-500 text-white text-[9px] uppercase tracking-widest font-bold hover:bg-yellow-600 transition-colors mt-2">Re-enviar AIMA</button>
+                                    )}
                                     {res.status !== 'CANCELADA' && res.status !== 'CHECK_OUT' && (
                                         <button onClick={() => updateStatus(res.id, 'cancelar')} className="w-full py-2 border border-red-200 text-red-500 text-[9px] uppercase tracking-widest hover:bg-red-50 transition-colors">Cancelar</button>
                                     )}
                                     {(res.status === 'CANCELADA' || res.status === 'CHECK_OUT') && (
-                                        <span className="text-[8px] uppercase tracking-widest text-gray-400 text-center italic">Sem ações</span>
+                                        <span className="text-[8px] uppercase tracking-widest text-gray-400 text-center italic mt-2 block">Sem mais ações de sistema</span>
                                     )}
                                 </div>
                             </div>
