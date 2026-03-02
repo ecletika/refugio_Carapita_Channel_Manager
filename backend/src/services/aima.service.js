@@ -110,7 +110,7 @@ class AimaService {
             const soapEnvelope = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
-    <EntregaBoletinsAlojamento xmlns="http://sef.pt/BAws">
+    <EntregaBoletinsAlojamento xmlns="http://sef.pt/">
       <UnidadeHoteleira>${process.env.AIMA_NIPC || ''}</UnidadeHoteleira>
       <Estabelecimento>${process.env.AIMA_ESTABELECIMENTO || '00'}</Estabelecimento>
       <ChaveAcesso>${process.env.AIMA_CHAVE_ACESSO || ''}</ChaveAcesso>
@@ -127,7 +127,7 @@ class AimaService {
                 {
                     headers: {
                         'Content-Type': 'text/xml; charset=utf-8',
-                        'SOAPAction': 'http://sef.pt/BAws/EntregaBoletinsAlojamento' // Required action header
+                        'SOAPAction': '"http://sef.pt/EntregaBoletinsAlojamento"'
                     }
                 }
             );
