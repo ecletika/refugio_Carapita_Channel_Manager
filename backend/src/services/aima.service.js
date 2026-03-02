@@ -14,9 +14,10 @@ class AimaService {
     }
 
     _formatDate(date) {
-        if (!date) return '1900-01-01';
+        if (!date) return '1900-01-01T00:00:00';
         const d = new Date(date);
-        return d.toISOString().split('T')[0];
+        // AIMA exige xsd:dateTime (YYYY-MM-DDTHH:mm:ss)
+        return d.toISOString().substring(0, 19);
     }
 
     _mapCountryCode(countryName) {
@@ -80,6 +81,7 @@ class AimaService {
             .ele('Codigo_Postal').txt(uhData.Codigo_Postal).up()
             .ele('Zona_Postal').txt(uhData.Zona_Postal).up()
             .ele('Telefone').txt(uhData.Telefone).up()
+            .ele('Fax').txt(uhData.Telefone).up()
             .ele('Nome_Contacto').txt(uhData.Nome_Contacto).up()
             .ele('Email_Contacto').txt(uhData.Email_Contacto).up()
             .up();
@@ -98,8 +100,8 @@ class AimaService {
         }
 
         ba.ele('Documento_Identificacao').txt((hospede.numero_documento || '00000000').replace(/[^0-9A-Z]/ig, '').substring(0, 16)).up()
-            .ele('Tipo_Documento_Identificacao').txt(tipoDoc).up()
             .ele('Pais_Emissor_Documento').txt(paisEmissor).up()
+            .ele('Tipo_Documento').txt(tipoDoc).up()
             .ele('Data_Entrada').txt(this._formatDate(reserva.data_check_in)).up();
 
         if (reserva.data_check_out) {
@@ -175,7 +177,9 @@ class AimaService {
                 let errorObj = null;
                 try {
                     errorObj = await parser.parseStringPromise(soapResult);
-                    errorDesc = errorObj?.Retorno?.Descricao || 'Erro desconhecido retornado pela AIMA.';
+                    let erroBA = errorObj?.ErrosBA?.RetornoBA;
+                    if (Array.isArray(erroBA)) erroBA = erroBA[0];
+                    errorDesc = erroBA?.Descricao || errorObj?.Retorno?.Descricao || 'Erro desconhecido retornado pela AIMA.';
                 } catch (parseErr) {
                     errorDesc = soapResult; // If it's not XML
                 }

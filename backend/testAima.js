@@ -1,25 +1,29 @@
-require('dotenv').config();
-const aimaService = require('./src/services/aima.service');
+require('dotenv').config({ path: './.env' });
+const AimaService = require('./src/services/aima.service');
 
 const hospede = {
-    nome: 'MAURICIO',
-    sobrenome: 'JUNIOR',
-    nacionalidade: 'PRT',
-    tipo_documento: 'PASSAPORTE',
-    numero_documento: 'A1234567',
-    data_nascimento: '1990-01-01',
-    cidade: 'Lisbon'
+    nome: "Joao",
+    sobrenome: "Silva",
+    nacionalidade: "Portugal",
+    tipo_documento: "Cartao de Cidadao",
+    numero_documento: "12345678",
+    pais_emissor_documento: "Portugal",
+    data_nascimento: "1980-05-15",
+    cidade: "Lisboa"
 };
 
 const reserva = {
-    data_check_in: '2026-03-05',
-    data_check_out: '2026-03-10'
+    id: "reserva-123",
+    data_check_in: new Date().toISOString(),
+    data_check_out: new Date(Date.now() + 86400000).toISOString()
 };
 
-try {
-    const xml = aimaService.gerarXML(hospede, reserva);
-    console.log("Generated XML:");
+async function test() {
+    process.env.AIMA_ENV = 'development';
+    console.log("XML Payload:");
+    const xml = AimaService.gerarXML(hospede, reserva);
     console.log(xml);
-} catch (error) {
-    console.error("Error:", error);
+    const result = await AimaService.enviarBoletim(hospede, reserva);
+    console.log("Result:", result);
 }
+test();
