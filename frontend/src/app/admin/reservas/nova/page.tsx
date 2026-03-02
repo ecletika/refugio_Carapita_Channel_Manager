@@ -49,8 +49,8 @@ export default function NovaReservaManual() {
         const fetchData = async () => {
             try {
                 const [qResp, eResp] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras`)
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos`),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras`)
                 ]);
                 const qData = await qResp.json();
                 const eData = await eResp.json();
@@ -67,7 +67,7 @@ export default function NovaReservaManual() {
         setLoading(true);
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

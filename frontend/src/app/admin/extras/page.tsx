@@ -33,7 +33,7 @@ export default function AdminExtras() {
         const formData = new FormData();
         formData.append('foto', file);
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/upload/`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -52,7 +52,7 @@ export default function AdminExtras() {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras/admin`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras/admin`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await resp.json();
@@ -67,7 +67,7 @@ export default function AdminExtras() {
     const handleCreate = async () => {
         try {
             const token = localStorage.getItem('token');
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export default function AdminExtras() {
     const handleUpdate = async (id: string, updates: Partial<Extra>) => {
         try {
             const token = localStorage.getItem('token');
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras/${id}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ export default function AdminExtras() {
         if (!confirm('Eliminar este extra?')) return;
         try {
             const token = localStorage.getItem('token');
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras/${id}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras/${id}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -258,7 +258,7 @@ export default function AdminExtras() {
                                     const formData = new FormData();
                                     formData.append('foto', file);
                                     try {
-                                        const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/upload/`, {
+                                        const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/`, {
                                             method: 'POST',
                                             headers: { 'Authorization': `Bearer ${token}` },
                                             body: formData

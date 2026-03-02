@@ -23,7 +23,7 @@ export default function AdminConfiguracoes() {
 
     const fetchConfigs = async () => {
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/configuracoes`);
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes`);
             const json = await resp.json();
             if (json.status === 'success' && json.data) {
                 setConfigs(prev => ({ ...prev, ...json.data }));
@@ -41,7 +41,7 @@ export default function AdminConfiguracoes() {
         setSaving(true);
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/configuracoes`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

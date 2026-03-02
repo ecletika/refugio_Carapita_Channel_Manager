@@ -252,7 +252,7 @@ export default function AdminDashboard() {
         if (!token) { router.push('/login'); return; }
         setCalLoading(true);
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas/dashboard?ano=${ano}&mes=${mes}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/dashboard?ano=${ano}&mes=${mes}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -288,7 +288,7 @@ export default function AdminDashboard() {
     const updateStatusDash = async (id: string, endpoint: string) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas/${id}/${endpoint}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/${id}/${endpoint}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` }
             });

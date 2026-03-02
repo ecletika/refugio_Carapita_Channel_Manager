@@ -31,8 +31,8 @@ export default function AdminTarifas() {
         const token = localStorage.getItem('token');
         try {
             const [tResp, qResp] = await Promise.all([
-                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`)
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos`)
             ]);
             const tData = await tResp.json();
             const qData = await qResp.json();
@@ -51,7 +51,7 @@ export default function AdminTarifas() {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(nova)
@@ -66,7 +66,7 @@ export default function AdminTarifas() {
     const handleDeletar = async (id: string) => {
         const token = localStorage.getItem('token');
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas/${id}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

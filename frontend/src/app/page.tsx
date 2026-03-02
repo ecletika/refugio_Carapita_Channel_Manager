@@ -142,7 +142,7 @@ export default function Home() {
     useEffect(() => {
         const fetchExtras = async () => {
             try {
-                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/extras?t=${Date.now()}`, {
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras?t=${Date.now()}`, {
                     cache: 'no-store'
                 });
                 const data = await resp.json();
@@ -154,7 +154,7 @@ export default function Home() {
 
         const fetchConfiguracoes = async () => {
             try {
-                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/configuracoes?t=${Date.now()}`, { cache: 'no-store' });
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes?t=${Date.now()}`, { cache: 'no-store' });
                 const json = await resp.json();
                 if (json.status === 'success' && json.data) {
                     setSiteConfigs(json.data);
@@ -164,7 +164,7 @@ export default function Home() {
 
         const fetchPasseiosData = async () => {
             try {
-                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios?t=${Date.now()}`, {
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/passeios?t=${Date.now()}`, {
                     cache: 'no-store'
                 });
                 const data = await resp.json();
@@ -179,7 +179,7 @@ export default function Home() {
 
         const fetchQuartosParaGaleria = async () => {
             try {
-                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos?ativo=true`, { cache: 'no-store' });
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos?ativo=true`, { cache: 'no-store' });
                 const data = await resp.json();
                 if (data.status === 'success') {
                     const activeQs = data.data.filter((q: any) => q.ativo);
@@ -237,7 +237,7 @@ export default function Home() {
         const senha = (e.target as any).password.value;
 
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/hospede/login`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hospede/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha })
@@ -361,7 +361,7 @@ export default function Home() {
                 metodoPagamento: bookingForm.metodoPagamento
             };
 
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
@@ -371,7 +371,7 @@ export default function Home() {
             if (data.status === 'success') {
                 if (bookingForm.metodoPagamento === 'CARTAO') {
                     // Start Stripe checkout
-                    const checkoutResp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/pagamentos/checkout`, {
+                    const checkoutResp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pagamentos/checkout`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ reservaData: data.data })
@@ -411,7 +411,7 @@ export default function Home() {
     const buscarDisponibilidade = async () => {
         setLoading(true);
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas/disponibilidade?checkIn=${checkIn}&checkOut=${checkOut}&capacidade=${hospedes}`);
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/disponibilidade?checkIn=${checkIn}&checkOut=${checkOut}&capacidade=${hospedes}`);
             const dados = await resp.json();
             if (dados.status === 'success') {
                 setQuartosEncontrados(dados.data);
@@ -432,7 +432,7 @@ export default function Home() {
             const hoje = new Date();
             const fim = new Date();
             fim.setMonth(hoje.getMonth() + 2);
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${hoje.toISOString()}&fim=${fim.toISOString()}&t=${Date.now()}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${hoje.toISOString()}&fim=${fim.toISOString()}&t=${Date.now()}`, {
                 cache: 'no-store'
             });
             const data = await resp.json();
@@ -447,7 +447,7 @@ export default function Home() {
             document.body.style.overflow = 'hidden';
             if (!quartosEncontrados) {
                 // Carregar apenas os quartos ativos inicialmente
-                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos?ativo=true`)
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos?ativo=true`)
                     .then(r => r.json())
                     .then(d => {
                         if (d.status === 'success') {
@@ -464,7 +464,7 @@ export default function Home() {
     const efetuarReserva = async (quartoId: string, dadosHospedeManual?: any) => {
         setLoading(true);
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

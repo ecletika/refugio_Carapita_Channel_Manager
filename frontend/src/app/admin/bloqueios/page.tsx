@@ -27,8 +27,8 @@ export default function AdminBloqueios() {
         const token = localStorage.getItem('token');
         try {
             const [bResp, qResp] = await Promise.all([
-                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/bloqueios`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`)
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bloqueios`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos`)
             ]);
             const bData = await bResp.json();
             const qData = await qResp.json();
@@ -47,7 +47,7 @@ export default function AdminBloqueios() {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/bloqueios`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bloqueios`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(novo)
@@ -66,7 +66,7 @@ export default function AdminBloqueios() {
         if (!confirm("Remover este bloqueio de agenda? As datas ficarão disponíveis para reserva novamente.")) return;
         const token = localStorage.getItem('token');
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/bloqueios/${id}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bloqueios/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

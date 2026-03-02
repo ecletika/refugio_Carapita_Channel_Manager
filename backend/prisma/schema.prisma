@@ -131,3 +131,14 @@ model Configuracao {
   valor     String?
   criado_em DateTime @default(now())
 }
+
+model AimaLog {
+  id           String   @id @default(uuid())
+  reserva_id   String?
+  hospede_nome String?
+  status       String
+  erro         String?
+  payload_xml  String?
+  resposta_xml String?
+  criado_em    DateTime @default(now())
+}

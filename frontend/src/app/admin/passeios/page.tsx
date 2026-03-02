@@ -29,7 +29,7 @@ export default function AdminPasseios() {
 
     const fetchPasseios = async () => {
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios`);
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/passeios`);
             const json = await resp.json();
             if (json.status === 'success') {
                 setPasseios(json.data);
@@ -53,7 +53,7 @@ export default function AdminPasseios() {
     const handleToggleAtivo = async (p: Passeio) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios/${p.id}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/passeios/${p.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ ...p, ativo: !p.ativo })
@@ -67,7 +67,7 @@ export default function AdminPasseios() {
         if (!window.confirm('Tem a certeza que deseja remover este passeio?')) return;
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios/${id}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/passeios/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -81,7 +81,7 @@ export default function AdminPasseios() {
         const token = localStorage.getItem('token');
 
         try {
-            const url = editing ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios/${editing.id}` : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/site/passeios`;
+            const url = editing ? `${process.env.NEXT_PUBLIC_API_URL}/api/site/passeios/${editing.id}` : `${process.env.NEXT_PUBLIC_API_URL}/api/site/passeios`;
             const method = editing ? 'PUT' : 'POST';
 
             const resp = await fetch(url, {

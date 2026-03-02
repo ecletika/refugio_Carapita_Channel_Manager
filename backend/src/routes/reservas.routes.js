@@ -38,6 +38,9 @@ router.post('/:id/checkin', authMiddleware, ReservasController.checkIn);
 // 3.4 Check-out
 router.post('/:id/checkout', authMiddleware, ReservasController.checkOut);
 
+// 3.5 Enviar AIMA Manualmente
+router.post('/:id/enviar-aima', authMiddleware, ReservasController.enviarAima);
+
 // ============================================
 // ROTAS DE INTEGRAÇÃO (Webhooks de Canais)
 // ============================================

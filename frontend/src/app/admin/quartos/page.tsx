@@ -80,7 +80,7 @@ export default function AdminQuartos() {
     const fetchComodidades = async () => {
         setLoadingGlobal(true);
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/comodidades`);
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comodidades`);
             const data = await resp.json();
             if (data.status === 'success') {
                 setAllComodidades(data.data);
@@ -95,7 +95,7 @@ export default function AdminQuartos() {
 
     const fetchQuartos = async () => {
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`);
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos`);
             const data = await resp.json();
             if (data.status === 'success') setQuartos(data.data);
         } catch (e) {
@@ -172,7 +172,7 @@ export default function AdminQuartos() {
             // Save to Supabase first
             const token = localStorage.getItem('token');
             try {
-                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/comodidades`, {
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comodidades`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ nome: trimmed, categoria: categoryToUse })
@@ -201,7 +201,7 @@ export default function AdminQuartos() {
 
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/comodidades`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comodidades`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ nome, categoria: cat })
@@ -228,7 +228,7 @@ export default function AdminQuartos() {
             const formData = new FormData();
             formData.append('foto', file);
             try {
-                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/upload`, {
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
@@ -266,7 +266,7 @@ export default function AdminQuartos() {
     const handleToggleAtivo = async (q: Quarto) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos/${q.id}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos/${q.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -298,8 +298,8 @@ export default function AdminQuartos() {
         const token = localStorage.getItem('token');
         const method = editQuarto?.id ? 'PUT' : 'POST';
         const url = editQuarto?.id
-            ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos/${editQuarto.id}`
-            : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos`;
+            ? `${process.env.NEXT_PUBLIC_API_URL}/api/quartos/${editQuarto.id}`
+            : `${process.env.NEXT_PUBLIC_API_URL}/api/quartos`;
 
         try {
             const resp = await fetch(url, {
@@ -338,7 +338,7 @@ export default function AdminQuartos() {
         if (!confirm("Tem certeza que deseja apagar este quarto? Todos os dados associados serão perdidos.")) return;
         const token = localStorage.getItem('token');
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/quartos/${id}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -351,7 +351,7 @@ export default function AdminQuartos() {
     const handleSync = async (id: string) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/sync/${id}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sync/${id}`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

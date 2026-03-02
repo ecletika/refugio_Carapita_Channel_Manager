@@ -248,6 +248,41 @@ class ReservasController {
     static async checkIn(req, res) { return ReservasController.updateStatus(req.params.id, 'CHECK_IN', res); }
     static async checkOut(req, res) { return ReservasController.updateStatus(req.params.id, 'CHECK_OUT', res); }
 
+    static async enviarAima(req, res) {
+        try {
+            const { id } = req.params;
+            const { data, error } = await supabase
+                .from('Reserva')
+                .select('*, Hospede(*), Quarto(*)')
+                .eq('id', id)
+                .single();
+
+            if (error || !data) throw error || new Error('Reserva não encontrada');
+
+            const normalizedData = {
+                ...data,
+                quarto: data.Quarto,
+                hospede: data.Hospede
+            };
+
+            if (!normalizedData.hospede) {
+                return res.status(400).json({ error: 'Hóspede não encontrado para esta reserva' });
+            }
+
+            const resultado = await AimaService.enviarBoletim(normalizedData.hospede, normalizedData);
+
+            if (resultado.sucesso) {
+                return res.json({ status: 'success', message: resultado.mensagem });
+            } else {
+                return res.status(500).json({ status: 'error', error: resultado.erro });
+            }
+
+        } catch (error) {
+            return res.status(500).json({ error: `Erro ao enviar AIMA: ${error.message}` });
+        }
+    }
+
+
     // 7. Admin List
     static async listarTodas(req, res) {
         try {

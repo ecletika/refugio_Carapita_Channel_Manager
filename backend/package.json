@@ -20,7 +20,10 @@
     "node-ical": "^0.25.4",
     "nodemailer": "^8.0.1",
     "pg": "^8.19.0",
-    "stripe": "^20.4.0"
+    "soap": "^1.7.1",
+    "stripe": "^20.4.0",
+    "xml2js": "^0.6.2",
+    "xmlbuilder2": "^4.0.3"
   },
   "devDependencies": {
     "@prisma/client": "^5.22.0",

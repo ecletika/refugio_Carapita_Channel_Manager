@@ -25,7 +25,7 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
             const endDate = new Date(year, month + 1, 0); // Último dia do próximo mês
             const end = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
             try {
-                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${start}&fim=${end}&t=${Date.now()}`, {
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${start}&fim=${end}&t=${Date.now()}`, {
                     cache: 'no-store'
                 });
                 const dados = await resp.json();

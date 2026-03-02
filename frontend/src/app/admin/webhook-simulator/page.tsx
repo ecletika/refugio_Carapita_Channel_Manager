@@ -13,7 +13,7 @@ export default function WebhookSimulator() {
         setLoading(true);
         try {
             const endpoint = canal === 'booking' ? 'booking' : 'airbnb';
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reservas/webhooks/${endpoint}`, {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/webhooks/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: payload
