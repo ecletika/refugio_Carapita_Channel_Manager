@@ -1,5 +1,6 @@
 const supabase = require('../config/supabase');
 const EmailService = require('../services/email.service');
+const AimaService = require('../services/aima.service');
 const crypto = require('crypto');
 
 class ReservasController {
@@ -67,23 +68,52 @@ class ReservasController {
 
             // Buscar/Criar Hóspede
             let { data: hospedeDB } = await supabase.from('Hospede').select('*').eq('email', hospede.email).single();
+            const now = new Date().toISOString();
+
+            const hospedeData = {
+                prefixo: hospede.prefixo,
+                nome: hospede.nome,
+                sobrenome: hospede.sobrenome,
+                telefone: hospede.telefone || null,
+                pais: hospede.pais,
+                cidade: hospede.cidade,
+                endereco1: hospede.endereco1,
+                endereco2: hospede.endereco2,
+                cep: hospede.cep,
+                estrangeiro: hospede.estrangeiro || false,
+                data_nascimento: hospede.data_nascimento || null,
+                local_nascimento: hospede.local_nascimento || null,
+                nacionalidade: hospede.nacionalidade || null,
+                tipo_documento: hospede.tipo_documento || null,
+                numero_documento: hospede.numero_documento || null,
+                pais_emissor_documento: hospede.pais_emissor_documento || null,
+                atualizado_em: now
+            };
+
             if (!hospedeDB) {
-                const now = new Date().toISOString();
                 const { data: novoH, error: errH } = await supabase
                     .from('Hospede')
-                    .insert([{ id: crypto.randomUUID(), nome: hospede.nome, email: hospede.email, telefone: hospede.telefone || null, criado_em: now, atualizado_em: now }])
+                    .insert([{ id: crypto.randomUUID(), email: hospede.email, criado_em: now, ...hospedeData }])
                     .select().single();
                 if (errH) { console.error('Hospede Insert Error:', errH); throw errH; }
                 hospedeDB = novoH;
+            } else {
+                const { data: updateH, error: errHUpd } = await supabase
+                    .from('Hospede')
+                    .update(hospedeData)
+                    .eq('id', hospedeDB.id)
+                    .select().single();
+                if (errHUpd) { console.error('Hospede Update Error:', errHUpd); throw errHUpd; }
+                hospedeDB = updateH;
             }
 
             // Buscar/Criar Canal
             let { data: canalDB } = await supabase.from('Canal').select('*').eq('nome_canal', canalNome || 'SITE').single();
             if (!canalDB) {
-                const now = new Date().toISOString();
+                const nowCanal = new Date().toISOString();
                 const { data: novoC, error: errC } = await supabase
                     .from('Canal')
-                    .insert([{ id: crypto.randomUUID(), nome_canal: canalNome || 'SITE', comissao_percentual: 0, criado_em: now, atualizado_em: now }])
+                    .insert([{ id: crypto.randomUUID(), nome_canal: canalNome || 'SITE', comissao_percentual: 0, criado_em: nowCanal, atualizado_em: nowCanal }])
                     .select().single();
                 if (errC) { console.error('Canal Insert Error:', errC); throw errC; }
                 canalDB = novoC;
@@ -120,7 +150,7 @@ class ReservasController {
             }
 
             // Salvar
-            const now = new Date().toISOString();
+            const nowReserva = new Date().toISOString();
             const { data: novaReserva, error } = await supabase
                 .from('Reserva')
                 .insert([{
@@ -135,8 +165,8 @@ class ReservasController {
                     metodo_pagamento: metodoPagamento,
                     requerimentos_especiais: requerimentosEspeciais,
                     extras_ids: extrasIds && extrasIds.length > 0 ? extrasIds : null,
-                    criado_em: now,
-                    atualizado_em: now
+                    criado_em: nowReserva,
+                    atualizado_em: nowReserva
                 }])
                 .select('*, Quarto(*), Hospede(*)')
                 .single();
@@ -201,6 +231,10 @@ class ReservasController {
 
             if (novoStatus === 'CONFIRMADA' && normalizedData.hospede) {
                 await EmailService.enviarEmailConfirmacao(normalizedData.hospede, normalizedData);
+            }
+
+            if (novoStatus === 'CHECK_IN' && normalizedData.hospede) {
+                await AimaService.enviarBoletim(normalizedData.hospede, normalizedData);
             }
 
             return res.json({ status: 'success', message: `Status alterado para ${novoStatus}`, data: normalizedData });

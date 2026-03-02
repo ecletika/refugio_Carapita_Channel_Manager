@@ -12,3 +12,4 @@ frontend/out
 backend/node_modules
 frontend/node_modules
 .gemini
+frontend/.env.local

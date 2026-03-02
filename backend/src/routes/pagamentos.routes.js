@@ -8,13 +8,13 @@ router.post('/checkout', async (req, res) => {
     try {
         const { reservaData } = req.body;
         let amount = Math.round(Number(reservaData.valor_total) * 100);
-        if(!amount || amount <= 0) amount = 1000; 
+        if (!amount || amount <= 0) amount = 1000;
 
         // Definindo a URL do frontend baseada ou em LOCAL ou PRODUCAO
         const frontendUrl = process.env.NODE_ENV === 'production' ? 'https://refugiocarapita.com' : 'http://localhost:3000';
 
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'], // 'paypal', 'mb_way' removidos por precisarem de setup especifico no dashboard da stripe para EUR
+            payment_method_types: ['card', 'multibanco', 'mb_way'], // O Stripe cuidará de mostrá-los se estiverem ativos no Dashboard
             line_items: [
                 {
                     price_data: {
@@ -23,7 +23,7 @@ router.post('/checkout', async (req, res) => {
                             name: 'Reserva Refúgio Carapita',
                             description: `Check-in: ${reservaData.data_check_in?.split('T')[0]} | Check-out: ${reservaData.data_check_out?.split('T')[0]}`,
                         },
-                        unit_amount: amount, 
+                        unit_amount: amount,
                     },
                     quantity: 1,
                 },

@@ -15,6 +15,7 @@ interface Quarto {
     video_url?: string;
     ical_url: string;
     ativo: boolean;
+    minima_estadia_padrao: number;
 }
 
 
@@ -111,7 +112,7 @@ export default function AdminQuartos() {
 
     // Open modal — init gallery from existing fotos
     const openEdit = (q?: Partial<Quarto>) => {
-        const quarto = q || { nome: '', tipo: 'Quarto', descricao: '', capacidade: 2, preco_base: 100, ativo: true };
+        const quarto = q || { nome: '', tipo: 'Quarto', descricao: '', capacidade: 2, preco_base: 100, ativo: true, minima_estadia_padrao: 2 };
         setEditQuarto(quarto);
         setFotosEdit(parseFotos(quarto.fotos));
 
@@ -317,7 +318,8 @@ export default function AdminQuartos() {
                     comodidades: JSON.stringify(comodidadesEdit),
                     ativo: editQuarto?.ativo,
                     videoUrl: editQuarto?.video_url,
-                    icalUrl: editQuarto?.ical_url
+                    icalUrl: editQuarto?.ical_url,
+                    minimaEstadiaPadrao: editQuarto?.minima_estadia_padrao
                 })
 
             });
@@ -431,6 +433,7 @@ export default function AdminQuartos() {
                                     <div className="flex gap-6">
                                         <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><Users size={12} className="text-carapita-gold" /> {q.capacidade} Hóspedes</span>
                                         <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><Euro size={12} className="text-carapita-gold" /> {q.preco_base} / Noite</span>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><RefreshCw size={12} className="text-carapita-gold" /> Min: {q.minima_estadia_padrao || 2} noites</span>
                                         {q.ical_url && <span className="text-[10px] uppercase tracking-widest font-bold text-blue-500 flex items-center gap-1.5"><RefreshCw size={12} /> iCal Sync</span>}
                                     </div>
                                 </div>
@@ -486,6 +489,10 @@ export default function AdminQuartos() {
                                     <div className="space-y-1">
                                         <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Capacidade (Hóspedes)</label>
                                         <input type="number" required value={editQuarto.capacidade} onChange={e => setEditQuarto({ ...editQuarto, capacidade: parseInt(e.target.value) })} className="w-full border-b border-gray-200 focus:border-carapita-gold pb-2 outline-none text-sm bg-transparent transition-colors text-carapita-dark" min="1" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Mínimo Estadia Padrão</label>
+                                        <input type="number" required value={editQuarto.minima_estadia_padrao || 2} onChange={e => setEditQuarto({ ...editQuarto, minima_estadia_padrao: parseInt(e.target.value) })} className="w-full border-b border-gray-200 focus:border-carapita-gold pb-2 outline-none text-sm bg-transparent transition-colors text-carapita-dark" min="1" />
                                     </div>
                                 </div>
 

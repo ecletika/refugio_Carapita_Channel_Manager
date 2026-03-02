@@ -17,13 +17,15 @@ interface TarifaSazonal {
     data_fim: string;
     preco_noite: number;
     motivo: string;
+    politica_cancelamento: string;
+    minima_estadia: number;
 }
 
 export default function AdminTarifas() {
     const [tarifas, setTarifas] = useState<TarifaSazonal[]>([]);
     const [quartos, setQuartos] = useState<Quarto[]>([]);
     const [loading, setLoading] = useState(true);
-    const [nova, setNova] = useState({ quarto_id: '', data_inicio: '', data_fim: '', preco_noite: 0, motivo: '' });
+    const [nova, setNova] = useState({ quarto_id: '', data_inicio: '', data_fim: '', preco_noite: 0, motivo: '', politica_cancelamento: 'FLEXIVEL', minima_estadia: 2 });
 
     const fetchData = async () => {
         const token = localStorage.getItem('token');
@@ -55,7 +57,7 @@ export default function AdminTarifas() {
                 body: JSON.stringify(nova)
             });
             if (resp.ok) {
-                setNova({ quarto_id: '', data_inicio: '', data_fim: '', preco_noite: 0, motivo: '' });
+                setNova({ quarto_id: '', data_inicio: '', data_fim: '', preco_noite: 0, motivo: '', politica_cancelamento: 'FLEXIVEL', minima_estadia: 2 });
                 fetchData();
             }
         } catch (e) { alert("Erro ao salvar"); }
@@ -128,6 +130,19 @@ export default function AdminTarifas() {
                                 <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Identificador (Ex: Verão 2024)</label>
                                 <input className="w-full border-b border-gray-100 py-3 outline-none text-sm focus:border-carapita-gold transition-colors" value={nova.motivo} onChange={e => setNova({ ...nova, motivo: e.target.value })} placeholder="Nome do evento ou época" />
                             </div>
+                            <div className="space-y-1">
+                                <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Política de Cancelamento</label>
+                                <select required className="w-full border-b border-gray-100 py-3 outline-none text-sm focus:border-carapita-gold transition-colors bg-transparent" value={nova.politica_cancelamento} onChange={e => setNova({ ...nova, politica_cancelamento: e.target.value })}>
+                                    <option value="FLEXIVEL">Flexível (Até 1 dia antes)</option>
+                                    <option value="MODERADA">Moderada (Até 5 dias antes)</option>
+                                    <option value="LIMITADA">Limitada/Firme (Até 14 dias antes)</option>
+                                    <option value="RIGOROSA">Rigorosa (Até 30 dias antes)</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[9px] uppercase tracking-widest text-carapita-muted font-bold">Mínimo de Noites</label>
+                                <input type="number" min="2" className="w-full border-b border-gray-100 py-3 outline-none text-sm focus:border-carapita-gold transition-colors" value={nova.minima_estadia} onChange={e => setNova({ ...nova, minima_estadia: parseInt(e.target.value) })} />
+                            </div>
                             <button className="w-full bg-carapita-dark text-white py-4 text-[10px] uppercase tracking-mega hover:bg-carapita-gold transition-all duration-500 shadow-xl shadow-carapita-dark/10">
                                 Aplicar Tarifa Especial
                             </button>
@@ -160,6 +175,10 @@ export default function AdminTarifas() {
                                             <span className="text-[11px] font-medium">{new Date(t.data_inicio).toLocaleDateString('pt-PT')}</span>
                                             <span className="text-[9px] text-gray-300 mx-1">até</span>
                                             <span className="text-[11px] font-medium">{new Date(t.data_fim).toLocaleDateString('pt-PT')}</span>
+                                            <span className="text-[9px] text-gray-300 mx-1">|</span>
+                                            <span className="text-[10px] font-bold text-carapita-gold">{t.politica_cancelamento || 'FLEXÍVEL'}</span>
+                                            <span className="text-[9px] text-gray-300 mx-1">|</span>
+                                            <span className="text-[10px] text-carapita-muted">Min: {t.minima_estadia || 2} noites</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-end shrink-0">

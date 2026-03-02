@@ -33,6 +33,8 @@ class TarifasController {
             const dataFim = req.body.dataFim || req.body.data_fim;
             const precoNoite = req.body.precoNoite || req.body.preco_noite;
             const motivo = req.body.motivo || '';
+            const politicaCancelamento = req.body.politicaCancelamento || req.body.politica_cancelamento || 'FLEXIVEL';
+            const minimaEstadia = req.body.minimaEstadia || req.body.minima_estadia || 2;
 
             if (!quartoId || !dataInicio || !dataFim || !precoNoite) {
                 return res.status(400).json({ error: 'Dados incompletos' });
@@ -46,7 +48,9 @@ class TarifasController {
                     data_inicio: new Date(dataInicio).toISOString(),
                     data_fim: new Date(dataFim).toISOString(),
                     preco_noite: Number(precoNoite),
-                    motivo: motivo || null
+                    motivo: motivo || null,
+                    politica_cancelamento: politicaCancelamento,
+                    minima_estadia: Number(minimaEstadia)
                 }])
                 .select()
                 .single();
@@ -154,10 +158,16 @@ class TarifasController {
 
                 const noPassado = dataAtual < hoje;
 
+                // Regra 1: Bloquear o dia de check-out sempre (não permitir novo check-in se alguém sai)
+                // Se o dia atual coincidir com o check-out de alguém, marcamos como bloqueado para check-in
+                const eDiaDeCheckOut = reservasExistentes?.some(r => r.data_check_out.split('T')[0] === isoData);
+
                 calendario.push({
                     data: isoData,
                     preco: tarifaSazonal ? Number(tarifaSazonal.preco_noite) : Number(quarto.preco_base),
-                    disponivel: !estaReservada && !estaBloqueado && !noPassado
+                    disponivel: !estaReservada && !estaBloqueado && !noPassado && !eDiaDeCheckOut,
+                    minimaEstadia: tarifaSazonal ? Number(tarifaSazonal.minima_estadia) : Number(quarto.minima_estadia_padrao || 2),
+                    eCheckOut: eDiaDeCheckOut
                 });
 
                 dataAtual.setUTCDate(dataAtual.getUTCDate() + 1);

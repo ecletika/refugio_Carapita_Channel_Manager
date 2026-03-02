@@ -6,12 +6,14 @@ interface PrecoDia {
     data: string;
     preco: number;
     disponivel: boolean;
+    minimaEstadia: number;
+    eCheckOut?: boolean;
 }
 
 export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (start: string, end: string) => void, quartoId: string }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selection, setSelection] = useState<{ start: string | null, end: string | null }>({ start: null, end: null });
-    const [precos, setPrecos] = useState<Record<string, { preco: number, disponivel: boolean }>>({});
+    const [precos, setPrecos] = useState<Record<string, { preco: number, disponivel: boolean, minimaEstadia: number, eCheckOut?: boolean }>>({});
 
     useEffect(() => {
         if (!quartoId) return;
@@ -28,8 +30,8 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
                 });
                 const dados = await resp.json();
                 if (dados.status === 'success') {
-                    const map: Record<string, { preco: number, disponivel: boolean }> = {};
-                    dados.data.forEach((p: PrecoDia) => map[p.data] = { preco: p.preco, disponivel: p.disponivel });
+                    const map: Record<string, { preco: number, disponivel: boolean, minimaEstadia: number, eCheckOut?: boolean }> = {};
+                    dados.data.forEach((p: PrecoDia) => map[p.data] = { preco: p.preco, disponivel: p.disponivel, minimaEstadia: p.minimaEstadia, eCheckOut: p.eCheckOut });
                     setPrecos(map);
                 }
             } catch (e) {
@@ -45,36 +47,63 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
         const selectedDate = new Date(dateStr);
         if (selectedDate < today) return; // Não permitir datas passadas
 
-        if (precos[dateStr] && !precos[dateStr].disponivel) return; // Bloquear clique se indisponível
+        const info = precos[dateStr];
+        // Se for dia de check-out, só pode ser usado como check-out de uma reserva anterior, 
+        // mas o backend já marcou disponivel=false para impedir check-in.
+        if (info && !info.disponivel) {
+            // Se já temos um check-in, o check-out PODE ser em um dia ocupado (se for o dia exato que alguém entra, mas aqui a regra é BLOQUEAR o dia que alguém sai)
+            // Na verdade, a regra do usuário é: BLOQUEAR o dia de check-out sempre (ninguém entra no dia que alguém sai).
+            // Então se disponivel=false, não pode clicar.
+            if (!selection.start) return;
+            // Se for check-out, permitimos clicar se for o dia FINAL de uma seleção, mas o backend disse que esse dia está indisponível para ENTRAR.
+            // No entanto, para SAIR, o dia de check-out de uma reserva costuma ser o dia de check-in da próxima.
+            // A Regra 1 diz: Bloquear o dia de check-out sempre. Isso significa que se alguém sai dia 10, ninguém entra dia 10.
+            // Então dia 10 está indisponível para check-in.
+            if (!selection.start) return;
+        }
 
         if (!selection.start || (selection.start && selection.end)) {
             setSelection({ start: dateStr, end: null });
         } else {
-            if (new Date(dateStr) < new Date(selection.start)) {
+            const startDate = new Date(selection.start);
+            const endDate = new Date(dateStr);
+
+            if (endDate <= startDate) {
+                setSelection({ start: dateStr, end: null });
+                return;
+            }
+
+            // Validar Mínimo de Noites
+            const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const minStayRequired = precos[selection.start]?.minimaEstadia || 2;
+
+            if (diffDays < minStayRequired) {
+                alert(`Esta tarifa exige um mínimo de ${minStayRequired} noites.`);
+                return;
+            }
+
+            // Validar se existe algum bloqueio no meio do intervalo
+            let hasBlock = false;
+            let current = new Date(startDate);
+
+            // Verificamos todos os dias do check-in até o dia ANTERIOR ao check-out
+            while (current < endDate) {
+                const currentStr = current.toISOString().split('T')[0];
+                if (precos[currentStr] && !precos[currentStr].disponivel) {
+                    hasBlock = true;
+                    break;
+                }
+                current.setDate(current.getDate() + 1);
+            }
+
+            if (hasBlock) {
+                alert("O intervalo selecionado contém datas indisponíveis.");
                 setSelection({ start: dateStr, end: null });
             } else {
-                // Validar se existe algum bloqueio no meio do intervalo
-                const startDate = new Date(selection.start);
-                const endDate = new Date(dateStr);
-                let hasBlock = false;
-                let current = new Date(startDate);
-
-                while (current <= endDate) {
-                    const currentStr = current.toISOString().split('T')[0];
-                    if (precos[currentStr] && !precos[currentStr].disponivel) {
-                        hasBlock = true;
-                        break;
-                    }
-                    current.setDate(current.getDate() + 1);
-                }
-
-                if (hasBlock) {
-                    alert("O intervalo selecionado contém datas indisponíveis. Por favor, escolha outro período.");
-                    setSelection({ start: dateStr, end: null });
-                } else {
-                    setSelection({ ...selection, end: dateStr });
-                    onSelect(selection.start, dateStr);
-                }
+                setSelection({ ...selection, end: dateStr });
+                onSelect(selection.start, dateStr);
             }
         }
     };
@@ -107,7 +136,9 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
                 >
                     {!isDisponivel && (
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span className="text-carapita-muted text-2xl font-light opacity-30 select-none">X</span>
+                            <span className="text-carapita-muted text-2xl font-light opacity-30 select-none">
+                                {info?.eCheckOut ? 'OUT' : 'X'}
+                            </span>
                         </div>
                     )}
                     <span className={`text-sm font-bold z-10 ${isSelected ? 'text-white' : 'text-white/90'}`}>{d}</span>

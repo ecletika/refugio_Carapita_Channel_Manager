@@ -6,6 +6,9 @@ import SeletorCalendario from '../components/SeletorCalendario';
 import { useEffect } from 'react';
 
 // Helper: parse fotos field (can be JSON array or plain URL)
+import { dictionaries as dict } from '../i18n/dictionaries';
+import { countries } from '../i18n/countries';
+
 export interface FotoObj {
     url: string;
     category: string;
@@ -29,7 +32,7 @@ function parseFotos(fotos: string | undefined): FotoObj[] {
         return fotos ? [{ url: fotos, category: 'Quarto', isMain: true }] : [];
     }
 }
-
+// Translation Dict was moved to i18n/dictionaries.ts;
 
 export default function Home() {
     const [checkIn, setCheckIn] = useState('');
@@ -68,7 +71,14 @@ export default function Home() {
         senha: '',
         confirmarSenha: '',
         requerimentosEspeciais: '',
-        aceitouTermos: false
+        aceitouTermos: false,
+        estrangeiro: false,
+        data_nascimento: '',
+        local_nascimento: '',
+        nacionalidade: '',
+        tipo_documento: 'Passaporte',
+        numero_documento: '',
+        pais_emissor_documento: ''
     });
     const [calendarioPrecos, setCalendarioPrecos] = useState<any[]>([]);
     const [galleryRooms, setGalleryRooms] = useState<any[]>([]);
@@ -78,7 +88,28 @@ export default function Home() {
     const [lightboxFotos, setLightboxFotos] = useState<string[]>([]);
     const [lightboxIdx, setLightboxIdx] = useState(0);
     const [siteConfigs, setSiteConfigs] = useState<any>({});
+    const [lang, setLangState] = useState<'PT' | 'EN'>('PT');
+
+    // Using a wrapper around setLang to persist preference
+    const setLang = (newLang: 'PT' | 'EN') => {
+        setLangState(newLang);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('preferencia_idioma', newLang);
+        }
+    };
+    const t = (key: string) => dict[lang][key as keyof typeof dict['PT']] || key;
+
     const router = useRouter();
+
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const savedLang = localStorage.getItem('preferencia_idioma') as 'PT' | 'EN';
+            if (savedLang && (savedLang === 'PT' || savedLang === 'EN')) {
+                setLangState(savedLang);
+            }
+        }
+    }, []);
 
 
     useEffect(() => {
@@ -289,6 +320,13 @@ export default function Home() {
                     endereco1: bookingForm.endereco1,
                     endereco2: bookingForm.endereco2,
                     cep: bookingForm.cep,
+                    estrangeiro: bookingForm.estrangeiro,
+                    data_nascimento: bookingForm.data_nascimento,
+                    local_nascimento: bookingForm.local_nascimento,
+                    nacionalidade: bookingForm.nacionalidade,
+                    tipo_documento: bookingForm.tipo_documento,
+                    numero_documento: bookingForm.numero_documento,
+                    pais_emissor_documento: bookingForm.pais_emissor_documento,
                     senha: bookingForm.criarConta ? bookingForm.senha : undefined
                 },
                 extrasIds: selectedExtras,
@@ -448,10 +486,10 @@ export default function Home() {
                 {/* Left: Navigation Menu */}
                 <nav className="flex-1 hidden lg:block">
                     <ul className="flex gap-10 text-[10px] uppercase tracking-mega font-medium">
-                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('a-essencia')}>A Casa</li>
-                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('alojamento')}>Alojamento</li>
-                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('passeios')}>Passeios</li>
-                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('contatos')}>Contatos</li>
+                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('a-essencia')}>{t('menu_casa')}</li>
+                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('alojamento')}>{t('menu_alojamento')}</li>
+                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('passeios')}>{t('menu_passeios')}</li>
+                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('contatos')}>{t('menu_contatos')}</li>
                     </ul>
                 </nav>
 
@@ -468,7 +506,9 @@ export default function Home() {
 
                 {/* Right: Admin & Auth */}
                 <div className="flex-1 flex justify-end items-center gap-3 md:gap-6">
-
+                    <button onClick={() => setLang(lang === 'PT' ? 'EN' : 'PT')} className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-white hover:text-carapita-gold transition-colors">
+                        {lang === 'PT' ? 'EN' : 'PT'}
+                    </button>
 
                     <button
                         onClick={() => {
@@ -481,12 +521,12 @@ export default function Home() {
                             : 'border-white text-white hover:bg-white hover:text-carapita-dark'
                             }`}
                     >
-                        {mounted && isLoggedIn ? 'Minha Conta' : 'Login'}
+                        {mounted && isLoggedIn ? t('btn_conta') : t('btn_login')}
                     </button>
 
                     <button onClick={() => setShowBookingScreen(true)} className={`text-[8px] md:text-[10px] uppercase tracking-mega font-bold rounded-full px-4 md:px-8 py-2 md:py-3 transition-all duration-500 bg-carapita-dark text-white hover:bg-carapita-gold text-center`}>
-                        <span className="hidden md:inline">Reservar Agora</span>
-                        <span className="md:hidden">Reservar</span>
+                        <span className="hidden md:inline">{t('btn_reservar_now')}</span>
+                        <span className="md:hidden">{t('btn_reservar')}</span>
                     </button>
                 </div>
             </header>
@@ -510,17 +550,17 @@ export default function Home() {
 
                 <div className="z-10 text-center px-4 max-w-5xl mt-24">
                     <p className="text-white text-xs md:text-sm tracking-mega uppercase mb-8 font-light drop-shadow-md">
-                        Relais & Châteaux em Ourém
+                        {t('hero_subtitle')}
                     </p>
                     <h2 className="text-5xl md:text-7xl lg:text-8xl text-white mb-8 font-serif font-light leading-tight drop-shadow-lg">
-                        Um Retiro de <br /><i className="font-serif text-carapita-goldLight">Exclusividade</i>
+                        {t('hero_title')} <br /><i className="font-serif text-carapita-goldLight">{t('hero_title_exclusividade')}</i>
                     </h2>
                 </div>
 
                 {/* Scroll Indicator */}
                 <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white flex flex-col items-center gap-4 opacity-80 cursor-pointer hover:text-carapita-gold hover:opacity-100 transition-colors" onClick={() => setShowBookingScreen(true)}>
                     <div className="w-[1px] h-20 bg-gradient-to-b from-white to-transparent"></div>
-                    <span className="text-[10px] tracking-mega uppercase font-bold">Ver Disponibilidade</span>
+                    <span className="text-[10px] tracking-mega uppercase font-bold">{t('hero_ver_dispo')}</span>
                 </div>
             </section>
 
@@ -535,9 +575,9 @@ export default function Home() {
                         <div className="flex justify-center mb-6 lg:mb-8">
                             <span className="w-[1px] h-8 lg:h-12 bg-carapita-gold opacity-50 block"></span>
                         </div>
-                        <span className="text-carapita-gold uppercase tracking-widest text-[9px] md:text-[10px] font-medium block mb-4 lg:mb-6"> Refúgio Carapita </span>
+                        <span className="text-carapita-gold uppercase tracking-widest text-[9px] md:text-[10px] font-medium block mb-4 lg:mb-6"> {t('essencia_tag')} </span>
                         <h3 className="text-3xl md:text-6xl lg:text-7xl font-serif text-carapita-goldLight leading-tight font-light uppercase tracking-widest">
-                            Um Lugar Mágico
+                            {t('essencia_title')}
                         </h3>
                     </div>
 
@@ -553,7 +593,7 @@ export default function Home() {
                             {/* Imagem Maior (Fundo Direita) */}
                             <div className="absolute right-0 lg:-right-8 xl:-right-12 top-0 w-full md:w-[85%] lg:w-[75%] h-[320px] sm:h-[480px] md:h-[750px] z-10 overflow-hidden shadow-2xl">
                                 <img
-                                    src="/casa.jpg"
+                                    src="/casa-exterior.jpg"
                                     className="w-full h-full object-cover transform duration-[3s] hover:scale-105 filter brightness-100"
                                     alt="Vista Exterior Mágica"
                                 />
@@ -572,15 +612,14 @@ export default function Home() {
                         {/* Coluna de Texto (Direita) */}
                         <div className="w-full lg:w-[15%] flex flex-col justify-start text-left z-30 mt-12 md:mt-28 lg:mt-0 lg:pt-12 xl:pl-4 px-4 md:px-0">
                             <p className="text-white/70 font-light leading-[2.2] text-sm tracking-wide text-justify md:text-left mb-12">
-                                Uma propriedade com encanto secular. Um passado intemporal que se mescla com a história de Ourém e de Portugal. Um lugar visionário, recheado de natureza, onde se serviu a comunidade e celebraram vinhos e sonhos.
+                                {t('essencia_p1')}
                                 <br /><br />
-                                Uma casa que ganha fama pelas suas maravilhosas vistas panorâmicas, e volta agora a abrir as portas como alojamento de charme e absoluto requinte.
-                                Bem-vindos a esta casa mágica no coração lusitano, cujo espírito navega ao ritmo das paisagens verdes, com o qual aprendeu que tudo muda e tudo repousa!
+                                {t('essencia_p2')}
                             </p>
 
                             {/* Botão Oval Elegante */}
                             <button onClick={() => scrollTo('alojamento')} className="flex items-center justify-center w-full md:w-48 h-12 border border-carapita-gold/60 rounded-[30px] text-[9px] uppercase tracking-[0.2em] text-carapita-gold hover:bg-carapita-gold hover:text-white transition-all duration-700 mx-auto md:mx-0">
-                                Descobrir &#10141;
+                                {t('essencia_btn')}
                             </button>
                         </div>
                     </div>
@@ -591,8 +630,8 @@ export default function Home() {
             {/* Galeria de Alojamento c/ Abas (Fotos Reais do Airbnb) */}
             <section id="alojamento" className="pb-20 lg:pb-32 px-4 md:px-8 max-w-[1400px] mx-auto w-full">
                 <div className="text-center mb-12 lg:mb-16">
-                    <span className="text-carapita-gold uppercase tracking-mega text-[10px] font-semibold block mb-4">Alojamento</span>
-                    <h3 className="text-3xl md:text-5xl font-serif text-white font-light mb-8 lg:mb-12">As Suas Áreas</h3>
+                    <span className="text-carapita-gold uppercase tracking-mega text-[10px] font-semibold block mb-4">{t('alojamento_tag')}</span>
+                    <h3 className="text-3xl md:text-5xl font-serif text-white font-light mb-8 lg:mb-12">{t('alojamento_title')}</h3>
 
                     {/* Seletor de Alojamento */}
                     {galleryRooms.length > 1 && (
@@ -639,9 +678,9 @@ export default function Home() {
             {/* Passeios pela Região (10 Passeios) */}
             <section id="passeios" className="py-24 px-4 md:px-12 max-w-[1400px] mx-auto w-full bg-carapita-green border-b border-white/5">
                 <div className="text-center mb-16">
-                    <span className="text-carapita-gold uppercase tracking-mega text-[10px] font-semibold block mb-4">Descubra a Região</span>
+                    <span className="text-carapita-gold uppercase tracking-mega text-[10px] font-semibold block mb-4">{t('passeios_tag')}</span>
                     <h3 className="text-4xl md:text-5xl font-serif text-white font-light max-w-2xl mx-auto leading-tight">
-                        Explorar além do nosso <i className="font-serif text-carapita-gold">Refúgio</i>
+                        {t('passeios_title')} <i className="font-serif text-carapita-gold">{t('passeios_title_refugio')}</i>
                     </h3>
                 </div>
 
@@ -665,7 +704,7 @@ export default function Home() {
             {/* Footer Padrão Relais & Châteaux */}
             <footer id="contatos" className="bg-carapita-dark text-white py-24 px-6 md:px-16 border-t-[12px] border-carapita-gold mt-auto">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-16">
-                    <div className="w-full md:w-1/3 text-center md:text-left flex flex-col justify-between">
+                    <div className="w-full lg:w-1/4 md:w-1/3 text-center md:text-left flex flex-col justify-between">
                         <div className="flex flex-col items-center md:items-start group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                             <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-carapita-gold/50 mb-6 p-0.5 bg-carapita-dark group-hover:border-carapita-gold transition-all duration-500 shadow-xl">
                                 <img src="/logo.jpg" alt="Refúgio Carapita Logo" className="w-full h-full object-cover" />
@@ -697,23 +736,32 @@ export default function Home() {
                             )}
                         </div>
                     </div>
-                    <div className="w-full md:w-2/3 grid grid-cols-1 sm:grid-cols-3 gap-12 text-center md:text-left">
+                    <div className="w-full lg:w-3/4 md:w-2/3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 text-center md:text-left">
                         <div className="flex flex-col gap-4 text-xs font-light text-white/70">
-                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">A Casa</h5>
-                            <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('a-essencia')}>A Essência</span>
-                            <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('alojamento')}>Alojamento</span>
-                            <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('passeios')}>Atrações e Passeios</span>
+                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">{t('footer_acasa')}</h5>
+                            <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('a-essencia')}>{t('footer_a_essencia')}</span>
+                            <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('alojamento')}>{t('alojamento_tag')}</span>
+                            <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('passeios')}>{t('footer_atracoes')}</span>
                         </div>
                         <div className="flex flex-col gap-4 text-xs font-light text-white/70">
-                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">Contatos</h5>
+                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">{t('footer_contatos')}</h5>
                             <p>{siteConfigs.endereco || 'Rua da Paz, S/N, Ourém, Portugal'}</p>
                             <p>{siteConfigs.telefoneReservas || '+351 967 244 938'}</p>
                             <p>{siteConfigs.emailContato || 'contato@refugiocarapita.com'}</p>
                         </div>
                         <div className="flex flex-col gap-4 text-xs font-light text-white/70">
-                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">Legal</h5>
-                            <a href="#" className="hover:text-carapita-gold transition-colors duration-300">Políticas de Privacidade</a>
-                            <a href="#" className="hover:text-carapita-gold transition-colors duration-300">Termos & Condições</a>
+                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">{t('footer_legal')}</h5>
+                            <a href="#" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_politicas')}</a>
+                            <a href="#" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_termos')}</a>
+                            <a href="/politica-cancelamento" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_politica_cancelamento')}</a>
+                            <a href="/regras-hospedes" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_regras')}</a>
+                        </div>
+                        <div className="flex flex-col gap-4 text-xs font-light text-white/70">
+                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">{t('footer_regras_casa_tit')}</h5>
+                            <p>{t('footer_checkin')}</p>
+                            <p>{t('footer_checkout')}</p>
+                            <p>{t('footer_max_pessoas')}</p>
+                            <a href="/regras-da-casa" className="hover:text-carapita-gold transition-colors duration-300 font-bold underline mt-2 w-fit mx-auto md:mx-0 inline-block">{t('footer_saiba_mais')}</a>
                         </div>
                     </div>
                 </div>
@@ -736,13 +784,13 @@ export default function Home() {
                             <img src={passeioSelecionado.img} className="absolute inset-0 w-full h-full object-cover" alt={passeioSelecionado.nome} />
                             <div className="absolute bottom-4 left-4 bg-carapita-green/90 backdrop-blur-sm px-4 py-2 flex items-center gap-2 shadow-lg border border-white/5">
                                 <MapPin size={12} className="text-carapita-gold" />
-                                <span className="text-[10px] uppercase tracking-widest font-semibold text-white">{passeioSelecionado.dist} da Casa</span>
+                                <span className="text-[10px] uppercase tracking-widest font-semibold text-white">{passeioSelecionado.dist} {t('passeios_da_casa')}</span>
                             </div>
                         </div>
 
                         {/* Conteúdo Lado Direito Modal */}
                         <div className="w-full md:w-1/2 p-10 md:p-14 flex flex-col justify-center bg-carapita-green text-left">
-                            <span className="text-carapita-gold uppercase tracking-widest text-[10px] font-medium block mb-4 border-b border-carapita-gold/30 pb-4 inline-block w-max">Descobrir Ourém & Arredores</span>
+                            <span className="text-carapita-gold uppercase tracking-widest text-[10px] font-medium block mb-4 border-b border-carapita-gold/30 pb-4 inline-block w-max">{t('passeios_descobrir')}</span>
                             <h3 className="text-3xl md:text-4xl font-serif text-white leading-tight font-light mb-6">
                                 {passeioSelecionado.nome}
                             </h3>
@@ -756,7 +804,7 @@ export default function Home() {
                                 rel="noreferrer"
                                 className="inline-block text-center w-full bg-carapita-dark hover:bg-carapita-gold text-white text-[10px] uppercase tracking-mega py-4 transition-colors duration-500"
                             >
-                                Ver no Mapa Direções
+                                {t('passeios_btn_mapa')}
                             </a>
                         </div>
                     </div>
@@ -888,14 +936,15 @@ export default function Home() {
                                         {/* Filtro de Hóspedes + Botão Buscar */}
                                         <div className="flex items-end gap-4 mb-8 pb-6 border-b border-white/10">
                                             <div>
-                                                <label className="text-[9px] uppercase tracking-mega text-white/40 block mb-2">Nº de Hóspedes</label>
+                                                <label className="text-[9px] uppercase tracking-mega text-white/40 block mb-2">{t('booking_num_hospedes')}</label>
                                                 <select
                                                     value={hospedes}
                                                     onChange={(e) => setHospedes(Number(e.target.value))}
                                                     className="bg-white/5 px-4 py-3 border border-white/10 outline-none font-sans text-sm focus:border-carapita-gold text-white"
                                                 >
-                                                    {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n} className="bg-carapita-green">{n} {n === 1 ? 'Hóspede' : 'Hóspedes'}</option>)}
+                                                    {[1, 2, 3, 4].map(n => <option key={n} value={n} className="bg-carapita-green">{n} {n === 1 ? t('booking_hospede') : t('booking_hospedes')}</option>)}
                                                 </select>
+                                                <span className="block mt-2 text-[9px] text-white/50 italic">{t('hospedes_criancas_aviso')}</span>
                                             </div>
                                             {checkIn && checkOut && (
                                                 <div className="flex items-center gap-3 bg-carapita-gold/10 border border-carapita-gold/30 px-4 py-3">
@@ -908,7 +957,7 @@ export default function Home() {
                                         {/* Calendário Interativo Real */}
                                         <div className="mb-12">
                                             <h4 className="font-serif text-xl mb-6 text-white border-b border-white/10 pb-4">
-                                                Selecione as Datas da Estadia
+                                                {t('booking_selecione_datas')}
                                             </h4>
                                             <SeletorCalendario
                                                 quartoId={quartosEncontrados?.[0]?.id || ''}
@@ -920,7 +969,7 @@ export default function Home() {
                                         </div>
 
                                         {/* Lista de Quartos */}
-                                        <h2 className="font-serif text-3xl mb-10 text-white border-b border-white/10 pb-4 uppercase tracking-widest">Alojamentos Disponíveis</h2>
+                                        <h2 className="font-serif text-3xl mb-10 text-white border-b border-white/10 pb-4 uppercase tracking-widest">{t('booking_alojamentos_disp')}</h2>
                                         <div className="space-y-8">
                                             {(quartosEncontrados || []).length > 0 ? (
                                                 quartosEncontrados?.map((q) => {
@@ -956,12 +1005,12 @@ export default function Home() {
                                                                             <h3 className="font-serif text-2xl text-white group-hover:text-carapita-gold transition-colors">{q.nome}</h3>
                                                                             <p className="text-[9px] uppercase tracking-widest text-carapita-gold font-bold mt-1.5">{q.tipo}</p>
                                                                         </div>
-                                                                        <div className="text-right flex flex-col items-end">
-                                                                            <div className="flex items-baseline gap-1">
+                                                                        <div className="text-right">
+                                                                            <div className="flex items-baseline gap-1 justify-end">
                                                                                 <span className="text-sm font-serif text-carapita-gold">€</span>
                                                                                 <span className="text-3xl font-serif text-white group-hover:text-carapita-gold transition-colors">{Number(q.preco_base).toFixed(0)}</span>
                                                                             </div>
-                                                                            <p className="text-[8px] text-white/40 uppercase tracking-widest">Por noite</p>
+                                                                            <p className="text-[8px] text-white/40 uppercase tracking-widest mt-1">{lang === 'PT' ? 'A partir de' : 'Starting from'}</p>
                                                                         </div>
                                                                     </div>
 
@@ -1007,9 +1056,9 @@ export default function Home() {
                                 {bookingStep === 'extras' && (
                                     <div className="animate-fade-in max-w-4xl mx-auto">
                                         <div className="text-center mb-16">
-                                            <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-4">Experiências Adicionais</span>
-                                            <h2 className="font-serif text-4xl text-white uppercase tracking-widest leading-tight">Personalize a sua <i className="font-serif italic font-light">Estadia</i></h2>
-                                            <p className="text-white/40 mt-4 text-[10px] uppercase tracking-widest font-medium">Selecione os mimos e serviços exclusivos para o seu refúgio</p>
+                                            <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-4">{t('booking_step_personalize')}</span>
+                                            <h2 className="font-serif text-4xl text-white uppercase tracking-widest leading-tight">{t('booking_title_extras')}</h2>
+                                            <p className="text-white/40 mt-4 text-[10px] uppercase tracking-widest font-medium">{lang === 'PT' ? 'Selecione os mimos e serviços exclusivos para o seu refúgio' : 'Select the exclusive treats and services for your retreat'}</p>
                                         </div>
 
                                         <div className="space-y-6 mb-20">
@@ -1056,10 +1105,10 @@ export default function Home() {
 
                                         <div className="flex justify-between items-center border-t border-white/10 pt-12">
                                             <button onClick={() => setBookingStep('selection')} className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-all flex items-center gap-2 group">
-                                                <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Voltar
+                                                <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> {t('form_voltar')}
                                             </button>
                                             <button onClick={() => setBookingStep('details')} className="bg-carapita-dark text-white px-12 py-5 text-[11px] uppercase tracking-mega font-bold hover:bg-carapita-gold shadow-xl transform hover:-translate-y-1 transition-all">
-                                                Confirmar e Continuar
+                                                {t('form_prosseguir')}
                                             </button>
                                         </div>
                                     </div>
@@ -1068,26 +1117,60 @@ export default function Home() {
                                 {bookingStep === 'details' && (
                                     <div className="animate-fade-in font-sans">
                                         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                                            <h2 className="font-serif text-3xl text-white uppercase tracking-widest">Detalhes do Hóspede</h2>
+                                            <h2 className="font-serif text-3xl text-white uppercase tracking-widest">{t('booking_title_details')}</h2>
                                             {!isGuestLoggedIn && (
                                                 <button
                                                     onClick={() => setShowGuestLoginModal(true)}
                                                     className="text-[10px] uppercase tracking-widest font-bold border border-carapita-gold text-carapita-gold px-6 py-2 hover:bg-carapita-gold hover:text-white transition-all shadow-sm"
                                                 >
-                                                    Já tem conta? Inicie sessão
+                                                    {lang === 'PT' ? 'Já tem conta? Inicie sessão' : 'Already have an account? Log in'}
                                                 </button>
-                                            )}
-                                            {isGuestLoggedIn && (
-                                                <div className="flex items-center gap-2 text-carapita-gold text-xs font-bold uppercase tracking-widest">
-                                                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                                    Sessão Iniciada: {bookingForm.nome}
-                                                </div>
                                             )}
                                         </div>
 
                                         <div className="space-y-10">
+                                            <section className="bg-carapita-gold/10 p-8 border border-carapita-gold/30">
+                                                <div className="flex items-center gap-3 mb-4">
+                                                    <input type="checkbox" id="estrangeiro" checked={bookingForm.estrangeiro} onChange={e => setBookingForm({ ...bookingForm, estrangeiro: e.target.checked })} className="w-5 h-5 accent-carapita-gold" />
+                                                    <label htmlFor="estrangeiro" className="text-[11px] font-bold uppercase tracking-widest text-carapita-gold cursor-pointer">{t('form_estrangeiro')}</label>
+                                                </div>
+
+                                                {bookingForm.estrangeiro && (
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 animate-slide-down mt-8 pt-8 border-t border-carapita-gold/20">
+                                                        <div className="col-span-2 md:col-span-1">
+                                                            <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_nascimento')}</label>
+                                                            <input type="date" value={bookingForm.data_nascimento} onChange={e => setBookingForm({ ...bookingForm, data_nascimento: e.target.value })} className="w-full border-b border-carapita-gold/30 bg-transparent py-2 text-sm focus:border-carapita-gold outline-none text-white" />
+                                                        </div>
+                                                        <div className="col-span-2 md:col-span-1">
+                                                            <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_local_nascimento')}</label>
+                                                            <input type="text" value={bookingForm.local_nascimento} onChange={e => setBookingForm({ ...bookingForm, local_nascimento: e.target.value })} className="w-full border-b border-carapita-gold/30 bg-transparent py-2 text-sm focus:border-carapita-gold outline-none text-white" placeholder="City / Country" />
+                                                        </div>
+                                                        <div className="col-span-2 md:col-span-1">
+                                                            <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_nacionalidade')}</label>
+                                                            <input type="text" value={bookingForm.nacionalidade} onChange={e => setBookingForm({ ...bookingForm, nacionalidade: e.target.value })} className="w-full border-b border-carapita-gold/30 bg-transparent py-2 text-sm focus:border-carapita-gold outline-none text-white" />
+                                                        </div>
+                                                        <div className="col-span-2 md:col-span-1">
+                                                            <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_tipo_documento')}</label>
+                                                            <select value={bookingForm.tipo_documento} onChange={e => setBookingForm({ ...bookingForm, tipo_documento: e.target.value })} className="w-full border-b border-carapita-gold/30 bg-transparent py-2 text-sm focus:border-carapita-gold outline-none text-white appearance-none">
+                                                                <option value="Passaporte" className="bg-carapita-green">Passaporte / Passport</option>
+                                                                <option value="Cartao de Identidade" className="bg-carapita-green">Cartão de Identidade / ID Card</option>
+                                                                <option value="Titulo de Residencia" className="bg-carapita-green">Título de Residência / Residence Permit</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="col-span-2 md:col-span-1">
+                                                            <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_num_documento')}</label>
+                                                            <input type="text" value={bookingForm.numero_documento} onChange={e => setBookingForm({ ...bookingForm, numero_documento: e.target.value })} className="w-full border-b border-carapita-gold/30 bg-transparent py-2 text-sm focus:border-carapita-gold outline-none text-white" />
+                                                        </div>
+                                                        <div className="col-span-2 md:col-span-1">
+                                                            <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_pais_emissor')}</label>
+                                                            <input type="text" value={bookingForm.pais_emissor_documento} onChange={e => setBookingForm({ ...bookingForm, pais_emissor_documento: e.target.value })} className="w-full border-b border-carapita-gold/30 bg-transparent py-2 text-sm focus:border-carapita-gold outline-none text-white" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </section>
+
                                             <section>
-                                                <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">Informação de Contacto</h4>
+                                                <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">{t('form_info_contato')}</h4>
                                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                                     <div className="col-span-1">
                                                         <label className="text-[10px] uppercase text-white/40 block mb-2">Prefixo</label>
@@ -1096,63 +1179,50 @@ export default function Home() {
                                                         </select>
                                                     </div>
                                                     <div className="col-span-1 lg:col-span-1">
-                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">Nome</label>
+                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_primeiro_nome')}</label>
                                                         <input type="text" value={bookingForm.nome} onChange={e => setBookingForm({ ...bookingForm, nome: e.target.value })} className="w-full border-b border-white/20 bg-transparent py-3 text-sm focus:border-carapita-gold outline-none text-white" placeholder="João" />
                                                     </div>
                                                     <div className="col-span-2 lg:col-span-2">
-                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">Sobrenome</label>
+                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_sobrenome')}</label>
                                                         <input type="text" value={bookingForm.sobrenome} onChange={e => setBookingForm({ ...bookingForm, sobrenome: e.target.value })} className="w-full border-b border-white/20 bg-transparent py-3 text-sm focus:border-carapita-gold outline-none text-white" placeholder="Silva" />
                                                     </div>
                                                     <div className="col-span-2 lg:col-span-2">
-                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">Telefone</label>
+                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_telefone')}</label>
                                                         <input type="tel" value={bookingForm.telefone} onChange={e => setBookingForm({ ...bookingForm, telefone: e.target.value })} className="w-full border-b border-white/20 bg-transparent py-3 text-sm focus:border-carapita-gold outline-none text-white" placeholder="+351 000 000 000" />
                                                     </div>
                                                     <div className="col-span-2 lg:col-span-2">
-                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">E-mail</label>
+                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_email')}</label>
                                                         <input type="email" value={bookingForm.email} onChange={e => setBookingForm({ ...bookingForm, email: e.target.value })} className="w-full border-b border-white/20 bg-transparent py-3 text-sm focus:border-carapita-gold outline-none text-white" placeholder="joao@exemplo.com" />
                                                     </div>
                                                 </div>
                                             </section>
 
                                             <section>
-                                                <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">Endereço de Faturação</h4>
+                                                <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">{t('form_faturacao')}</h4>
                                                 <div className="grid grid-cols-2 gap-6 text-sm">
                                                     <div className="col-span-2 lg:col-span-1">
-                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">País</label>
-                                                        <select value={bookingForm.pais} onChange={e => setBookingForm({ ...bookingForm, pais: e.target.value })} className="w-full border-b border-white/20 py-3 focus:border-carapita-gold outline-none bg-transparent appearance-none text-white">
-                                                            <option value="" disabled className="bg-carapita-green">Selecione o seu país</option>
-                                                            <option value="Portugal" className="bg-carapita-green">Portugal</option>
-                                                            <option value="Brasil" className="bg-carapita-green">Brasil</option>
-                                                            <option value="Espanha" className="bg-carapita-green">Espanha</option>
-                                                            <option value="França" className="bg-carapita-green">França</option>
-                                                            <option value="Reino Unido" className="bg-carapita-green">Reino Unido</option>
-                                                            <option value="Estados Unidos" className="bg-carapita-green">Estados Unidos</option>
-                                                            <option value="Alemanha" className="bg-carapita-green">Alemanha</option>
-                                                            <option value="Itália" className="bg-carapita-green">Itália</option>
-                                                            <option value="Canadá" className="bg-carapita-green">Canadá</option>
-                                                            <option value="Suíça" className="bg-carapita-green">Suíça</option>
-                                                            <option value="Angola" className="bg-carapita-green">Angola</option>
-                                                            <option value="Cabo Verde" className="bg-carapita-green">Cabo Verde</option>
-                                                            <option value="Moçambique" className="bg-carapita-green">Moçambique</option>
-                                                            <option value="Irlanda" className="bg-carapita-green">Irlanda</option>
-                                                            <option value="Bélgica" className="bg-carapita-green">Bélgica</option>
-                                                            <option value="Outro" className="bg-carapita-green">Outro</option>
+                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_pais')}</label>
+                                                        <select value={bookingForm.pais} onChange={e => setBookingForm({ ...bookingForm, pais: e.target.value })} className="w-full border-b border-white/20 py-3 focus:border-carapita-gold outline-none bg-transparent appearance-none text-white scrollbar-thin scrollbar-thumb-carapita-gold">
+                                                            <option value="" disabled className="bg-carapita-green">Select Country</option>
+                                                            {countries.map(c => (
+                                                                <option key={c} value={c} className="bg-carapita-green">{c}</option>
+                                                            ))}
                                                         </select>
                                                     </div>
                                                     <div className="col-span-2 lg:col-span-1">
-                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">Cidade</label>
+                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_cidade')}</label>
                                                         <input type="text" value={bookingForm.cidade} onChange={e => setBookingForm({ ...bookingForm, cidade: e.target.value })} className="w-full border-b border-white/20 bg-transparent py-3 focus:border-carapita-gold outline-none text-white" />
                                                     </div>
                                                     <div className="col-span-2">
-                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">Endereço 1</label>
+                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_endereco')}</label>
                                                         <input type="text" value={bookingForm.endereco1} onChange={e => setBookingForm({ ...bookingForm, endereco1: e.target.value })} className="w-full border-b border-white/20 bg-transparent py-3 focus:border-carapita-gold outline-none text-white" />
                                                     </div>
                                                     <div className="col-span-2 lg:col-span-1">
-                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">Endereço 2 (Opcional)</label>
+                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_endereco_opcional')}</label>
                                                         <input type="text" value={bookingForm.endereco2} onChange={e => setBookingForm({ ...bookingForm, endereco2: e.target.value })} className="w-full border-b border-white/20 bg-transparent py-3 focus:border-carapita-gold outline-none text-white" />
                                                     </div>
                                                     <div className="col-span-2 lg:col-span-1">
-                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">CEP / Código Postal</label>
+                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_cep')}</label>
                                                         <input type="text" value={bookingForm.cep} onChange={e => setBookingForm({ ...bookingForm, cep: e.target.value })} className="w-full border-b border-white/20 bg-transparent py-3 focus:border-carapita-gold outline-none text-white" />
                                                     </div>
                                                 </div>
@@ -1161,16 +1231,16 @@ export default function Home() {
                                             <section className="bg-white/5 p-8 border border-white/10">
                                                 <div className="flex items-center gap-3 mb-6">
                                                     <input type="checkbox" id="create" checked={bookingForm.criarConta} onChange={e => setBookingForm({ ...bookingForm, criarConta: e.target.checked })} className="w-4 h-4 accent-carapita-gold" />
-                                                    <label htmlFor="create" className="text-xs font-bold uppercase tracking-widest text-white cursor-pointer">Desejo criar uma conta para reservar mais rápido</label>
+                                                    <label htmlFor="create" className="text-xs font-bold uppercase tracking-widest text-white cursor-pointer">{t('form_criar_conta')}</label>
                                                 </div>
                                                 {bookingForm.criarConta && (
                                                     <div className="grid grid-cols-2 gap-6 animate-slide-down">
                                                         <div>
-                                                            <label className="text-[10px] uppercase text-white/40 block mb-2">Senha</label>
+                                                            <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_senha')}</label>
                                                             <input type="password" value={bookingForm.senha} onChange={e => setBookingForm({ ...bookingForm, senha: e.target.value })} className="w-full border-b border-white/20 bg-transparent py-3 text-sm focus:border-carapita-gold outline-none text-white" />
                                                         </div>
                                                         <div>
-                                                            <label className="text-[10px] uppercase text-white/40 block mb-2">Confirmar Senha</label>
+                                                            <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_confirmar_senha')}</label>
                                                             <input type="password" value={bookingForm.confirmarSenha} onChange={e => setBookingForm({ ...bookingForm, confirmarSenha: e.target.value })} className="w-full border-b border-white/20 bg-transparent py-3 text-sm focus:border-carapita-gold outline-none text-white" />
                                                         </div>
                                                     </div>
@@ -1178,115 +1248,118 @@ export default function Home() {
                                             </section>
 
                                             <section>
-                                                <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-4">Requerimentos Especiais</h4>
-                                                <p className="text-[10px] text-white/40 mb-4 uppercase tracking-widest leading-relaxed">Pode adicionar aqui informações como idade das crianças, pedidos de restaurante, dietas especiais ou animais de estimação.</p>
-                                                <textarea value={bookingForm.requerimentosEspeciais} onChange={e => setBookingForm({ ...bookingForm, requerimentosEspeciais: e.target.value })} className="w-full border border-white/10 bg-transparent p-4 text-sm h-32 focus:border-carapita-gold outline-none text-white" placeholder="Escreva aqui os seus pedidos..." />
+                                                <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-4">{t('form_requerimentos')}</h4>
+                                                <p className="text-[10px] text-white/40 mb-4 uppercase tracking-widest leading-relaxed">{t('form_requerimentos_desc')}</p>
+                                                <textarea value={bookingForm.requerimentosEspeciais} onChange={e => setBookingForm({ ...bookingForm, requerimentosEspeciais: e.target.value })} className="w-full border border-white/10 bg-transparent p-4 text-sm h-32 focus:border-carapita-gold outline-none text-white" placeholder={t('form_requerimentos_placeholder')} />
                                             </section>
                                         </div>
 
                                         <div className="flex justify-between mt-12 pt-8 border-t border-white/10">
-                                            <button onClick={() => setBookingStep('extras')} className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white">Voltar</button>
-                                            <button onClick={() => setBookingStep('payment')} className="bg-carapita-gold text-white px-10 py-4 text-[11px] uppercase tracking-mega font-bold hover:bg-white hover:text-carapita-green transition-all shadow-xl">Prosseguir para pagamento</button>
+                                            <button onClick={() => setBookingStep('extras')} className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white">{t('form_voltar')}</button>
+                                            <button onClick={() => setBookingStep('payment')} className="bg-carapita-gold text-white px-10 py-4 text-[11px] uppercase tracking-mega font-bold hover:bg-white hover:text-carapita-green transition-all shadow-xl">{t('form_prosseguir')}</button>
                                         </div>
                                     </div>
                                 )}
 
                                 {bookingStep === 'payment' && (
                                     <div className="animate-fade-in font-sans">
-                                        <h2 className="font-serif text-3xl mb-8 text-white uppercase tracking-widest text-sh">Pagamento e Políticas</h2>
+                                        <h2 className="font-serif text-3xl mb-8 text-white uppercase tracking-widest text-sh">{t('booking_title_payment')}</h2>
 
                                         <div className="bg-green-600/10 p-6 flex items-start gap-4 mb-10 border border-green-600/30 text-green-400">
                                             <div className="p-2 bg-green-600 rounded-full text-white"><Check size={16} /></div>
-                                            <p className="text-xs leading-relaxed uppercase tracking-widest font-medium">Usamos transmissão segura e armazenamento criptografado para proteger as suas informações pessoais e dados de pagamento.</p>
+                                            <p className="text-xs leading-relaxed uppercase tracking-widest font-medium">{t('booking_seguranca_msg')}</p>
                                         </div>
 
                                         <section className="mb-12">
-                                            <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">Detalhes de Pagamento</h4>
+                                            <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">{t('booking_pagamento_detalhes')}</h4>
                                             <div className="bg-white/5 p-10 text-center border border-dashed border-white/10 rounded">
-                                                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-4">A processar integração com Cartões de Crédito (Stripe/Reduniq)</p>
-                                                <div className="flex justify-center gap-4 opacity-50">
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" className="h-6 brightness-0 invert" alt="Visa" />
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" className="h-8 brightness-0 invert" alt="Mastercard" />
+                                                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-4">{t('booking_pagamento_seguro')}</p>
+                                                <div className="flex justify-center gap-4 opacity-70 items-center">
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" className="h-4 brightness-0 invert" alt="Visa" />
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" className="h-6 brightness-0 invert" alt="Mastercard" />
+                                                    <span className="text-white text-xs font-bold font-sans">MB WAY</span>
+                                                    <span className="text-white text-xs font-bold font-sans">MULTIBANCO</span>
                                                 </div>
                                             </div>
                                         </section>
 
                                         <section className="space-y-8 mb-12">
                                             <div>
-                                                <h4 className="text-[10px] uppercase tracking-mega text-white font-bold mb-3">POLÍTICA DE GARANTIA</h4>
-                                                <p className="text-xs text-white/50 leading-relaxed italic uppercase tracking-widest p-4 border-l-2 border-carapita-gold bg-white/5">O depósito, não é reembolsável, no valor integral da estadia, incluindo taxa, será cobrado 02 dias antes da chegada.</p>
+                                                <h4 className="text-[10px] uppercase tracking-mega text-white font-bold mb-3">{t('booking_politica_garantia')}</h4>
+                                                <p className="text-xs text-white/50 leading-relaxed italic uppercase tracking-widest p-4 border-l-2 border-carapita-gold bg-white/5">{t('booking_politica_garantia_texto')}</p>
                                             </div>
                                             <div>
-                                                <h4 className="text-[10px] uppercase tracking-mega text-white font-bold mb-3">POLÍTICAS DE CANCELAMENTO</h4>
-                                                <p className="text-xs text-white/50 leading-relaxed italic uppercase tracking-widest p-4 border-l-2 border-carapita-gold bg-white/5">Cancelamento/modificação gratuito até 2 dias antes da chegada. Uma penalidade de toda a estadia incluindo impostos será cobrado por cancelamento/modificação tardio, não comparência ou partida antecipada.</p>
+                                                <h4 className="text-[10px] uppercase tracking-mega text-white font-bold mb-3">{t('booking_politica_cancelamento')}</h4>
+                                                <p className="text-xs text-white/50 leading-relaxed italic uppercase tracking-widest p-4 border-l-2 border-carapita-gold bg-white/5">{t('booking_politica_texto')}</p>
                                             </div>
                                         </section>
 
                                         <div className="space-y-4 mb-10">
                                             <div className="flex items-center gap-3">
                                                 <input type="checkbox" id="terms" checked={bookingForm.aceitouTermos} onChange={e => setBookingForm({ ...bookingForm, aceitouTermos: e.target.checked })} className="w-4 h-4 accent-carapita-gold" />
-                                                <label htmlFor="terms" className="text-[10px] uppercase tracking-widest text-white/60 cursor-pointer">Reconhecimento de que concordo com os termos de privacidade e condições de Reserva</label>
+                                                <label htmlFor="terms" className="text-[10px] uppercase tracking-widest text-white/60 cursor-pointer">{t('form_aceito_termos')}</label>
                                             </div>
                                         </div>
 
                                         <div className="flex justify-between pt-8 border-t border-white/10">
-                                            <button onClick={() => setBookingStep('details')} className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white">Voltar</button>
+                                            <button onClick={() => setBookingStep('details')} className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white">{t('form_voltar')}</button>
                                             <button
                                                 onClick={handleConfirmarReserva}
                                                 disabled={!bookingForm.aceitouTermos}
                                                 className={`px-12 py-5 text-[11px] uppercase tracking-mega font-bold transition-all ${bookingForm.aceitouTermos ? 'bg-carapita-gold text-white hover:bg-white hover:text-carapita-green shadow-xl' : 'bg-white/10 text-white/20 cursor-not-allowed'}`}
                                             >
-                                                Confirmar Reserva e Pagar
+                                                {t('form_confirmar_pagar')}
                                             </button>
                                         </div>
                                     </div>
                                 )}
                             </div>
+                        </div>
 
-                            {/* Sumário lateral / Carrinho */}
-                            <div className="lg:col-span-1">
-                                <div className="sticky top-10 space-y-8">
-                                    <div className="bg-carapita-dark text-white p-10">
-                                        <h3 className="font-serif text-xl border-b border-white/10 pb-4 mb-6 uppercase tracking-widest italic">A Sua Estadia</h3>
-                                        <div className="space-y-4 font-sans text-[11px] uppercase tracking-widest text-white/60">
-                                            <div className="flex justify-between"><span>Check-in:</span> <span className="text-white">{checkIn || '-'}</span></div>
-                                            <div className="flex justify-between"><span>Check-out:</span> <span className="text-white">{checkOut || '-'}</span></div>
-                                            <div className="flex justify-between"><span>Hóspedes:</span> <span className="text-white">{hospedes} Pax</span></div>
+                        {/* Sumário lateral / Carrinho */}
+                        <div className="lg:col-span-1">
+                            <div className="sticky top-10 space-y-8">
+                                <div className="bg-carapita-dark text-white p-10">
+                                    <h3 className="font-serif text-xl border-b border-white/10 pb-4 mb-6 uppercase tracking-widest italic">{t('summary_title')}</h3>
+                                    <div className="mb-10 pb-6 border-b border-white/10">
+                                        <div className="flex justify-between items-baseline mb-2">
+                                            <span className="text-xs tracking-widest uppercase text-white/40">{t('summary_total')}</span>
+                                            <span className="text-4xl font-serif text-carapita-gold">€{totalEstadia().toFixed(2).replace('.', ',')}</span>
                                         </div>
-                                        <div className="mt-10 pt-6 border-t border-white/10">
-                                            <div className="flex justify-between items-baseline mb-8">
-                                                <span className="text-xs tracking-widest uppercase">Total Estimado</span>
-                                                <span className="text-4xl font-serif text-carapita-gold">€{totalEstadia().toFixed(2).replace('.', ',')}</span>
-                                            </div>
-                                            <p className="text-[9px] text-white/30 italic uppercase">Taxas incluídas. O valor final será confirmado após aprovação.</p>
-                                        </div>
+                                        <p className="text-[9px] text-white/30 italic uppercase">{t('summary_taxas')}</p>
                                     </div>
 
-                                    {selectedExtras.length > 0 && (
-                                        <div className="border border-carapita-gold/20 p-8 bg-white/5">
-                                            <h4 className="text-[10px] uppercase tracking-mega font-bold text-white mb-4">Extras Selecionados</h4>
-                                            <ul className="space-y-3 text-[10px] text-white/60 font-medium uppercase tracking-widest">
-                                                {selectedExtras.map(id => {
-                                                    const e = disponiveisExtras.find(ext => ext.id === id);
-                                                    return (
-                                                        <li key={id} className="flex justify-between border-b border-carapita-gold/10 pb-2">
-                                                            <span>{e?.nome}</span>
-                                                            <span>€{Number(e?.preco).toFixed(2)}</span>
-                                                        </li>
-                                                    );
-                                                })}
-                                            </ul>
-                                        </div>
-                                    )}
+                                    <div className="space-y-4 font-sans text-[11px] uppercase tracking-widest text-white/60">
+                                        <div className="flex justify-between"><span>{t('summary_checkin')}:</span> <span className="text-white">{checkIn || '-'}</span></div>
+                                        <div className="flex justify-between"><span>{t('summary_checkout')}:</span> <span className="text-white">{checkOut || '-'}</span></div>
+                                        <div className="flex justify-between"><span>{t('summary_hospedes')}:</span> <span className="text-white">{hospedes} Pax</span></div>
+                                    </div>
+                                </div>
 
-                                    <div className="border border-white/10 p-8 shadow-sm bg-white/5">
-                                        <h4 className="text-[10px] uppercase tracking-mega font-bold text-white mb-4">Porquê reservar connosco?</h4>
-                                        <ul className="space-y-4 text-[10px] text-white/40 font-sans uppercase tracking-widest leading-relaxed">
-                                            <li className="flex gap-2">✓ Melhores preços garantidos</li>
-                                            <li className="flex gap-2">✓ Check-in flexível</li>
-                                            <li className="flex gap-2">✓ Apoio local 24/7</li>
+                                {selectedExtras.length > 0 && (
+                                    <div className="border border-carapita-gold/20 p-8 bg-white/5">
+                                        <h4 className="text-[10px] uppercase tracking-mega font-bold text-white mb-4">{t('booking_extras_selecionados')}</h4>
+                                        <ul className="space-y-3 text-[10px] text-white/60 font-medium uppercase tracking-widest">
+                                            {selectedExtras.map(id => {
+                                                const e = disponiveisExtras.find(ext => ext.id === id);
+                                                return (
+                                                    <li key={id} className="flex justify-between border-b border-carapita-gold/10 pb-2">
+                                                        <span>{e?.nome}</span>
+                                                        <span>€{Number(e?.preco).toFixed(2)}</span>
+                                                    </li>
+                                                );
+                                            })}
                                         </ul>
                                     </div>
+                                )}
+
+                                <div className="border border-white/10 p-8 shadow-sm bg-white/5">
+                                    <h4 className="text-[10px] uppercase tracking-mega font-bold text-white mb-4">{t('summary_pq_nos')}</h4>
+                                    <ul className="space-y-4 text-[10px] text-white/40 font-sans uppercase tracking-widest leading-relaxed">
+                                        <li className="flex gap-2">✓ {t('summary_melhores_precos')}</li>
+                                        <li className="flex gap-2">✓ {t('summary_checkin_flex')}</li>
+                                        <li className="flex gap-2">✓ {t('summary_apoio')}</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -1365,7 +1438,7 @@ export default function Home() {
                     </div>
                 </div>
             )}
-
         </main>
     );
 }
+
