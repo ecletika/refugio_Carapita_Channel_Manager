@@ -954,10 +954,10 @@ export default function Home() {
                         </button>
                     </div>
 
-                    <div className="max-w-6xl mx-auto py-20 px-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <div className="max-w-7xl mx-auto py-20 px-4 md:px-6">
+                        <div className="grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-3 gap-6 lg:gap-12">
                             {/* Coluna do Calendário e Filtros */}
-                            <div className="lg:col-span-2">
+                            <div className="md:col-span-2">
                                 {bookingStep === 'selection' && (
                                     <>
                                         {/* Filtro de Hóspedes + Botão Buscar */}
@@ -1374,7 +1374,7 @@ export default function Home() {
                         </div>
 
                         {/* Sumário lateral / Carrinho */}
-                        <div className="lg:col-span-1">
+                        <div className="md:col-span-1 mt-12 md:mt-0">
                             <div className="sticky top-10 space-y-8">
                                 <div className="bg-carapita-dark text-white p-10">
                                     <h3 className="font-serif text-xl border-b border-white/10 pb-4 mb-6 uppercase tracking-widest italic">{t('summary_title')}</h3>
