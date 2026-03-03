@@ -209,7 +209,7 @@ class AimaService {
                 resposta_xml: resposta
             };
 
-            const { error: insertErr } = await supabase
+            const { error: insertErr } = await supabase.supabaseAdmin
                 .from('AimaLog')
                 .insert([logEntry]);
 

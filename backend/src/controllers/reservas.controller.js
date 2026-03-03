@@ -233,11 +233,17 @@ class ReservasController {
                 await EmailService.enviarEmailConfirmacao(normalizedData.hospede, normalizedData);
             }
 
+            let aimaMessage = '';
             if (novoStatus === 'CHECK_IN' && normalizedData.hospede) {
-                await AimaService.enviarBoletim(normalizedData.hospede, normalizedData);
+                const aimaResult = await AimaService.enviarBoletim(normalizedData.hospede, normalizedData);
+                if (aimaResult && aimaResult.sucesso) {
+                    aimaMessage = ' | AIMA: Sucesso no envio!';
+                } else if (aimaResult && aimaResult.erro) {
+                    aimaMessage = ' | Erro AIMA: ' + aimaResult.erro;
+                }
             }
 
-            return res.json({ status: 'success', message: `Status alterado para ${novoStatus}`, data: normalizedData });
+            return res.json({ status: 'success', message: `Status alterado para ${novoStatus}${aimaMessage}`, data: normalizedData });
         } catch (error) {
             return res.status(500).json({ error: `Erro ao alterar status: ${error.message}` });
         }

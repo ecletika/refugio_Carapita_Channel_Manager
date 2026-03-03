@@ -46,6 +46,9 @@ export default function AdminReservas() {
             });
             const data = await resp.json();
             if (data.status === 'success') {
+                if (endpoint === 'checkin' && data.message && data.message.includes('AIMA')) {
+                    alert(data.message);
+                }
                 fetchReservas();
             } else {
                 alert(data.error || 'Erro ao atualizar status');
