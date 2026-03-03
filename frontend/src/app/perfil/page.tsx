@@ -177,13 +177,19 @@ export default function PerfilHospede() {
     return (
         <main className="min-h-screen bg-carapita-green flex flex-col font-sans">
             {/* Nav do Dashboard */}
-            <header className="bg-carapita-green text-white border-b border-white/10 p-4 md:px-12 flex justify-between items-center shadow-sm relative z-10">
-                <div className="cursor-pointer" onClick={() => router.push('/')}>
+            <header className="bg-carapita-green text-white border-b border-white/10 p-4 md:px-12 flex justify-between items-center shadow-sm relative z-50 h-[72px]">
+                {/* Placeholder para flex justify-between */}
+                <div className="hidden md:block w-32"></div>
+
+                {/* Logo Centralizado Absoluto */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer w-max z-10" onClick={() => router.push('/')}>
                     <h2 className="text-2xl font-serif font-light uppercase tracking-widest text-white text-center w-full">
                         Refúgio <span className="text-carapita-gold text-lg tracking-mega">Carapita</span>
                     </h2>
                 </div>
-                <div className="flex items-center gap-6">
+
+                {/* Info Utilizador à Direita */}
+                <div className="flex items-center gap-6 ml-auto relative z-20">
                     <div className="hidden md:flex flex-col text-right">
                         <span className="text-[10px] uppercase font-bold tracking-widest leading-none block">{hospede?.nome}</span>
                         <span className="text-[9px] uppercase tracking-widest text-white/50 mt-1 block">{hospede?.email}</span>
@@ -317,28 +323,28 @@ export default function PerfilHospede() {
                     {/* TAB RESERVAS & ANFITRIÃO */}
                     {activeTab === 'reservas' && (
                         <div className="flex flex-col gap-10 animate-fade-in">
-                            <div>
-                                <h2 className="text-2xl font-serif text-white mb-4 border-b border-white/10 pb-4">Detalhes da Hospedagem</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div className="bg-carapita-dark p-6 flex flex-col items-center justify-center text-center gap-3">
-                                        <MapPin className="text-carapita-gold" size={24} />
+                            <div className="flex flex-col items-center justify-center mb-8">
+                                <h2 className="text-2xl font-serif text-white mb-6 border-b border-white/10 pb-4 text-center w-full max-w-4xl">Detalhes da Hospedagem</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+                                    <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
+                                        <MapPin className="text-carapita-gold" size={20} />
                                         <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Local</span>
-                                        <p className="text-sm text-white">{configs?.endereco || 'Rua Principal, Carapita - Portugal'}</p>
+                                        <p className="text-xs text-white line-clamp-2">{configs?.endereco || 'Rua Principal, Carapita'}</p>
                                     </div>
-                                    <div className="bg-carapita-dark p-6 flex flex-col items-center justify-center text-center gap-3">
-                                        <User className="text-carapita-gold" size={24} />
+                                    <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
+                                        <User className="text-carapita-gold" size={20} />
                                         <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Anfitrião</span>
-                                        <p className="text-sm text-white">Leonardo Azevedo</p>
+                                        <p className="text-xs text-white line-clamp-2">Leonardo Azevedo</p>
                                     </div>
-                                    <div className="bg-carapita-dark p-6 flex flex-col items-center justify-center text-center gap-3">
-                                        <Phone className="text-carapita-gold" size={24} />
+                                    <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
+                                        <Phone className="text-carapita-gold" size={20} />
                                         <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Apoio Hóspede</span>
-                                        <p className="text-sm text-white">{configs?.telefone || '+351 969 581 657'}</p>
+                                        <p className="text-xs text-white line-clamp-2">{configs?.telefone || '+351 969 581 657'}</p>
                                     </div>
-                                    <div className="bg-carapita-dark p-6 flex flex-col items-center justify-center text-center gap-3">
-                                        <Instagram className="text-carapita-gold" size={24} />
+                                    <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
+                                        <Instagram className="text-carapita-gold" size={20} />
                                         <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Social</span>
-                                        <a href={configs?.instagram || '#'} target="_blank" className="text-sm text-white hover:text-carapita-gold underline underline-offset-4">@refugiocarapita</a>
+                                        <a href={configs?.instagram || '#'} target="_blank" className="text-xs text-white hover:text-carapita-gold underline underline-offset-4 line-clamp-2">@refugiocarapita</a>
                                     </div>
                                 </div>
                             </div>

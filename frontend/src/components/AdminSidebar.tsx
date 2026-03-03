@@ -12,11 +12,9 @@ export default function AdminSidebar() {
     const menuItems = [
         { icon: BarChart2, label: 'Dashboard', path: '/admin' },
         { icon: Calendar, label: 'Reservas', path: '/admin/reservas' },
-        { icon: Home, label: 'Quartos', path: '/admin/quartos' },
+        { icon: Home, label: 'Alojamento & Extras', path: '/admin/quartos' },
         { icon: RefreshCw, label: 'Integrações', path: '/admin/integracoes' },
-        { icon: TrendingUp, label: 'Tarifas', path: '/admin/tarifas' },
-        { icon: Lock, label: 'Bloqueios', path: '/admin/bloqueios' },
-        { icon: Sparkles, label: 'Extras', path: '/admin/extras' },
+        { icon: TrendingUp, label: 'Tarifas & Bloqueios', path: '/admin/tarifas' },
         { icon: BarChart2, label: 'Relatórios', path: '/admin/relatorios' },
         { icon: MapPin, label: 'Passeios', path: '/admin/passeios' },
         { icon: Settings, label: 'Contactos & Redes', path: '/admin/configuracoes' },

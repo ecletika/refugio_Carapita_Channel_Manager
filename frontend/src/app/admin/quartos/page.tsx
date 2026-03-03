@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Edit2, CheckCircle, XCircle, RefreshCw, Upload, Euro, Users, Home, Camera, Info, Link, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
+import { AdminExtrasContent } from './ExtrasContent';
 
 interface Quarto {
     id: string;
@@ -375,78 +376,96 @@ export default function AdminQuartos() {
         <div className="min-h-screen bg-[#F9F8F6]">
             <AdminSidebar />
 
-            <div className="ml-20 p-8 md:p-12 max-w-6xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
-                    <div>
-                        <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-1">Alojamento</span>
-                        <h1 className="text-4xl font-serif text-carapita-dark">Gestão do Inventário</h1>
-                    </div>
-                    <button
-                        onClick={() => openEdit()}
-                        className="bg-carapita-dark text-white px-8 py-4 text-[10px] uppercase tracking-mega flex items-center gap-3 hover:bg-carapita-gold transition-all duration-500 shadow-xl shadow-carapita-dark/10 group"
-                    >
-                        <Plus size={16} className="group-hover:rotate-90 transition-transform duration-500" />
-                        <span>Novo Alojamento</span>
-                    </button>
+            <div className="ml-20 p-8 md:p-12 max-w-[95%] mx-auto">
+                <div className="mb-16">
+                    <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-1">Inventário Global</span>
+                    <h1 className="text-4xl font-serif text-carapita-dark">Alojamento & Extras</h1>
+                    <p className="text-xs text-carapita-muted mt-2 font-light">Gerencie os quartos e os serviços adicionais disponíveis para os hóspedes no mesmo painel.</p>
                 </div>
 
-                <div className="flex flex-col gap-3">
-                    {quartos.map((q) => {
-                        const fotos = parseFotos(q.fotos);
-                        const mainFoto = fotos.find(f => f.isMain)?.url || fotos[0]?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80';
-                        return (
-                            <div key={q.id} className="bg-white border border-gray-100 flex items-center p-4 gap-6 hover:shadow-lg transition-all duration-300 rounded-sm">
-                                {/* Thumbnail */}
-                                <div
-                                    className="w-24 h-24 shrink-0 bg-gray-100 relative rounded-sm overflow-hidden cursor-pointer group"
-                                    onClick={() => { if (fotos.length > 0) setLightbox({ fotos: fotos.map(f => f.url), index: 0 }); }}
-                                >
-                                    <img src={mainFoto} alt={q.nome} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                                        <Camera size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
-                                    </div>
-                                    {fotos.length > 1 && (
-                                        <div className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-sm text-white text-[8px] px-1.5 py-0.5 rounded-sm font-bold">
-                                            +{fotos.length - 1}
-                                        </div>
-                                    )}
-                                </div>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 items-start">
 
-                                {/* Info */}
-                                <div className="flex-1 flex flex-col justify-center">
-                                    <div className="flex items-center gap-3 mb-1">
-                                        <h3 className="font-serif text-xl text-carapita-dark">{q.nome}</h3>
-                                        <span className="text-[9px] uppercase tracking-widest bg-gray-50 border border-gray-200 text-gray-600 px-2 py-0.5 rounded-sm">{q.tipo}</span>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleToggleAtivo(q); }}
-                                            title={q.ativo ? "Desativar quarto" : "Ativar quarto"}
-                                            className={`text-[9px] uppercase tracking-widest font-bold flex items-center gap-1 transition-all hover:scale-105 active:scale-95 ${q.ativo ? 'text-green-600' : 'text-red-500 opacity-60 hover:opacity-100'}`}
-                                        >
-                                            {q.ativo ? (
-                                                <><CheckCircle size={10} /> Ativo</>
-                                            ) : (
-                                                <><XCircle size={10} /> Inativo</>
-                                            )}
-                                        </button>
-                                    </div>
-                                    <p className="text-xs text-carapita-muted line-clamp-1 mb-3 max-w-3xl leading-relaxed">{q.descricao}</p>
-                                    <div className="flex gap-6">
-                                        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><Users size={12} className="text-carapita-gold" /> {q.capacidade} Hóspedes</span>
-                                        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><Euro size={12} className="text-carapita-gold" /> {q.preco_base} / Noite</span>
-                                        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><RefreshCw size={12} className="text-carapita-gold" /> Min: {q.minima_estadia_padrao || 2} noites</span>
-                                        {q.ical_url && <span className="text-[10px] uppercase tracking-widest font-bold text-blue-500 flex items-center gap-1.5"><RefreshCw size={12} /> iCal Sync</span>}
-                                    </div>
-                                </div>
-
-                                {/* Ações */}
-                                <div className="flex items-center gap-2 border-l border-gray-100 pl-6 shrink-0">
-                                    <button onClick={() => handleSync(q.id)} title="Sincronizar" className="w-10 h-10 flex items-center justify-center text-carapita-gold hover:bg-carapita-gold hover:text-white rounded-sm transition-all duration-300"><RefreshCw size={14} /></button>
-                                    <button onClick={() => openEdit(q)} title="Editar" className="w-10 h-10 flex items-center justify-center text-carapita-dark hover:bg-carapita-dark hover:text-white rounded-sm transition-all duration-300"><Edit2 size={14} /></button>
-                                    <button onClick={() => handleDelete(q.id)} title="Remover" className="w-10 h-10 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white rounded-sm transition-all duration-300"><Trash2 size={14} /></button>
-                                </div>
+                    {/* COLUNA ESQUERDA: ALOJAMENTO */}
+                    <div className="w-full">
+                        <div className="flex justify-between items-end mb-10">
+                            <div>
+                                <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-1">Configurações</span>
+                                <h2 className="text-4xl font-serif text-carapita-dark font-light">Gestão de Alojamento</h2>
                             </div>
-                        );
-                    })}
+                            <button
+                                onClick={() => openEdit()}
+                                className="bg-carapita-dark text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-carapita-gold transition-all duration-500 shadow-xl shadow-carapita-dark/10 group flex items-center gap-2"
+                            >
+                                <Plus size={14} className="group-hover:rotate-90 transition-transform duration-500" />
+                                <span>Novo Alojamento</span>
+                            </button>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                            {quartos.map((q) => {
+                                const fotos = parseFotos(q.fotos);
+                                const mainFoto = fotos.find(f => f.isMain)?.url || fotos[0]?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80';
+                                return (
+                                    <div key={q.id} className="bg-white border border-gray-100 flex items-center p-4 gap-6 hover:shadow-lg transition-all duration-300 rounded-sm">
+                                        {/* Thumbnail */}
+                                        <div
+                                            className="w-24 h-24 shrink-0 bg-gray-100 relative rounded-sm overflow-hidden cursor-pointer group"
+                                            onClick={() => { if (fotos.length > 0) setLightbox({ fotos: fotos.map(f => f.url), index: 0 }); }}
+                                        >
+                                            <img src={mainFoto} alt={q.nome} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                <Camera size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
+                                            </div>
+                                            {fotos.length > 1 && (
+                                                <div className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-sm text-white text-[8px] px-1.5 py-0.5 rounded-sm font-bold">
+                                                    +{fotos.length - 1}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="flex-1 flex flex-col justify-center">
+                                            <div className="flex items-center gap-3 mb-1">
+                                                <h3 className="font-serif text-xl text-carapita-dark">{q.nome}</h3>
+                                                <span className="text-[9px] uppercase tracking-widest bg-gray-50 border border-gray-200 text-gray-600 px-2 py-0.5 rounded-sm">{q.tipo}</span>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleToggleAtivo(q); }}
+                                                    title={q.ativo ? "Desativar quarto" : "Ativar quarto"}
+                                                    className={`text-[9px] uppercase tracking-widest font-bold flex items-center gap-1 transition-all hover:scale-105 active:scale-95 ${q.ativo ? 'text-green-600' : 'text-red-500 opacity-60 hover:opacity-100'}`}
+                                                >
+                                                    {q.ativo ? (
+                                                        <><CheckCircle size={10} /> Ativo</>
+                                                    ) : (
+                                                        <><XCircle size={10} /> Inativo</>
+                                                    )}
+                                                </button>
+                                            </div>
+                                            <p className="text-xs text-carapita-muted line-clamp-1 mb-3 max-w-3xl leading-relaxed">{q.descricao}</p>
+                                            <div className="flex gap-6">
+                                                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><Users size={12} className="text-carapita-gold" /> {q.capacidade} Hóspedes</span>
+                                                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><Euro size={12} className="text-carapita-gold" /> {q.preco_base} / Noite</span>
+                                                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 flex items-center gap-1.5"><RefreshCw size={12} className="text-carapita-gold" /> Min: {q.minima_estadia_padrao || 2} noites</span>
+                                                {q.ical_url && <span className="text-[10px] uppercase tracking-widest font-bold text-blue-500 flex items-center gap-1.5"><RefreshCw size={12} /> iCal Sync</span>}
+                                            </div>
+                                        </div>
+
+                                        {/* Ações */}
+                                        <div className="flex items-center gap-2 border-l border-gray-100 pl-6 shrink-0">
+                                            <button onClick={() => handleSync(q.id)} title="Sincronizar" className="w-10 h-10 flex items-center justify-center text-carapita-gold hover:bg-carapita-gold hover:text-white rounded-sm transition-all duration-300"><RefreshCw size={14} /></button>
+                                            <button onClick={() => openEdit(q)} title="Editar" className="w-10 h-10 flex items-center justify-center text-carapita-dark hover:bg-carapita-dark hover:text-white rounded-sm transition-all duration-300"><Edit2 size={14} /></button>
+                                            <button onClick={() => handleDelete(q.id)} title="Remover" className="w-10 h-10 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white rounded-sm transition-all duration-300"><Trash2 size={14} /></button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div> {/* Fim Coluna Esquerda */}
+
+                    {/* COLUNA DIREITA: EXTRAS */}
+                    <div className="w-full">
+                        <AdminExtrasContent />
+                    </div>
+
                 </div>
             </div>
 
