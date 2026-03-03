@@ -11,6 +11,8 @@ interface Passeio {
     desc: string;
     historia: string;
     ativo: boolean;
+    dias: number;
+    mostrar_perfil: boolean;
 }
 
 export default function AdminPasseios() {
@@ -24,7 +26,9 @@ export default function AdminPasseios() {
         img: '',
         desc: '',
         historia: '',
-        ativo: true
+        ativo: true,
+        dias: 1,
+        mostrar_perfil: false
     });
 
     const fetchPasseios = async () => {
@@ -41,12 +45,12 @@ export default function AdminPasseios() {
 
     const resetForm = () => {
         setEditing(null);
-        setFormData({ nome: '', dist: '', img: '', desc: '', historia: '', ativo: true });
+        setFormData({ nome: '', dist: '', img: '', desc: '', historia: '', ativo: true, dias: 1, mostrar_perfil: false });
     };
 
     const handleEdit = (p: Passeio) => {
         setEditing(p);
-        setFormData({ nome: p.nome, dist: p.dist, img: p.img, desc: p.desc, historia: p.historia, ativo: p.ativo });
+        setFormData({ nome: p.nome, dist: p.dist, img: p.img, desc: p.desc, historia: p.historia, ativo: p.ativo, dias: p.dias || 1, mostrar_perfil: p.mostrar_perfil || false });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -131,30 +135,39 @@ export default function AdminPasseios() {
                         {editing ? `A Editar: ${editing.nome}` : 'Adicionar Novo Passeio'}
                     </h3>
                     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="flex flex-col gap-2">
-                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold">Nome do Local</label>
-                                <input required type="text" value={formData.nome} onChange={e => setFormData({ ...formData, nome: e.target.value })} className="border border-gray-200 p-3 outline-none focus:border-carapita-gold text-sm" placeholder="Ex: Castelo de Ourém" />
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div className="flex flex-col gap-2 md:col-span-2">
+                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold">Nome do Roteiro/Local</label>
+                                <input required type="text" value={formData.nome} onChange={e => setFormData({ ...formData, nome: e.target.value })} className="border border-gray-200 p-3 outline-none focus:border-carapita-gold text-sm" placeholder="Ex: Roteiro pelo Castelo..." />
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold">Distância Curta</label>
+                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold">Distância/Tempo</label>
                                 <input required type="text" value={formData.dist} onChange={e => setFormData({ ...formData, dist: e.target.value })} className="border border-gray-200 p-3 outline-none focus:border-carapita-gold text-sm" placeholder="Ex: 5 min, 10 km..." />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold">Qtd. Dias (Roteiro)</label>
+                                <input required type="number" min="1" value={formData.dias} onChange={e => setFormData({ ...formData, dias: parseInt(e.target.value) || 1 })} className="border border-gray-200 p-3 outline-none focus:border-carapita-gold text-sm" placeholder="Ex: 3" />
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] uppercase tracking-widest text-carapita-muted flex items-center gap-2 font-bold"><ImageIcon size={14} /> URL da Imagem principal</label>
+                            <label className="text-[10px] uppercase tracking-widest text-carapita-muted flex items-center gap-2 font-bold"><ImageIcon size={14} /> URL da Imagem de Capa</label>
                             <input required type="url" value={formData.img} onChange={e => setFormData({ ...formData, img: e.target.value })} className="border border-gray-200 p-3 outline-none focus:border-carapita-gold text-sm bg-gray-50" placeholder="https://..." />
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold">Descrição Curta (Aparece no Card Principal)</label>
+                            <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold">Descrição Curta</label>
                             <textarea required rows={2} value={formData.desc} onChange={e => setFormData({ ...formData, desc: e.target.value })} className="border border-gray-200 p-3 outline-none focus:border-carapita-gold text-sm" placeholder="Breve resumo atraente..." />
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold">História Completa (Aparece ao clicar/Modal)</label>
+                            <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold">História Completa (Descritivo Longo)</label>
                             <textarea required rows={5} value={formData.historia} onChange={e => setFormData({ ...formData, historia: e.target.value })} className="border border-gray-200 p-3 outline-none focus:border-carapita-gold text-sm leading-relaxed" placeholder="Toda a história do lugar..." />
+                        </div>
+
+                        <div className="flex items-center gap-2 border border-gray-200 p-4 bg-gray-50 rounded-sm">
+                            <input type="checkbox" id="mostrar_perfil" checked={formData.mostrar_perfil} onChange={e => setFormData({ ...formData, mostrar_perfil: e.target.checked })} className="w-5 h-5 accent-carapita-gold cursor-pointer" />
+                            <label htmlFor="mostrar_perfil" className="text-sm text-carapita-dark cursor-pointer font-medium">Mostrar na aba "Roteiros" do perfil de hóspedes</label>
                         </div>
 
                         <div className="flex justify-end gap-4 mt-4">
@@ -175,8 +188,13 @@ export default function AdminPasseios() {
                             <div className="h-48 relative overflow-hidden bg-gray-100">
                                 <img src={p.img} alt={p.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                 <div className="absolute top-4 left-4 bg-white/90 px-3 py-1 flex items-center gap-1 text-[9px] uppercase font-bold text-carapita-dark shadow-sm">
-                                    <MapPin size={10} className="text-carapita-gold" /> {p.dist}
+                                    <MapPin size={10} className="text-carapita-gold" /> {p.dist} {p.dias > 1 && `| ${p.dias} Dias`}
                                 </div>
+                                {p.mostrar_perfil && (
+                                    <div className="absolute top-4 right-4 bg-carapita-gold text-white px-2 py-1 text-[8px] uppercase tracking-widest font-bold shadow-sm">
+                                        Roteiro Perfis
+                                    </div>
+                                )}
                             </div>
                             <div className="p-6 flex-1 flex flex-col">
                                 <h4 className="font-serif text-xl text-carapita-dark mb-2">{p.nome}</h4>

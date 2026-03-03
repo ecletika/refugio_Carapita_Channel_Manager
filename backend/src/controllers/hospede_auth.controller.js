@@ -95,6 +95,48 @@ class HospedeAuthController {
             return res.status(500).json({ error: 'Erro ao realizar login' });
         }
     }
+
+    // 3. Obter Perfil
+    static async getMe(req, res) {
+        try {
+            const { data, error } = await supabase
+                .from('Hospede')
+                .select('*')
+                .eq('id', req.usuarioId)
+                .single();
+            if (error || !data) throw error;
+            delete data.senha_hash; // Nunca retornar a senha
+            return res.json({ status: 'success', data });
+        } catch (e) {
+            return res.status(500).json({ error: 'Erro ao buscar perfil' });
+        }
+    }
+
+    // 4. Edit Perfil
+    static async updateMe(req, res) {
+        try {
+            const { nome, sobrenome, email, telefone, pais, cidade, endereco1, cep, dependentes, nacionalidade, tipo_documento, numero_documento, pais_emissor_documento, data_nascimento, local_nascimento } = req.body;
+            const payload = {
+                nome, sobrenome, email, telefone, pais, cidade, endereco1, cep,
+                dependentes, nacionalidade, tipo_documento, numero_documento,
+                pais_emissor_documento, data_nascimento, local_nascimento,
+                atualizado_em: new Date()
+            };
+
+            const { data, error } = await supabase
+                .from('Hospede')
+                .update(payload)
+                .eq('id', req.usuarioId)
+                .select()
+                .single();
+            if (error) throw error;
+            delete data.senha_hash;
+            return res.json({ status: 'success', data });
+        } catch (e) {
+            console.error('Erro atualizar perfil', e);
+            return res.status(500).json({ error: 'Erro ao atualizar perfil' });
+        }
+    }
 }
 
 module.exports = HospedeAuthController;

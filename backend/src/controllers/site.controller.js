@@ -13,9 +13,14 @@ class SiteController {
 
     static async criarPasseio(req, res) {
         try {
-            const { nome, dist, img, desc, historia, ativo } = req.body;
+            const { nome, dist, img, desc, historia, ativo, dias, mostrar_perfil } = req.body;
             const newId = crypto.randomUUID();
-            const { data, error } = await supabase.from('Passeio').insert([{ id: newId, nome, dist, img, desc, historia, ativo: ativo !== undefined ? ativo : true }]).select().single();
+            const { data, error } = await supabase.from('Passeio').insert([{
+                id: newId, nome, dist, img, desc, historia,
+                ativo: ativo !== undefined ? ativo : true,
+                dias: dias || 1,
+                mostrar_perfil: mostrar_perfil || false
+            }]).select().single();
             if (error) throw error;
             return res.json({ status: 'success', data });
         } catch (error) {
@@ -27,9 +32,11 @@ class SiteController {
     static async atualizarPasseio(req, res) {
         try {
             const { id } = req.params;
-            const { nome, dist, img, desc, historia, ativo } = req.body;
+            const { nome, dist, img, desc, historia, ativo, dias, mostrar_perfil } = req.body;
             const payload = { nome, dist, img, desc, historia };
             if (ativo !== undefined) payload.ativo = ativo;
+            if (dias !== undefined) payload.dias = dias;
+            if (mostrar_perfil !== undefined) payload.mostrar_perfil = mostrar_perfil;
             const { data, error } = await supabase.from('Passeio').update(payload).eq('id', id).select().single();
             if (error) throw error;
             return res.json({ status: 'success', data });
