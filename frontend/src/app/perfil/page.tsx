@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Calendar, Home, User, Plus, Trash2, MapPin, Instagram, Phone, Save, Navigation } from 'lucide-react';
+import { LogOut, Calendar, Home, User, Plus, Trash2, MapPin, Instagram, Phone, Save, Navigation, Camera } from 'lucide-react';
 
 interface Dependente {
     nome: string;
@@ -19,6 +19,7 @@ export default function PerfilHospede() {
     const [configs, setConfigs] = useState<any>({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
 
     // Tab tracking
     const [activeTab, setActiveTab] = useState<'perfil' | 'reservas' | 'dependentes' | 'roteiros'>('perfil');
@@ -134,59 +135,103 @@ export default function PerfilHospede() {
         }
     };
 
+    const handleUploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingLogo(true);
+        const token = localStorage.getItem('token') || localStorage.getItem('guestToken');
+        const formData = new FormData();
+        formData.append('foto', file);
+
+        try {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.status === 'success') {
+                const updatedHospede = { ...hospede, foto_perfil: data.url };
+                setHospede(updatedHospede);
+
+                // Salvar de imediato
+                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hospede/me`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(updatedHospede)
+                });
+            } else {
+                alert('Erro ao carregar foto.');
+            }
+        } catch (error) {
+            alert('Erro de conexão ao carregar imagem.');
+        } finally {
+            setUploadingLogo(false);
+        }
+    };
+
     if (loading) return <div className="min-h-screen bg-white flex items-center justify-center font-sans tracking-mega uppercase text-xs">Carregando O Seu Portal...</div>;
 
     return (
         <main className="min-h-screen bg-[#F9F8F6] flex flex-col font-sans">
             {/* Nav do Dashboard */}
-            <header className="bg-carapita-dark text-white p-6 md:px-12 flex justify-between items-center shadow-lg relative z-10">
-                <h1 className="text-2xl font-serif tracking-widest uppercase cursor-pointer" onClick={() => router.push('/')}>
-                    Meu <span className="text-carapita-gold">Portal</span>
-                </h1>
+            <header className="bg-white text-carapita-dark border-b border-gray-100 p-4 md:px-12 flex justify-between items-center shadow-sm relative z-10">
+                <div className="cursor-pointer" onClick={() => router.push('/')}>
+                    <img src="/logo.jpg" alt="Refúgio Carapita" className="h-10 object-contain" />
+                </div>
                 <div className="flex items-center gap-6">
-                    <span className="text-[10px] hidden md:block uppercase tracking-widest text-white/70">Bem-vindo(a), {hospede?.nome}</span>
-                    <button onClick={() => router.push('/')} className="text-white hover:text-carapita-gold transition-colors" title="Ir para a página inicial">
+                    <div className="hidden md:flex flex-col text-right">
+                        <span className="text-[10px] uppercase font-bold tracking-widest leading-none block">{hospede?.nome}</span>
+                        <span className="text-[9px] uppercase tracking-widest text-gray-400 mt-1 block">{hospede?.email}</span>
+                    </div>
+                    <button onClick={() => router.push('/')} className="text-carapita-dark hover:text-carapita-gold transition-colors" title="Ir para a página inicial">
                         <Home size={18} />
                     </button>
-                    <button onClick={handleLogout} className="text-white hover:text-carapita-gold transition-colors" title="Terminar Sessão">
+                    <button onClick={handleLogout} className="text-carapita-dark hover:text-carapita-gold transition-colors" title="Terminar Sessão">
                         <LogOut size={18} />
                     </button>
                 </div>
             </header>
 
             {/* Banner Topo */}
-            <div className="relative w-full h-48 md:h-64 bg-carapita-dark overflow-hidden flex items-center justify-center">
-                <img src="/img/casa-exterior.jpg" alt="Refúgio Carapita" className="absolute w-full h-full object-cover opacity-30" />
-                <div className="relative text-center z-10 px-4">
-                    <h2 className="text-3xl md:text-5xl font-serif text-white mb-2 shadow-sm">Portal do Hóspede</h2>
-                    <p className="text-carapita-gold tracking-mega uppercase text-[10px] md:text-xs">Gerencie a sua estadia, perfil e descubra roteiros exclusivos</p>
+            <div className="relative w-full h-64 md:h-80 bg-carapita-dark overflow-hidden flex items-center justify-center">
+                <img src="/casa-exterior.jpg" alt="Refúgio Carapita" className="absolute w-full h-full object-cover opacity-40 mix-blend-overlay" />
+                <div className="relative text-center z-10 px-4 flex flex-col items-center">
+                    <div className="relative mb-4 group cursor-pointer w-24 h-24 rounded-full border-2 border-carapita-gold overflow-hidden bg-white/10 flex items-center justify-center backdrop-blur-md">
+                        {hospede?.foto_perfil ? (
+                            <img src={hospede.foto_perfil} alt="Perfil" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-carapita-gold font-serif text-3xl">{hospede?.nome?.charAt(0) || 'U'}</span>
+                        )}
+                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white">
+                            {uploadingLogo ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Camera size={20} />}
+                            <input type="file" className="hidden" accept="image/*" onChange={handleUploadPhoto} />
+                        </label>
+                    </div>
+                    <h2 className="text-3xl md:text-5xl font-serif text-white mb-2 shadow-sm text-balance">
+                        Bem-vindo(a) <span className="text-carapita-gold">{hospede?.nome}</span> ao Refúgio Carapita
+                    </h2>
+                    <p className="text-white/80 tracking-mega uppercase text-[10px] md:text-xs">Gerencie a sua estadia, perfil e descubra roteiros exclusivos</p>
                 </div>
             </div>
 
-            <section className="flex-1 w-full max-w-7xl mx-auto -mt-10 relative z-20 px-4 md:px-6 mb-20 flex flex-col md:flex-row gap-8">
+            <section className="flex-1 w-full max-w-7xl mx-auto -mt-10 relative z-20 px-4 md:px-6 mb-20 flex flex-col gap-8">
 
-                {/* Menu Lateral de Navegação (Desktop) / Superior (Mobile) */}
-                <div className="w-full md:w-64 bg-white shadow-xl flex flex-col p-4 md:p-6 self-start lg:sticky lg:top-10 shrink-0">
-                    <div className="hidden md:flex flex-col items-center mb-8 border-b border-gray-100 pb-6 text-center">
-                        <div className="w-16 h-16 bg-carapita-dark text-carapita-gold rounded-full flex items-center justify-center mb-3">
-                            <span className="text-2xl font-serif">{hospede?.nome?.charAt(0) || 'H'}</span>
-                        </div>
-                        <h4 className="font-serif text-lg text-carapita-dark">{hospede?.nome} {hospede?.sobrenome}</h4>
-                        <span className="text-[10px] uppercase text-gray-400 font-bold tracking-widest">{hospede?.email}</span>
-                    </div>
-
-                    <nav className="flex md:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
-                        <button onClick={() => setActiveTab('perfil')} className={`flex items-center gap-3 p-3 whitespace-nowrap text-xs uppercase font-bold tracking-widest text-left transition-colors ${activeTab === 'perfil' ? 'bg-carapita-dark text-carapita-gold' : 'text-gray-500 hover:bg-gray-50'}`}>
-                            <User size={16} /> Meu Perfil
+                {/* Abas Topo */}
+                <div className="w-full bg-white shadow-xl flex px-4 border-b border-gray-100 overflow-x-auto no-scrollbar">
+                    <nav className="flex items-center gap-8 min-w-max mx-auto md:mx-0">
+                        <button onClick={() => setActiveTab('perfil')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'perfil' ? 'text-carapita-gold border-carapita-gold' : 'text-gray-400 border-transparent hover:text-carapita-dark'}`}>
+                            <User size={14} /> Meu Perfil
                         </button>
-                        <button onClick={() => setActiveTab('reservas')} className={`flex items-center gap-3 p-3 whitespace-nowrap text-xs uppercase font-bold tracking-widest text-left transition-colors ${activeTab === 'reservas' ? 'bg-carapita-dark text-carapita-gold' : 'text-gray-500 hover:bg-gray-50'}`}>
-                            <Calendar size={16} /> Reservas & Anfitrião
+                        <button onClick={() => setActiveTab('reservas')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'reservas' ? 'text-carapita-gold border-carapita-gold' : 'text-gray-400 border-transparent hover:text-carapita-dark'}`}>
+                            <Calendar size={14} /> Reservas & Anfitrião
                         </button>
-                        <button onClick={() => setActiveTab('dependentes')} className={`flex items-center gap-3 p-3 whitespace-nowrap text-xs uppercase font-bold tracking-widest text-left transition-colors ${activeTab === 'dependentes' ? 'bg-carapita-dark text-carapita-gold' : 'text-gray-500 hover:bg-gray-50'}`}>
-                            <Plus size={16} /> Acompanhantes
+                        <button onClick={() => setActiveTab('dependentes')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'dependentes' ? 'text-carapita-gold border-carapita-gold' : 'text-gray-400 border-transparent hover:text-carapita-dark'}`}>
+                            <Plus size={14} /> Acompanhantes
                         </button>
-                        <button onClick={() => setActiveTab('roteiros')} className={`flex items-center gap-3 p-3 whitespace-nowrap text-xs uppercase font-bold tracking-widest text-left transition-colors ${activeTab === 'roteiros' ? 'bg-carapita-dark text-carapita-gold' : 'text-gray-500 hover:bg-gray-50'}`}>
-                            <Navigation size={16} /> Roteiros Exclusivos
+                        <button onClick={() => setActiveTab('roteiros')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'roteiros' ? 'text-carapita-gold border-carapita-gold' : 'text-gray-400 border-transparent hover:text-carapita-dark'}`}>
+                            <Navigation size={14} /> Roteiros Exclusivos
                         </button>
                     </nav>
                 </div>
@@ -275,9 +320,14 @@ export default function PerfilHospede() {
                                         <p className="text-sm text-white">{configs?.endereco || 'Rua Principal, Carapita - Portugal'}</p>
                                     </div>
                                     <div className="bg-carapita-dark p-6 flex flex-col items-center justify-center text-center gap-3">
+                                        <User className="text-carapita-gold" size={24} />
+                                        <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Anfitrião</span>
+                                        <p className="text-sm text-white">Leonardo Azevedo</p>
+                                    </div>
+                                    <div className="bg-carapita-dark p-6 flex flex-col items-center justify-center text-center gap-3">
                                         <Phone className="text-carapita-gold" size={24} />
                                         <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Apoio Hóspede</span>
-                                        <p className="text-sm text-white">{configs?.telefone || '+351 900 000 000'}</p>
+                                        <p className="text-sm text-white">{configs?.telefone || '+351 969 581 657'}</p>
                                     </div>
                                     <div className="bg-carapita-dark p-6 flex flex-col items-center justify-center text-center gap-3">
                                         <Instagram className="text-carapita-gold" size={24} />
