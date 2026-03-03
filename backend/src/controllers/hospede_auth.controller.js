@@ -115,11 +115,11 @@ class HospedeAuthController {
     // 4. Edit Perfil
     static async updateMe(req, res) {
         try {
-            const { nome, sobrenome, email, telefone, pais, cidade, endereco1, cep, dependentes, nacionalidade, tipo_documento, numero_documento, pais_emissor_documento, data_nascimento, local_nascimento } = req.body;
+            const { nome, sobrenome, email, telefone, pais, cidade, endereco1, cep, dependentes, nacionalidade, tipo_documento, numero_documento, pais_emissor_documento, data_nascimento, local_nascimento, foto_perfil } = req.body;
             const payload = {
                 nome, sobrenome, email, telefone, pais, cidade, endereco1, cep,
                 dependentes, nacionalidade, tipo_documento, numero_documento,
-                pais_emissor_documento, data_nascimento, local_nascimento,
+                pais_emissor_documento, data_nascimento, local_nascimento, foto_perfil,
                 atualizado_em: new Date()
             };
 
