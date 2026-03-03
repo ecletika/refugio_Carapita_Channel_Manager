@@ -329,7 +329,7 @@ export default function PerfilHospede() {
                                     <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
                                         <MapPin className="text-carapita-gold" size={20} />
                                         <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Local</span>
-                                        <p className="text-xs text-white line-clamp-2">{configs?.endereco || 'Rua Principal, Carapita'}</p>
+                                        <p className="text-xs text-white line-clamp-2">{configs?.endereco || 'R. Dom Afonso Quarto Conde de Ourém IV 450, 2490-480 Ourém'}</p>
                                     </div>
                                     <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
                                         <User className="text-carapita-gold" size={20} />
