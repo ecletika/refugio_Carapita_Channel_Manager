@@ -63,7 +63,10 @@ interface BookingForm {
 export default function Home() {
     const [checkIn, setCheckIn] = useState('');
     const [checkOut, setCheckOut] = useState('');
-    const [hospedes, setHospedes] = useState(1);
+    const [adultos, setAdultos] = useState(2);
+    const [criancas, setCriancas] = useState(0);
+    const hospedes = adultos + criancas;
+    const [showGuestSelector, setShowGuestSelector] = useState(false);
     const [quartosEncontrados, setQuartosEncontrados] = useState<any[] | null>(null);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('Todos');
@@ -787,6 +790,19 @@ export default function Home() {
                             <p>{t('footer_checkout')}</p>
                             <p>{t('footer_max_pessoas')}</p>
                             <a href="/regras-da-casa" className="hover:text-carapita-gold transition-colors duration-300 font-bold underline mt-2 w-fit mx-auto md:mx-0 inline-block">{t('footer_saiba_mais')}</a>
+
+                            <div className="mt-8 flex flex-col gap-3 border-t border-white/10 pt-6">
+                                <a href="https://www.livroreclamacoes.pt/INICIO/" target="_blank" rel="noopener noreferrer" className="hover:text-carapita-gold transition-colors duration-300 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></svg>
+                                    Livro de Reclamações
+                                </a>
+                                <a href="/tratamento-dados" className="hover:text-carapita-gold transition-colors duration-300">
+                                    Política de Proteção de Dados
+                                </a>
+                                <a href="https://rnt.turismodeportugal.pt/RNT/RNAL.aspx?nr=172760" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-carapita-gold transition-colors duration-300 inline-block mt-2">
+                                    RNET 172760
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -960,16 +976,59 @@ export default function Home() {
                                     <>
                                         {/* Filtro de Hóspedes + Botão Buscar */}
                                         <div className="flex items-end gap-4 mb-8 pb-6 border-b border-white/10">
-                                            <div>
+                                            <div className="relative">
                                                 <label className="text-[9px] uppercase tracking-mega text-white/40 block mb-2">{t('booking_num_hospedes')}</label>
-                                                <select
-                                                    value={hospedes}
-                                                    onChange={(e) => setHospedes(Number(e.target.value))}
-                                                    className="bg-white/5 px-4 py-3 border border-white/10 outline-none font-sans text-sm focus:border-carapita-gold text-white"
+                                                <button
+                                                    onClick={() => setShowGuestSelector(!showGuestSelector)}
+                                                    className="bg-white/5 px-4 py-3 border border-white/10 outline-none font-sans text-sm hover:border-carapita-gold text-white min-w-[200px] text-left flex justify-between items-center"
                                                 >
-                                                    {[1, 2, 3, 4].map(n => <option key={n} value={n} className="bg-carapita-green">{n} {n === 1 ? t('booking_hospede') : t('booking_hospedes')}</option>)}
-                                                </select>
-                                                <span className="block mt-2 text-[9px] text-white/50 italic">{t('hospedes_criancas_aviso')}</span>
+                                                    <span>{hospedes} {hospedes === 1 ? t('booking_hospede') : t('booking_hospedes')}</span>
+                                                    <span className="text-[10px] opacity-50">▼</span>
+                                                </button>
+
+                                                {showGuestSelector && (
+                                                    <div className="absolute top-full left-0 mt-2 bg-carapita-green border border-white/20 p-5 shadow-2xl z-50 w-[320px] rounded-sm">
+                                                        <div className="flex justify-between items-center mb-6">
+                                                            <div>
+                                                                <div className="text-white text-sm font-semibold">Adultos (18+)</div>
+                                                            </div>
+                                                            <div className="flex items-center gap-4">
+                                                                <button
+                                                                    onClick={() => setAdultos(Math.max(1, adultos - 1))}
+                                                                    className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors disabled:opacity-30 disabled:hover:border-white/30 disabled:hover:text-white"
+                                                                    disabled={adultos <= 1}
+                                                                >−</button>
+                                                                <span className="text-white font-serif text-lg w-4 text-center">{adultos}</span>
+                                                                <button
+                                                                    onClick={() => setAdultos(Math.min(10, adultos + 1))}
+                                                                    className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors"
+                                                                >+</button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex justify-between items-center mb-6">
+                                                            <div>
+                                                                <div className="text-white text-sm font-semibold">Crianças (5-17 anos)</div>
+                                                            </div>
+                                                            <div className="flex items-center gap-4">
+                                                                <button
+                                                                    onClick={() => setCriancas(Math.max(0, criancas - 1))}
+                                                                    className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors disabled:opacity-30 disabled:hover:border-white/30 disabled:hover:text-white"
+                                                                    disabled={criancas <= 0}
+                                                                >−</button>
+                                                                <span className="text-white font-serif text-lg w-4 text-center">{criancas}</span>
+                                                                <button
+                                                                    onClick={() => setCriancas(Math.min(10, criancas + 1))}
+                                                                    className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors"
+                                                                >+</button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="text-[10px] text-white/50 italic mt-4 pt-4 border-t border-white/10">
+                                                            Crianças devem ter pelo menos 5 anos
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                             {checkIn && checkOut && (
                                                 <div className="flex items-center gap-3 bg-carapita-gold/10 border border-carapita-gold/30 px-4 py-3">
