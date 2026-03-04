@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Check, X, Sparkles } from 'lucide-react';
-import AdminSidebar from '../../../components/AdminSidebar';
+import { Plus, Trash2, Edit2, X, ToggleLeft, ToggleRight } from 'lucide-react';
 
 interface Extra {
     id: string;
@@ -20,10 +19,40 @@ export function AdminExtrasContent() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [newExtra, setNewExtra] = useState({ nome: '', descricao: '', preco: 0, icone: '🍷', foto: '' });
     const [uploading, setUploading] = useState(false);
+    const [telaExtrasAtiva, setTelaExtrasAtiva] = useState(false);
+    const [savingToggle, setSavingToggle] = useState(false);
 
     useEffect(() => {
         fetchExtras();
+        fetchTelaConfig();
     }, []);
+
+    const fetchTelaConfig = async () => {
+        try {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes`);
+            const json = await resp.json();
+            if (json.status === 'success' && json.data) {
+                setTelaExtrasAtiva(!!json.data.tela_extras_ativa);
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    const handleToggleTela = async () => {
+        setSavingToggle(true);
+        const token = localStorage.getItem('token');
+        const novoValor = !telaExtrasAtiva;
+        try {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ tela_extras_ativa: novoValor })
+            });
+            const json = await resp.json();
+            if (json.status === 'success') setTelaExtrasAtiva(novoValor);
+            else alert('Erro ao atualizar configuração.');
+        } catch (e) { alert('Erro de ligação.'); }
+        finally { setSavingToggle(false); }
+    };
 
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -125,7 +154,7 @@ export function AdminExtrasContent() {
 
     return (
         <div className="w-full">
-            <div className="flex justify-between items-end mb-10">
+            <div className="flex justify-between items-end mb-6">
                 <div>
                     <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-1">Configurações</span>
                     <h1 className="text-4xl font-serif text-carapita-dark font-light">Gestão de Extras</h1>
@@ -135,6 +164,33 @@ export function AdminExtrasContent() {
                     className="bg-carapita-dark text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-carapita-gold transition-all flex items-center gap-2"
                 >
                     <Plus size={14} /> Adicionar Extra
+                </button>
+            </div>
+
+            {/* Toggle Tela de Personalização */}
+            <div className={`flex items-center justify-between p-6 mb-8 border-2 rounded-sm transition-all duration-300 ${telaExtrasAtiva ? 'border-green-200 bg-green-50' : 'border-gray-100 bg-white'}`}>
+                <div>
+                    <p className={`text-sm font-bold uppercase tracking-widest mb-1 ${telaExtrasAtiva ? 'text-green-700' : 'text-gray-400'}`}>
+                        Tela "Personalize a Sua Estadia"
+                    </p>
+                    <p className="text-[11px] text-gray-400">
+                        {telaExtrasAtiva
+                            ? '✅ Visível no fluxo de reserva — os hóspedes podem adicionar extras antes de confirmar.'
+                            : '⛔ Oculto — o passo de extras não aparece durante a reserva.'}
+                    </p>
+                </div>
+                <button
+                    onClick={handleToggleTela}
+                    disabled={savingToggle}
+                    className="flex items-center gap-3 transition-all disabled:opacity-50"
+                    title={telaExtrasAtiva ? 'Desativar tela de extras' : 'Ativar tela de extras'}
+                >
+                    {telaExtrasAtiva
+                        ? <ToggleRight size={48} className="text-green-500" />
+                        : <ToggleLeft size={48} className="text-gray-300" />}
+                    <span className={`text-[10px] uppercase tracking-widest font-bold ${telaExtrasAtiva ? 'text-green-600' : 'text-gray-400'}`}>
+                        {savingToggle ? 'A guardar...' : telaExtrasAtiva ? 'Ativado' : 'Desativado'}
+                    </span>
                 </button>
             </div>
 

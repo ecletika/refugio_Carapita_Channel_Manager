@@ -79,7 +79,8 @@ export default function Home() {
     const [mounted, setMounted] = useState(false);
     const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
     const [showBookingScreen, setShowBookingScreen] = useState(false);
-    const [bookingStep, setBookingStep] = useState<'selection' | 'extras' | 'details' | 'payment'>('selection');
+    const [bookingStep, setBookingStep] = useState<'selection' | 'extras' | 'details'>('selection');
+    const [extrasTelaAtiva, setExtrasTelaAtiva] = useState(false);
     const [disponiveisExtras, setDisponiveisExtras] = useState<any[]>([]);
     const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
     const [bookingForm, setBookingForm] = useState<BookingForm>({
@@ -158,6 +159,7 @@ export default function Home() {
                 const json = await resp.json();
                 if (json.status === 'success' && json.data) {
                     setSiteConfigs(json.data);
+                    setExtrasTelaAtiva(!!json.data.tela_extras_ativa);
                 }
             } catch (e) { }
         };
@@ -318,16 +320,27 @@ export default function Home() {
             return;
         }
         setIdQuartoParaReserva(quartoId);
-        fetchCalendario(quartoId); // Atualizar preços específicos para este quarto
-        setBookingStep('extras');
-        // Smooth scroll to top
+        fetchCalendario(quartoId);
+        // Só vai para Extras se a tela estiver activa E houver extras disponíveis
+        if (extrasTelaAtiva && disponiveisExtras.length > 0) {
+            setBookingStep('extras');
+        } else {
+            setBookingStep('details');
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleConfirmarReserva = async () => {
-        if (!bookingForm.aceitouTermos) return;
+        if (!bookingForm.aceitouTermos) {
+            alert('Por favor, aceite os termos e condições para continuar.');
+            return;
+        }
         if (bookingForm.criarConta && bookingForm.senha !== bookingForm.confirmarSenha) {
             alert("As senhas não coincidem!");
+            return;
+        }
+        if (!bookingForm.nome || !bookingForm.email) {
+            alert('Por favor preencha o nome e o email.');
             return;
         }
 
@@ -336,6 +349,7 @@ export default function Home() {
                 quartoId: idQuartoParaReserva,
                 checkIn,
                 checkOut,
+                canalNome: 'SITE',
                 hospede: {
                     prefixo: bookingForm.prefixo,
                     nome: bookingForm.nome,
@@ -358,7 +372,7 @@ export default function Home() {
                 },
                 extrasIds: selectedExtras,
                 requerimentosEspeciais: bookingForm.requerimentosEspeciais,
-                metodoPagamento: bookingForm.metodoPagamento
+                metodoPagamento: 'PENDENTE'
             };
 
             const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas`, {
@@ -369,27 +383,11 @@ export default function Home() {
 
             const data = await resp.json();
             if (data.status === 'success') {
-                if (bookingForm.metodoPagamento === 'CARTAO') {
-                    // Start Stripe checkout
-                    const checkoutResp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pagamentos/checkout`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ reservaData: data.data })
-                    });
-                    const checkoutData = await checkoutResp.json();
-                    if (checkoutData.status === 'success' && checkoutData.url) {
-                        window.location.href = checkoutData.url;
-                        return;
-                    } else {
-                        alert("Reserva criada, mas falha ao iniciar pagamento. Verifique seu e-mail.");
-                    }
-                } else {
-                    alert("Reserva enviada com sucesso! Receberá um e-mail de confirmação em breve.");
-                }
-
                 setShowBookingScreen(false);
                 setBookingStep('selection');
                 setSelectedExtras([]);
+                setBookingForm(prev => ({ ...prev, aceitouTermos: false }));
+                alert('✅ Reserva confirmada! Receberá um email com os detalhes e instruções de pagamento em breve.');
             } else {
                 alert("Erro ao processar reserva: " + (data.error || 'Erro desconhecido'));
             }
@@ -1282,94 +1280,29 @@ export default function Home() {
                                         </div>
 
                                         <div className="flex justify-between mt-12 pt-8 border-t border-white/10">
-                                            <button onClick={() => setBookingStep('extras')} className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white">{t('form_voltar')}</button>
-                                            <button onClick={() => setBookingStep('payment')} className="bg-carapita-gold text-white px-10 py-4 text-[11px] uppercase tracking-mega font-bold hover:bg-white hover:text-carapita-green transition-all shadow-xl">{t('form_prosseguir')}</button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {bookingStep === 'payment' && (
-                                    <div className="animate-fade-in font-sans">
-                                        <h2 className="font-serif text-3xl mb-8 text-white uppercase tracking-widest text-sh">{t('booking_title_payment')}</h2>
-
-                                        <div className="bg-green-600/10 p-6 flex items-start gap-4 mb-10 border border-green-600/30 text-green-400">
-                                            <div className="p-2 bg-green-600 rounded-full text-white"><Check size={16} /></div>
-                                            <p className="text-xs leading-relaxed uppercase tracking-widest font-medium">{t('booking_seguranca_msg')}</p>
-                                        </div>
-
-                                        <section className="mb-12">
-                                            <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">{t('booking_pagamento_detalhes')}</h4>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                                                {[
-                                                    { id: 'CARTAO', label: 'Cartão / Apple Pay', icon: '💳' },
-                                                    { id: 'MBWAY', label: 'MB WAY', icon: '📱' },
-                                                    { id: 'TRANSFERENCIA', label: 'Transferência', icon: '🏦' }
-                                                ].map((metodo) => (
-                                                    <button
-                                                        key={metodo.id}
-                                                        onClick={() => setBookingForm({ ...bookingForm, metodoPagamento: metodo.id })}
-                                                        className={`p-6 border transition-all flex flex-col items-center gap-3 ${bookingForm.metodoPagamento === metodo.id
-                                                            ? 'border-carapita-gold bg-carapita-gold/10 scale-105 shadow-lg'
-                                                            : 'border-white/10 bg-white/5 hover:border-white/30'
-                                                            }`}
-                                                    >
-                                                        <span className="text-2xl">{metodo.icon}</span>
-                                                        <span className={`text-[9px] uppercase tracking-widest font-bold ${bookingForm.metodoPagamento === metodo.id ? 'text-carapita-gold' : 'text-white/60'}`}>
-                                                            {metodo.label}
-                                                        </span>
-                                                    </button>
-                                                ))}
-                                            </div>
-
-                                            <div className="bg-white/5 p-10 text-center border border-dashed border-white/10 rounded">
-                                                {bookingForm.metodoPagamento === 'CARTAO' ? (
-                                                    <>
-                                                        <p className="text-[10px] uppercase tracking-widest text-white/40 mb-4">{t('booking_pagamento_seguro')}</p>
-                                                        <div className="flex justify-center gap-4 opacity-70 items-center">
-                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" className="h-4 brightness-0 invert" alt="Visa" />
-                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" className="h-6 brightness-0 invert" alt="Mastercard" />
-                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Apple_Pay_logo.svg" className="h-6 brightness-0 invert" alt="Apple Pay" />
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <p className="text-[10px] uppercase tracking-widest text-carapita-gold mb-2 font-bold">
-                                                        {bookingForm.metodoPagamento === 'MBWAY' ? 'Pagar via MB WAY no próximo passo' : 'Dados para transferência serão enviados por e-mail'}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </section>
-
-                                        <section className="space-y-8 mb-12">
-                                            <div>
-                                                <h4 className="text-[10px] uppercase tracking-mega text-white font-bold mb-3">{t('booking_politica_garantia')}</h4>
-                                                <p className="text-xs text-white/50 leading-relaxed italic uppercase tracking-widest p-4 border-l-2 border-carapita-gold bg-white/5">{t('booking_politica_garantia_texto')}</p>
-                                            </div>
-                                            <div>
-                                                <h4 className="text-[10px] uppercase tracking-mega text-white font-bold mb-3">{t('booking_politica_cancelamento')}</h4>
-                                                <p className="text-xs text-white/50 leading-relaxed italic uppercase tracking-widest p-4 border-l-2 border-carapita-gold bg-white/5">{t('booking_politica_texto')}</p>
-                                            </div>
-                                        </section>
-
-                                        <div className="space-y-4 mb-10">
-                                            <div className="flex items-center gap-3">
-                                                <input type="checkbox" id="terms" checked={bookingForm.aceitouTermos} onChange={e => setBookingForm({ ...bookingForm, aceitouTermos: e.target.checked })} className="w-4 h-4 accent-carapita-gold" />
-                                                <label htmlFor="terms" className="text-[10px] uppercase tracking-widest text-white/60 cursor-pointer">{t('form_aceito_termos')}</label>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex justify-between pt-8 border-t border-white/10">
-                                            <button onClick={() => setBookingStep('details')} className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white">{t('form_voltar')}</button>
-                                            <button
-                                                onClick={handleConfirmarReserva}
-                                                disabled={!bookingForm.aceitouTermos}
-                                                className={`px-12 py-5 text-[11px] uppercase tracking-mega font-bold transition-all ${bookingForm.aceitouTermos ? 'bg-carapita-gold text-white hover:bg-white hover:text-carapita-green shadow-xl' : 'bg-white/10 text-white/20 cursor-not-allowed'}`}
-                                            >
-                                                {t('form_confirmar_pagar')}
+                                            <button onClick={() => setBookingStep(extrasTelaAtiva && disponiveisExtras.length > 0 ? 'extras' : 'selection')} className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white flex items-center gap-2 group">
+                                                <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> {t('form_voltar')}
                                             </button>
+                                            <div className="flex flex-col items-end gap-4">
+                                                <div className="flex items-center gap-3">
+                                                    <input type="checkbox" id="terms" checked={bookingForm.aceitouTermos} onChange={e => setBookingForm({ ...bookingForm, aceitouTermos: e.target.checked })} className="w-4 h-4 accent-carapita-gold" />
+                                                    <label htmlFor="terms" className="text-[10px] uppercase tracking-widest text-white/60 cursor-pointer">{t('form_aceito_termos')}</label>
+                                                </div>
+                                                <button
+                                                    onClick={handleConfirmarReserva}
+                                                    disabled={!bookingForm.aceitouTermos || !bookingForm.nome || !bookingForm.email}
+                                                    className={`px-12 py-5 text-[11px] uppercase tracking-mega font-bold transition-all flex items-center gap-3 ${bookingForm.aceitouTermos && bookingForm.nome && bookingForm.email
+                                                        ? 'bg-carapita-gold text-white hover:bg-white hover:text-carapita-green shadow-xl'
+                                                        : 'bg-white/10 text-white/20 cursor-not-allowed'
+                                                        }`}
+                                                >
+                                                    <Check size={16} /> {t('form_confirmar_pagar')}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
+
                             </div>
                         </div>
 
