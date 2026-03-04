@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CreditCard, FileText, CheckCircle, Clock, AlertTriangle, ArrowLeft, Download, ExternalLink, Home, LogOut, Loader2, Shield } from 'lucide-react';
 
@@ -32,6 +32,21 @@ interface Fatura {
 }
 
 export default function PagamentosPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-carapita-green flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="animate-spin text-carapita-gold" size={40} />
+                    <p className="text-white/60 text-xs uppercase tracking-widest">A carregar pagamentos...</p>
+                </div>
+            </div>
+        }>
+            <PagamentosContent />
+        </Suspense>
+    );
+}
+
+function PagamentosContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const reservaIdParam = searchParams.get('reserva');
@@ -213,15 +228,15 @@ export default function PagamentosPage() {
                                 key={r.id}
                                 onClick={() => setReservaSelecionada(r.id)}
                                 className={`text-left p-4 border transition-all duration-200 ${reservaSelecionada === r.id
-                                        ? 'border-carapita-gold bg-carapita-gold/5'
-                                        : 'border-white/10 bg-black/10 hover:border-white/30'
+                                    ? 'border-carapita-gold bg-carapita-gold/5'
+                                    : 'border-white/10 bg-black/10 hover:border-white/30'
                                     }`}
                             >
                                 <div className="flex justify-between items-start mb-2">
                                     <span className="font-serif text-white text-sm">{r.Quarto?.nome || r.quarto?.nome || 'Alojamento'}</span>
                                     <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 ${r.status === 'CONFIRMADA' ? 'text-green-400 bg-green-900/30' :
-                                            r.status === 'PENDENTE' ? 'text-yellow-400 bg-yellow-900/30' :
-                                                'text-white/40 bg-white/5'
+                                        r.status === 'PENDENTE' ? 'text-yellow-400 bg-yellow-900/30' :
+                                            'text-white/40 bg-white/5'
                                         }`}>{r.status}</span>
                                 </div>
                                 <p className="text-white/50 text-[11px]">
@@ -307,8 +322,8 @@ export default function PagamentosPage() {
 
                                     {/* 2.ª Prestação */}
                                     <div className={`flex items-center justify-between p-4 border ${dadosPagamento.resumo.pagou_total ? 'border-green-500/30 bg-green-900/10' :
-                                            dadosPagamento.resumo.pagou_inicial ? 'border-yellow-500/30 bg-yellow-900/10' :
-                                                'border-white/10 bg-black/10 opacity-60'}`}>
+                                        dadosPagamento.resumo.pagou_inicial ? 'border-yellow-500/30 bg-yellow-900/10' :
+                                            'border-white/10 bg-black/10 opacity-60'}`}>
                                         <div className="flex items-center gap-3">
                                             {dadosPagamento.resumo.pagou_total
                                                 ? <CheckCircle className="text-green-400 shrink-0" size={20} />
