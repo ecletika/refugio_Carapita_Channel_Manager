@@ -79,7 +79,8 @@ export default function Home() {
     const [mounted, setMounted] = useState(false);
     const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
     const [showBookingScreen, setShowBookingScreen] = useState(false);
-    const [bookingStep, setBookingStep] = useState<'selection' | 'extras' | 'details'>('selection');
+    const [bookingStep, setBookingStep] = useState<'selection' | 'extras' | 'details' | 'success'>('selection');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [extrasTelaAtiva, setExtrasTelaAtiva] = useState(false);
     const [disponiveisExtras, setDisponiveisExtras] = useState<any[]>([]);
     const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
@@ -344,6 +345,7 @@ export default function Home() {
             return;
         }
 
+        setIsSubmitting(true);
         try {
             const body = {
                 quartoId: idQuartoParaReserva,
@@ -383,17 +385,15 @@ export default function Home() {
 
             const data = await resp.json();
             if (data.status === 'success') {
-                setShowBookingScreen(false);
-                setBookingStep('selection');
-                setSelectedExtras([]);
-                setBookingForm(prev => ({ ...prev, aceitouTermos: false }));
-                alert('✅ Reserva confirmada! Receberá um email com os detalhes e instruções de pagamento em breve.');
+                setBookingStep('success');
             } else {
                 alert("Erro ao processar reserva: " + (data.error || 'Erro desconhecido'));
             }
         } catch (e) {
             console.error(e);
             alert("Erro de conexão com o servidor.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -1290,15 +1290,61 @@ export default function Home() {
                                                 </div>
                                                 <button
                                                     onClick={handleConfirmarReserva}
-                                                    disabled={!bookingForm.aceitouTermos || !bookingForm.nome || !bookingForm.email}
-                                                    className={`px-12 py-5 text-[11px] uppercase tracking-mega font-bold transition-all flex items-center gap-3 ${bookingForm.aceitouTermos && bookingForm.nome && bookingForm.email
+                                                    disabled={!bookingForm.aceitouTermos || !bookingForm.nome || !bookingForm.email || isSubmitting}
+                                                    className={`px-12 py-5 text-[11px] uppercase tracking-mega font-bold transition-all flex items-center gap-3 ${bookingForm.aceitouTermos && bookingForm.nome && bookingForm.email && !isSubmitting
                                                         ? 'bg-carapita-gold text-white hover:bg-white hover:text-carapita-green shadow-xl'
                                                         : 'bg-white/10 text-white/20 cursor-not-allowed'
                                                         }`}
                                                 >
-                                                    <Check size={16} /> {t('form_confirmar_pagar')}
+                                                    <Check size={16} /> {isSubmitting ? 'A processar...' : 'Confirmar sua reserva'}
                                                 </button>
                                             </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {bookingStep === 'success' && (
+                                    <div className="animate-fade-in font-sans flex flex-col items-center justify-center text-center p-12 bg-white/5 border border-carapita-gold/30 mt-12 rounded-sm shadow-[0_20px_40px_rgba(212,175,55,0.05)]">
+                                        <div className="w-20 h-20 rounded-full bg-carapita-gold/20 flex items-center justify-center mb-6">
+                                            <Check size={40} className="text-carapita-gold" />
+                                        </div>
+                                        <h2 className="font-serif text-3xl md:text-4xl text-white mb-6 leading-tight">
+                                            Obrigado pela sua Reserva
+                                        </h2>
+                                        <div className="space-y-4 text-[13px] text-white/70 max-w-xl mx-auto font-light leading-relaxed">
+                                            <p>
+                                                Tem <strong>48 Horas</strong> para pagar 50% de sua Reserva. Para saber mais acesse termos e condições em seu portal Carapita.
+                                            </p>
+                                            <p>
+                                                Dentro do seu portal, tem tudo o que precisa: os dados do alojamento, Anfitrião, termos e condições, área de pagamentos e roteiros da região.
+                                            </p>
+                                        </div>
+
+                                        <div className="mt-12 w-full max-w-sm flex flex-col gap-4">
+                                            <a
+                                                href="/perfil"
+                                                className="w-full bg-carapita-gold hover:bg-white text-white hover:text-carapita-green uppercase text-[11px] tracking-mega font-bold py-5 transition-all duration-500 block shadow-xl"
+                                                onClick={() => {
+                                                    // Optional cleanups when they navigate to portal
+                                                    setShowBookingScreen(false);
+                                                    setBookingStep('selection');
+                                                    setSelectedExtras([]);
+                                                    setBookingForm(prev => ({ ...prev, aceitouTermos: false }));
+                                                }}
+                                            >
+                                                Entrar no Portal Carapita
+                                            </a>
+                                            <button
+                                                onClick={() => {
+                                                    setShowBookingScreen(false);
+                                                    setBookingStep('selection');
+                                                    setSelectedExtras([]);
+                                                    setBookingForm(prev => ({ ...prev, aceitouTermos: false }));
+                                                }}
+                                                className="w-full bg-transparent border border-white/20 hover:border-carapita-gold text-white/60 hover:text-carapita-gold uppercase text-[10px] tracking-widest font-bold py-4 transition-all"
+                                            >
+                                                Voltar à Página Inicial
+                                            </button>
                                         </div>
                                     </div>
                                 )}
