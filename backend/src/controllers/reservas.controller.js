@@ -184,7 +184,7 @@ class ReservasController {
 
             console.log('7. EMAIL E RETORNO');
             if (canalNome === 'SITE' || !canalNome) {
-                try { await EmailService.enviarEmailProcessamento(hospedeDB, normalizedReserva); } catch (e) { console.error("Erro email:", e); }
+                try { await EmailService.enviarEmailConfirmacaoReserva(hospedeDB, normalizedReserva); } catch (e) { console.error("Erro email:", e); }
             }
 
             return res.status(201).json({ status: 'success', data: normalizedReserva });

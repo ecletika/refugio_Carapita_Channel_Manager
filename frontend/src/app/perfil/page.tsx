@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Calendar, Home, User, Plus, Trash2, MapPin, Instagram, Phone, Save, Navigation, Camera, FileText, X } from 'lucide-react';
+import { LogOut, Calendar, Home, User, Plus, Trash2, MapPin, Instagram, Phone, Save, Navigation, Camera, FileText, X, CreditCard } from 'lucide-react';
 
 interface Dependente {
     nome: string;
@@ -22,7 +22,7 @@ export default function PerfilHospede() {
     const [uploadingLogo, setUploadingLogo] = useState(false);
 
     // Tab tracking
-    const [activeTab, setActiveTab] = useState<'perfil' | 'reservas' | 'dependentes' | 'roteiros' | 'cancelamento'>('perfil');
+    const [activeTab, setActiveTab] = useState<'perfil' | 'reservas' | 'dependentes' | 'roteiros' | 'cancelamento' | 'pagamentos'>('perfil');
     const [passeioSelecionado, setPasseioSelecionado] = useState<any>(null);
 
     const router = useRouter();
@@ -244,6 +244,9 @@ export default function PerfilHospede() {
                         </button>
                         <button onClick={() => setActiveTab('cancelamento')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'cancelamento' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
                             <FileText size={14} /> Política Cancelamento
+                        </button>
+                        <button onClick={() => router.push('/perfil/pagamentos')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 text-white/50 border-transparent hover:text-carapita-gold`}>
+                            <CreditCard size={14} /> Pagamentos
                         </button>
                     </nav>
                 </div>

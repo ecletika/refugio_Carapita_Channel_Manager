@@ -148,3 +148,15 @@ h6 {
 .splash-fade-out {
   animation: fadeOut 0.8s ease-in-out 3.2s forwards;
 }
+
+/* Scrollbar oculta */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Estilos de Impressão — Fatura */
+@media print {
+  body * { visibility: hidden; }
+  #fatura-print, #fatura-print * { visibility: visible; }
+  #fatura-print { position: absolute; left: 0; top: 0; width: 100%; }
+  .no-print { display: none !important; }
+}
