@@ -116,7 +116,7 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
         const monthName = date.toLocaleString('pt-PT', { month: 'long' });
 
         const days = [];
-        for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} className="p-2"></div>);
+        for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} className="p-1"></div>);
         for (let d = 1; d <= daysInMonth; d++) {
             const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const info = precos[dStr];
@@ -128,7 +128,7 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
                 <div
                     key={dStr}
                     onClick={() => handleDateClick(dStr)}
-                    className={`p-2 border border-white/5 flex flex-col items-center justify-center cursor-pointer transition-all h-16 relative
+                    className={`p-1 border border-white/5 flex flex-col items-center justify-center cursor-pointer transition-all h-14 relative
                         ${isSelected ? 'bg-carapita-gold text-white border-carapita-gold' : ''}
                         ${isInRange ? 'bg-carapita-gold/20' : 'hover:bg-white/5'}
                         ${!isDisponivel ? 'opacity-50 cursor-not-allowed bg-black/20' : ''}
@@ -152,8 +152,8 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
         }
 
         return (
-            <div className="flex-1 min-w-[300px]">
-                <h4 className="text-center font-serif uppercase tracking-widest mb-4 text-white">{monthName} {year}</h4>
+            <div className="flex-1 min-w-0">
+                <h4 className="text-center font-serif uppercase tracking-widest mb-4 text-white text-sm md:text-base">{monthName} {year}</h4>
                 <div className="grid grid-cols-7 text-[10px] text-center text-white/40 mb-2 uppercase tracking-tighter">
                     <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
                 </div>
@@ -165,8 +165,8 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
     };
 
     return (
-        <div className="bg-carapita-green p-8 shadow-3xl border border-white/10 animate-fade-in w-full max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+        <div className="bg-transparent animate-fade-in w-full">
+            <div className="flex justify-between items-center mb-6">
                 <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))} className="p-2 hover:bg-white/5 text-white rounded-full transition-colors"><ChevronLeft size={20} /></button>
                 <div className="text-center">
                     <span className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold">Selecione as Datas</span>
@@ -174,7 +174,7 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
                 <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} className="p-2 hover:bg-white/5 text-white rounded-full transition-colors"><ChevronRight size={20} /></button>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-8 overflow-x-auto">
+            <div className="flex flex-col md:flex-row lg:flex-col gap-6 w-full">
                 {renderMonth(new Date(currentDate))}
                 {renderMonth(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
             </div>

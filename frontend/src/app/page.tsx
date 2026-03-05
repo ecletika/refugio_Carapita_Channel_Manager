@@ -60,6 +60,54 @@ interface BookingForm {
     metodoPagamento: string;
 }
 
+const RoomImageGallery = ({ fotos, quartoNome, onClick }: { fotos: FotoObj[], quartoNome: string, onClick: () => void }) => {
+    const [idx, setIdx] = useState(0);
+
+    const prevImg = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIdx((prev) => (prev === 0 ? fotos.length - 1 : prev - 1));
+    };
+
+    const nextImg = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIdx((prev) => (prev === fotos.length - 1 ? 0 : prev + 1));
+    };
+
+    const currentImg = fotos.length > 0 ? fotos[idx].url : 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&auto=format&fit=crop';
+
+    return (
+        <div className="w-full h-full min-h-[300px] xl:h-[300px] relative overflow-hidden cursor-pointer group/slider" onClick={onClick}>
+            <img src={currentImg} alt={quartoNome} className="w-full h-full object-cover group-hover/slider:scale-105 transition-transform duration-1000" />
+            <div className="absolute inset-0 bg-black/0 group-hover/slider:bg-black/20 transition-colors duration-500 flex items-center justify-center">
+                <Camera className="text-white opacity-0 group-hover/slider:opacity-100 transition-opacity duration-500 drop-shadow-lg" size={32} strokeWidth={1.5} />
+            </div>
+
+            {fotos.length > 1 && (
+                <>
+                    <button
+                        onClick={prevImg}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center opacity-0 group-hover/slider:opacity-100 hover:bg-carapita-gold transition-all duration-300"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <button
+                        onClick={nextImg}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center opacity-0 group-hover/slider:opacity-100 hover:bg-carapita-gold transition-all duration-300"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                        {fotos.map((_, i) => (
+                            <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === idx ? 'w-4 bg-carapita-gold' : 'w-1.5 bg-white/50'}`} />
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
 export default function Home() {
     const [checkIn, setCheckIn] = useState('');
     const [checkOut, setCheckOut] = useState('');
@@ -1028,14 +1076,14 @@ export default function Home() {
                         </button>
                     </div>
 
-                    <div className="max-w-7xl mx-auto py-20 px-4 md:px-6">
-                        <div className="grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-3 gap-6 lg:gap-12">
+                    <div className="max-w-[1600px] mx-auto py-12 px-4 md:px-8">
+                        <div className="flex flex-col xl:flex-row gap-8 xl:gap-10 items-start">
                             {/* Coluna do Calendário e Filtros */}
-                            <div className="md:col-span-2">
+                            <div className="w-full xl:w-auto xl:flex-shrink-0">
                                 {bookingStep === 'selection' && (
-                                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12 min-w-full">
+                                    <div className="flex flex-col xl:flex-row gap-8">
                                         {/* Left Side: Calendar + Guests + Cupons */}
-                                        <div className="lg:col-span-1 space-y-6">
+                                        <div className="w-full xl:w-[420px] xl:flex-shrink-0 space-y-5">
                                             <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-sm">
                                                 <h4 className="font-serif text-xl mb-6 text-white text-center border-b border-white/10 pb-4">
                                                     {t('booking_selecione_datas')}
@@ -1125,7 +1173,7 @@ export default function Home() {
                                         </div>
 
                                         {/* Right Side: Rooms */}
-                                        <div className="lg:col-span-3">
+                                        <div className="flex-1 min-w-0">
                                             <h2 className="font-serif text-2xl lg:text-3xl mb-8 text-white border-b border-white/10 pb-4 uppercase tracking-widest">{t('booking_alojamentos_disp')}</h2>
                                             <div className="space-y-8">
                                                 {(quartosEncontrados || []).length > 0 ? (
@@ -1138,39 +1186,14 @@ export default function Home() {
 
                                                         return (
                                                             <div key={q.id} className="bg-[#1C2621] border border-white/10 rounded-[2rem] hover:border-carapita-gold/50 shadow-2xl transition-all duration-700 flex flex-col xl:flex-row overflow-hidden group">
-                                                                {/* Foto Hero + Thumbnails */}
+                                                                {/* Foto Hero com setas em vez de Thumbnails */}
                                                                 <div className="w-full xl:w-[45%] h-full shrink-0 relative flex flex-col">
-                                                                    <div
-                                                                        className="w-full h-64 xl:h-[300px] relative overflow-hidden cursor-pointer"
-                                                                        onClick={() => { if (fotos.length > 0) { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); } }}
-                                                                    >
-                                                                        <img src={mainFoto} alt={q.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
-                                                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center">
-                                                                            <Camera className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500 drop-shadow-lg" size={32} strokeWidth={1.5} />
-                                                                        </div>
-                                                                    </div>
-                                                                    {/* Thumbnails na parte inferior da box da foto */}
-                                                                    {fotos.length > 1 && (
-                                                                        <div className="flex bg-[#151D18] p-2 gap-2 overflow-x-auto scrollbar-none border-t border-white/5">
-                                                                            {fotos.slice(0, 4).map((f, i) => (
-                                                                                <div
-                                                                                    key={i}
-                                                                                    onClick={() => { setLightboxFotos(fotos.map(fx => fx.url)); setLightboxIdx(i); }}
-                                                                                    className="h-16 w-24 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden border border-white/10 hover:border-carapita-gold transition-colors"
-                                                                                >
-                                                                                    <img src={f.url} className="w-full h-full object-cover" />
-                                                                                </div>
-                                                                            ))}
-                                                                            {fotos.length > 4 && (
-                                                                                <div
-                                                                                    onClick={() => { setLightboxFotos(fotos.map(fx => fx.url)); setLightboxIdx(4); }}
-                                                                                    className="h-16 w-24 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden border border-white/10 bg-black/50 flex items-center justify-center text-white/70 hover:text-white hover:border-carapita-gold transition-colors text-xs font-bold"
-                                                                                >
-                                                                                    +{fotos.length - 4}
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
+                                                                    {(() => {
+                                                                        // Usando um pequeno hack ou criando subcomponente inline? Melhor criar um component. 
+                                                                        // Mas como não podemos exportar facilmente e usar hook no meio do map:
+                                                                        // Em React não podemos chamar useState dentro de map. Então vamos usar um wrapper component.
+                                                                        return <RoomImageGallery fotos={fotos} quartoNome={q.nome} onClick={() => { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); }} />;
+                                                                    })()}
                                                                 </div>
 
                                                                 {/* Detalhes do Quarto */}
@@ -1504,65 +1527,65 @@ export default function Home() {
                                 )}
 
                             </div>
-                        </div>
 
-                        {/* Sumário lateral / Carrinho */}
-                        <div className="md:col-span-1 mt-12 md:mt-0">
-                            <div className="sticky top-10 space-y-8">
-                                <div className="bg-carapita-dark text-white p-10">
-                                    <h3 className="font-serif text-xl border-b border-white/10 pb-4 mb-6 uppercase tracking-widest italic">{t('summary_title')}</h3>
-                                    <div className="mb-10 pb-6 border-b border-white/10">
-                                        <div className="flex justify-between items-baseline mb-2">
-                                            <span className="text-xs tracking-widest uppercase text-white/40">{t('summary_total')}</span>
-                                            <div className="text-right">
-                                                {cupomAplicado && (
-                                                    <span className="block text-[11px] text-white/40 line-through mb-1 tracking-widest uppercase">
-                                                        {(totalEstadia() + valorDesconto()).toFixed(2).replace('.', ',')}
-                                                    </span>
-                                                )}
-                                                <span className="text-4xl font-serif text-carapita-gold">€{totalEstadia().toFixed(2).replace('.', ',')}</span>
+                            {/* Sumário lateral / Carrinho */}
+                            <div className="w-full xl:w-80 xl:flex-shrink-0 mt-8 xl:mt-0">
+                                <div className="sticky top-10 space-y-8">
+                                    <div className="bg-carapita-dark text-white p-10">
+                                        <h3 className="font-serif text-xl border-b border-white/10 pb-4 mb-6 uppercase tracking-widest italic">{t('summary_title')}</h3>
+                                        <div className="mb-10 pb-6 border-b border-white/10">
+                                            <div className="flex justify-between items-baseline mb-2">
+                                                <span className="text-xs tracking-widest uppercase text-white/40">{t('summary_total')}</span>
+                                                <div className="text-right">
+                                                    {cupomAplicado && (
+                                                        <span className="block text-[11px] text-white/40 line-through mb-1 tracking-widest uppercase">
+                                                            {(totalEstadia() + valorDesconto()).toFixed(2).replace('.', ',')}
+                                                        </span>
+                                                    )}
+                                                    <span className="text-4xl font-serif text-carapita-gold">€{totalEstadia().toFixed(2).replace('.', ',')}</span>
+                                                </div>
                                             </div>
+                                            {cupomAplicado && (
+                                                <div className="flex justify-between items-center mb-2 text-green-400 text-[10px] uppercase tracking-widest font-bold">
+                                                    <span>Desconto Aplicado ({cupomAplicado.codigo}):</span>
+                                                    <span>- €{valorDesconto().toFixed(2).replace('.', ',')}</span>
+                                                </div>
+                                            )}
+                                            <p className="text-[9px] text-white/30 italic uppercase mt-2">{t('summary_taxas')}</p>
                                         </div>
-                                        {cupomAplicado && (
-                                            <div className="flex justify-between items-center mb-2 text-green-400 text-[10px] uppercase tracking-widest font-bold">
-                                                <span>Desconto Aplicado ({cupomAplicado.codigo}):</span>
-                                                <span>- €{valorDesconto().toFixed(2).replace('.', ',')}</span>
-                                            </div>
-                                        )}
-                                        <p className="text-[9px] text-white/30 italic uppercase mt-2">{t('summary_taxas')}</p>
+
+                                        <div className="space-y-4 font-sans text-[11px] uppercase tracking-widest text-white/60">
+                                            <div className="flex justify-between"><span>{t('summary_checkin')}:</span> <span className="text-white">{checkIn || '-'}</span></div>
+                                            <div className="flex justify-between"><span>{t('summary_checkout')}:</span> <span className="text-white">{checkOut || '-'}</span></div>
+                                            <div className="flex justify-between"><span>{t('summary_hospedes')}:</span> <span className="text-white">{hospedes} Pax</span></div>
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-4 font-sans text-[11px] uppercase tracking-widest text-white/60">
-                                        <div className="flex justify-between"><span>{t('summary_checkin')}:</span> <span className="text-white">{checkIn || '-'}</span></div>
-                                        <div className="flex justify-between"><span>{t('summary_checkout')}:</span> <span className="text-white">{checkOut || '-'}</span></div>
-                                        <div className="flex justify-between"><span>{t('summary_hospedes')}:</span> <span className="text-white">{hospedes} Pax</span></div>
-                                    </div>
-                                </div>
+                                    {selectedExtras.length > 0 && (
+                                        <div className="border border-carapita-gold/20 p-8 bg-white/5">
+                                            <h4 className="text-[10px] uppercase tracking-mega font-bold text-white mb-4">{t('booking_extras_selecionados')}</h4>
+                                            <ul className="space-y-3 text-[10px] text-white/60 font-medium uppercase tracking-widest">
+                                                {selectedExtras.map(id => {
+                                                    const e = disponiveisExtras.find(ext => ext.id === id);
+                                                    return (
+                                                        <li key={id} className="flex justify-between border-b border-carapita-gold/10 pb-2">
+                                                            <span>{e?.nome}</span>
+                                                            <span>€{Number(e?.preco).toFixed(2)}</span>
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    )}
 
-                                {selectedExtras.length > 0 && (
-                                    <div className="border border-carapita-gold/20 p-8 bg-white/5">
-                                        <h4 className="text-[10px] uppercase tracking-mega font-bold text-white mb-4">{t('booking_extras_selecionados')}</h4>
-                                        <ul className="space-y-3 text-[10px] text-white/60 font-medium uppercase tracking-widest">
-                                            {selectedExtras.map(id => {
-                                                const e = disponiveisExtras.find(ext => ext.id === id);
-                                                return (
-                                                    <li key={id} className="flex justify-between border-b border-carapita-gold/10 pb-2">
-                                                        <span>{e?.nome}</span>
-                                                        <span>€{Number(e?.preco).toFixed(2)}</span>
-                                                    </li>
-                                                );
-                                            })}
+                                    <div className="border border-white/10 p-8 shadow-sm bg-white/5">
+                                        <h4 className="text-[10px] uppercase tracking-mega font-bold text-white mb-4">{t('summary_pq_nos')}</h4>
+                                        <ul className="space-y-4 text-[10px] text-white/40 font-sans uppercase tracking-widest leading-relaxed">
+                                            <li className="flex gap-2">✓ {t('summary_melhores_precos')}</li>
+                                            <li className="flex gap-2">✓ {t('summary_checkin_flex')}</li>
+                                            <li className="flex gap-2">✓ {t('summary_apoio')}</li>
                                         </ul>
                                     </div>
-                                )}
-
-                                <div className="border border-white/10 p-8 shadow-sm bg-white/5">
-                                    <h4 className="text-[10px] uppercase tracking-mega font-bold text-white mb-4">{t('summary_pq_nos')}</h4>
-                                    <ul className="space-y-4 text-[10px] text-white/40 font-sans uppercase tracking-widest leading-relaxed">
-                                        <li className="flex gap-2">✓ {t('summary_melhores_precos')}</li>
-                                        <li className="flex gap-2">✓ {t('summary_checkin_flex')}</li>
-                                        <li className="flex gap-2">✓ {t('summary_apoio')}</li>
-                                    </ul>
                                 </div>
                             </div>
                         </div>
