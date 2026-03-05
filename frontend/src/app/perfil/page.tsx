@@ -271,7 +271,7 @@ export default function PerfilHospede() {
                                         <input type="text" value={hospede?.nome || ''} onChange={e => setHospede({ ...hospede, nome: e.target.value })} className="p-3 border border-white/20 outline-none text-sm bg-black/20 text-white focus:border-carapita-gold transition-colors" required />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-[10px] uppercase font-bold tracking-widest text-white/50">Sobrenome</label>
+                                        <label className="text-[10px] uppercase font-bold tracking-widest text-white/50">Apelido</label>
                                         <input type="text" value={hospede?.sobrenome || ''} onChange={e => setHospede({ ...hospede, sobrenome: e.target.value })} className="p-3 border border-white/20 outline-none text-sm bg-black/20 text-white focus:border-carapita-gold transition-colors" required />
                                     </div>
                                     <div className="flex flex-col gap-2">

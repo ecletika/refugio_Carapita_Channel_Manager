@@ -87,6 +87,7 @@ class ReservasController {
                 tipo_documento: hospede.tipo_documento || null,
                 numero_documento: hospede.numero_documento || null,
                 pais_emissor_documento: hospede.pais_emissor_documento || null,
+                dependentes: hospede.dependentes || [],
                 atualizado_em: now
             };
 

@@ -81,14 +81,12 @@ class HospedeAuthController {
                 { expiresIn: '7d' }
             );
 
+            delete hospede.senha_hash;
+
             return res.status(200).json({
                 status: 'success',
                 token,
-                hospede: {
-                    id: hospede.id,
-                    nome: hospede.nome,
-                    email: hospede.email
-                }
+                hospede: hospede
             });
         } catch (error) {
             console.error('Erro login hospede:', error.message);

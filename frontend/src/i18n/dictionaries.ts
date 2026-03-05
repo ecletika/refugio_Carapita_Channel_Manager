@@ -62,7 +62,7 @@ export const dictionaries = {
         booking_politica_texto: 'Cancelamento/modificação gratuito até 2 dias antes da chegada. Uma penalidade de toda a estadia incluindo impostos será cobrada por cancelamento/modificação tardio, não comparência ou partida antecipada.',
 
         form_primeiro_nome: 'Primeiro Nome',
-        form_sobrenome: 'Sobrenome',
+        form_sobrenome: 'Apelido',
         form_telefone: 'Telefone',
         form_email: 'E-mail',
         form_pais: 'País',

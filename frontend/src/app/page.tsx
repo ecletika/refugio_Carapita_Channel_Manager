@@ -58,6 +58,7 @@ interface BookingForm {
     numero_documento: string;
     pais_emissor_documento: string;
     metodoPagamento: string;
+    dependentes: { nome: string; sobrenome: string }[];
 }
 
 const RoomImageGallery = ({ fotos, quartoNome, onClick }: { fotos: FotoObj[], quartoNome: string, onClick: () => void }) => {
@@ -161,7 +162,8 @@ export default function Home() {
         tipo_documento: 'Passaporte',
         numero_documento: '',
         pais_emissor_documento: '',
-        metodoPagamento: 'CARTAO'
+        metodoPagamento: 'CARTAO',
+        dependentes: []
     });
     const [calendarioPrecos, setCalendarioPrecos] = useState<any[]>([]);
     const [galleryRooms, setGalleryRooms] = useState<any[]>([]);
@@ -172,6 +174,7 @@ export default function Home() {
     const [lightboxIdx, setLightboxIdx] = useState(0);
     const [siteConfigs, setSiteConfigs] = useState<any>({});
     const [lang, setLangState] = useState<'PT' | 'EN'>('PT');
+    const [visibleAdditionalGuests, setVisibleAdditionalGuests] = useState(1);
 
     // Using a wrapper around setLang to persist preference
     const setLang = (newLang: 'PT' | 'EN') => {
@@ -307,7 +310,23 @@ export default function Home() {
                 setBookingForm(prev => ({
                     ...prev,
                     nome: data.hospede.nome || prev.nome,
-                    email: data.hospede.email || prev.email
+                    email: data.hospede.email || prev.email,
+                    sobrenome: data.hospede.sobrenome || prev.sobrenome,
+                    telefone: data.hospede.telefone || prev.telefone,
+                    cidade: data.hospede.cidade || prev.cidade,
+                    pais: data.hospede.pais || prev.pais,
+                    endereco1: data.hospede.endereco1 || prev.endereco1,
+                    endereco2: data.hospede.endereco2 || prev.endereco2,
+                    cep: data.hospede.cep || prev.cep,
+                    prefixo: data.hospede.prefixo || prev.prefixo,
+                    data_nascimento: data.hospede.data_nascimento || prev.data_nascimento,
+                    local_nascimento: data.hospede.local_nascimento || prev.local_nascimento,
+                    nacionalidade: data.hospede.nacionalidade || prev.nacionalidade,
+                    tipo_documento: data.hospede.tipo_documento || prev.tipo_documento,
+                    numero_documento: data.hospede.numero_documento || prev.numero_documento,
+                    pais_emissor_documento: data.hospede.pais_emissor_documento || prev.pais_emissor_documento,
+                    estrangeiro: data.hospede.estrangeiro !== undefined ? data.hospede.estrangeiro : prev.estrangeiro,
+                    dependentes: data.hospede.dependentes || prev.dependentes,
                 }));
             } else { alert(data.error || "Erro ao fazer login"); }
         } catch (e) { alert("Erro de conexão"); }
@@ -462,7 +481,8 @@ export default function Home() {
                     tipo_documento: bookingForm.tipo_documento,
                     numero_documento: bookingForm.numero_documento,
                     pais_emissor_documento: bookingForm.pais_emissor_documento,
-                    senha: bookingForm.criarConta ? bookingForm.senha : undefined
+                    senha: bookingForm.criarConta ? bookingForm.senha : undefined,
+                    dependentes: bookingForm.dependentes
                 },
                 extrasIds: selectedExtras,
                 requerimentosEspeciais: bookingForm.requerimentosEspeciais,
@@ -1398,6 +1418,68 @@ export default function Home() {
                                                     </div>
                                                 </div>
                                             </section>
+
+                                            {hospedes > 1 && (
+                                                <section className="animate-fade-in">
+                                                    <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">
+                                                        {lang === 'PT' ? 'Hóspedes Adicionais' : 'Additional Guests'}
+                                                    </h4>
+                                                    <div className="space-y-6">
+                                                        {Array.from({ length: hospedes - 1 }).slice(0, visibleAdditionalGuests).map((_, i) => (
+                                                            <div key={i} className="bg-white/5 p-6 border border-white/5 rounded-xl hover:border-carapita-gold/30 transition-all duration-300">
+                                                                <div className="flex items-center justify-between mb-4">
+                                                                    <span className="text-[10px] uppercase font-bold text-carapita-gold tracking-widest flex items-center gap-2">
+                                                                        <User size={12} /> {lang === 'PT' ? `Hóspede ${i + 2}` : `Guest ${i + 2}`}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                    <div>
+                                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_primeiro_nome')}</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="w-full border-b border-white/20 bg-transparent py-2 text-sm focus:border-carapita-gold outline-none text-white"
+                                                                            placeholder="Nome"
+                                                                            value={bookingForm.dependentes[i]?.nome || ''}
+                                                                            onChange={(e) => {
+                                                                                const newDeps = [...bookingForm.dependentes];
+                                                                                if (!newDeps[i]) newDeps[i] = { nome: '', sobrenome: '' };
+                                                                                newDeps[i].nome = e.target.value;
+                                                                                setBookingForm({ ...bookingForm, dependentes: newDeps });
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_sobrenome')}</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="w-full border-b border-white/20 bg-transparent py-2 text-sm focus:border-carapita-gold outline-none text-white"
+                                                                            placeholder="Apelido"
+                                                                            value={bookingForm.dependentes[i]?.sobrenome || ''}
+                                                                            onChange={(e) => {
+                                                                                const newDeps = [...bookingForm.dependentes];
+                                                                                if (!newDeps[i]) newDeps[i] = { nome: '', sobrenome: '' };
+                                                                                newDeps[i].sobrenome = e.target.value;
+                                                                                setBookingForm({ ...bookingForm, dependentes: newDeps });
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+
+                                                        {visibleAdditionalGuests < hospedes - 1 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setVisibleAdditionalGuests(prev => prev + 1)}
+                                                                className="w-full py-4 border border-dashed border-white/20 text-white/40 hover:text-carapita-gold hover:border-carapita-gold transition-all flex items-center justify-center gap-2 text-[10px] uppercase tracking-mega font-bold group"
+                                                            >
+                                                                <Plus size={14} className="group-hover:rotate-90 transition-transform" />
+                                                                {lang === 'PT' ? `+ Hóspede ${visibleAdditionalGuests + 2}` : `+ Guest ${visibleAdditionalGuests + 2}`}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </section>
+                                            )}
 
                                             <section>
                                                 <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">{t('form_faturacao')}</h4>
