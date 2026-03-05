@@ -41,6 +41,7 @@ const extraRoutes = require('./routes/extras.routes');
 const relatoriosRoutes = require('./routes/relatorios.routes');
 const siteRoutes = require('./routes/site.routes');
 const comodidadesRoutes = require('./routes/comodidades.routes');
+const cuponsRoutes = require('./routes/cupons.routes');
 
 // Montando as rotas da API
 app.use('/api/auth', authRoutes);
@@ -56,6 +57,7 @@ app.use('/api/relatorios', relatoriosRoutes);
 app.use('/api/site', siteRoutes);
 app.use('/api/comodidades', comodidadesRoutes);
 app.use('/api/pagamentos', pagamentosRoutes);
+app.use('/api/cupons', cuponsRoutes);
 
 // Rota de Healthcheck
 app.get('/api/health', (req, res) => {

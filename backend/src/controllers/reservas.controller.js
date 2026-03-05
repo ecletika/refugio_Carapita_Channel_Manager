@@ -60,7 +60,7 @@ class ReservasController {
     static async criarReserva(req, res) {
         try {
             console.log('1. INICIANDO CRIAR RESERVA', req.body);
-            const { quartoId, hospede, checkIn, checkOut, canalNome, metodoPagamento, requerimentosEspeciais, extrasIds } = req.body;
+            const { quartoId, hospede, checkIn, checkOut, canalNome, metodoPagamento, requerimentosEspeciais, extrasIds, cupomCodigo } = req.body;
             if (!quartoId || !hospede || !checkIn || !checkOut) return res.status(400).json({ error: 'Dados incompletos' });
 
             const dataInicio = new Date(`${checkIn}T00:00:00.000Z`).toISOString();
@@ -149,6 +149,24 @@ class ReservasController {
                 }
             }
 
+
+            let cupomDB = null;
+            if (cupomCodigo) {
+                const { data: cData } = await supabase.from('Cupom').select('*').eq('codigo', cupomCodigo.toUpperCase()).single();
+                if (cData && cData.ativo) {
+                    const validadeOk = !cData.data_validade || new Date(cData.data_validade) >= new Date();
+                    const usosOk = !cData.limite_usos || cData.usos_atuais < cData.limite_usos;
+                    if (validadeOk && usosOk) {
+                        cupomDB = cData;
+                        if (cupomDB.tipo_desconto === 'PERCENTUAL') {
+                            valorTotal = valorTotal - (valorTotal * (Number(cupomDB.valor_desconto) / 100));
+                        } else {
+                            valorTotal = valorTotal - Number(cupomDB.valor_desconto);
+                        }
+                        if (valorTotal < 0) valorTotal = 0;
+                    }
+                }
+            }
             // Salvar
             const nowReserva = new Date().toISOString();
             const { data: novaReserva, error } = await supabase
@@ -165,6 +183,7 @@ class ReservasController {
                     metodo_pagamento: metodoPagamento,
                     requerimentos_especiais: requerimentosEspeciais,
                     extras_ids: extrasIds && extrasIds.length > 0 ? extrasIds : null,
+                    cupom_id: cupomDB ? cupomDB.id : null,
                     criado_em: nowReserva,
                     atualizado_em: nowReserva
                 }])
@@ -174,6 +193,10 @@ class ReservasController {
             if (error) {
                 console.error('Reserva Insert Error:', error);
                 throw error;
+            }
+
+            if (cupomDB) {
+                await supabase.from('Cupom').update({ usos_atuais: cupomDB.usos_atuais + 1 }).eq('id', cupomDB.id);
             }
 
             const normalizedReserva = {

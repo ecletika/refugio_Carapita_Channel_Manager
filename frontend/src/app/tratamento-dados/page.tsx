@@ -26,11 +26,11 @@ export default function TratamentoDados() {
                         <h2 className="text-xl font-serif text-carapita-gold mb-4 uppercase tracking-widest">2. Responsável pelo Tratamento</h2>
                         <p className="mb-4">A entidade responsável pelo tratamento dos seus dados pessoais é:</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li><strong>Entidade:</strong> <span className="text-red-500 font-bold uppercase" id="dado-1">[1 - NOME ENTIDADE RESPONSÁVEL A PREENCHER]</span></li>
+                            <li><strong>Entidade:</strong> <span>Leonardo Guedes Azevedo</span></li>
                             <li><strong>NIF:</strong> <span className="text-red-500 font-bold uppercase" id="dado-2">[2 - NIF A PREENCHER]</span></li>
-                            <li><strong>Morada:</strong> <span className="text-red-500 font-bold uppercase" id="dado-3">[3 - MORADA FISCAL A PREENCHER]</span></li>
-                            <li><strong>Telemóvel:</strong> <span className="text-red-500 font-bold uppercase" id="dado-4">[4 - TELEFONE DE CONTACTO DO RESPONSÁVEL]</span></li>
-                            <li><strong>E-mail:</strong> <span className="text-red-500 font-bold uppercase" id="dado-5">[5 - E-MAIL DO ENCARREGADO DE PROTEÇÃO DE DADOS]</span></li>
+                            <li><strong>Morada:</strong> <span>R. Dom Afonso Quarto Conde de Ourém IV 450, 2490-480 Ourém</span></li>
+                            <li><strong>Telemóvel:</strong> <span>+351 967 244 938</span></li>
+                            <li><strong>E-mail:</strong> <span>mauricio.junior@ecletika.com</span></li>
                         </ul>
                     </section>
 
@@ -85,7 +85,7 @@ export default function TratamentoDados() {
                             <li>Solicitar o apagamento dos seus dados (Direito a Ser Esquecido), desde que tal não contrarie normas ou imposições legais;</li>
                             <li>Retirar o seu consentimento para comunicações de marketing a qualquer momento.</li>
                         </ul>
-                        <p className="mt-6">Para exercer qualquer um destes direitos, utilize o e-mail: <strong className="text-red-500 uppercase">[5 - E-MAIL]</strong> indicando no assunto "Proteção de Dados".</p>
+                        <p className="mt-6">Para exercer qualquer um destes direitos, utilize o e-mail: <strong>mauricio.junior@ecletika.com</strong> indicando no assunto "Proteção de Dados".</p>
                     </section>
 
                 </div>

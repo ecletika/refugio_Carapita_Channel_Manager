@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { ChevronRight, Calendar, Users, Menu, MapPin, X, Check, Camera, ChevronLeft, Instagram, Facebook, PlayCircle } from 'lucide-react';
+import { ChevronRight, Calendar, Users, Menu, MapPin, X, Check, Camera, ChevronLeft, Instagram, Facebook, PlayCircle, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import SeletorCalendario from '../components/SeletorCalendario';
 import { useEffect } from 'react';
@@ -67,6 +67,9 @@ export default function Home() {
     const [criancas, setCriancas] = useState(0);
     const hospedes = adultos + criancas;
     const [showGuestSelector, setShowGuestSelector] = useState(false);
+    const [cupomCodigo, setCupomCodigo] = useState('');
+    const [cupomAplicado, setCupomAplicado] = useState<any>(null);
+    const [cupomMensagem, setCupomMensagem] = useState({ text: '', type: '' });
     const [quartosEncontrados, setQuartosEncontrados] = useState<any[] | null>(null);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('Todos');
@@ -315,7 +318,45 @@ export default function Home() {
             return acc + (extra ? Number(extra.preco) : 0);
         }, 0);
 
-        return subtotal + extras;
+        let total = subtotal + extras;
+
+        if (cupomAplicado) {
+            if (cupomAplicado.tipo_desconto === 'PERCENTUAL') {
+                total -= (total * Number(cupomAplicado.valor_desconto) / 100);
+            } else {
+                total -= Number(cupomAplicado.valor_desconto);
+            }
+        }
+
+        return Math.max(0, total);
+    };
+
+    const valorDesconto = () => {
+        if (!cupomAplicado || !checkIn || !checkOut || !idQuartoParaReserva) return 0;
+        let subtotal = 0;
+        const start = new Date(`${checkIn}T00:00:00.000Z`);
+        const end = new Date(`${checkOut}T00:00:00.000Z`);
+        const q = quartosEncontrados?.find(r => r.id === idQuartoParaReserva);
+        if (!q) return 0;
+        let current = new Date(start);
+        while (current < end) {
+            const dateStr = current.toISOString().split('T')[0];
+            const diaPrice = calendarioPrecos.find(p => p.data === dateStr);
+            if (diaPrice) subtotal += Number(diaPrice.preco);
+            else subtotal += Number(q.preco_base);
+            current.setUTCDate(current.getUTCDate() + 1);
+        }
+        const extras = selectedExtras.reduce((acc, id) => {
+            const extra = disponiveisExtras.find(e => e.id === id);
+            return acc + (extra ? Number(extra.preco) : 0);
+        }, 0);
+
+        let totalBase = subtotal + extras;
+        if (cupomAplicado.tipo_desconto === 'PERCENTUAL') {
+            return totalBase * (Number(cupomAplicado.valor_desconto) / 100);
+        } else {
+            return Number(cupomAplicado.valor_desconto);
+        }
     };
 
     const iniciarReserva = (quartoId: string) => {
@@ -377,7 +418,8 @@ export default function Home() {
                 },
                 extrasIds: selectedExtras,
                 requerimentosEspeciais: bookingForm.requerimentosEspeciais,
-                metodoPagamento: 'PENDENTE'
+                metodoPagamento: 'PENDENTE',
+                cupomCodigo: cupomCodigo || undefined
             };
 
             const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas`, {
@@ -407,6 +449,24 @@ export default function Home() {
         }
         efetuarReserva(idQuartoParaReserva!, formHospede);
         setShowGuestModal(false);
+    };
+
+    const validarCupom = async () => {
+        if (!cupomCodigo) return;
+        setCupomMensagem({ text: 'A verificar...', type: 'info' });
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cupons/validar/${cupomCodigo}`);
+            const data = await res.json();
+            if (data.status === 'success') {
+                setCupomAplicado(data.data);
+                setCupomMensagem({ text: 'Cupão aplicado!', type: 'success' });
+            } else {
+                setCupomAplicado(null);
+                setCupomMensagem({ text: data.error || 'Cupão inválido', type: 'error' });
+            }
+        } catch (e) {
+            setCupomMensagem({ text: 'Erro ao validar', type: 'error' });
+        }
     };
 
     const buscarDisponibilidade = async () => {
@@ -973,168 +1033,203 @@ export default function Home() {
                             {/* Coluna do Calendário e Filtros */}
                             <div className="md:col-span-2">
                                 {bookingStep === 'selection' && (
-                                    <>
-                                        {/* Filtro de Hóspedes + Botão Buscar */}
-                                        <div className="flex items-end gap-4 mb-8 pb-6 border-b border-white/10">
-                                            <div className="relative">
-                                                <label className="text-[9px] uppercase tracking-mega text-white/40 block mb-2">{t('booking_num_hospedes')}</label>
-                                                <button
-                                                    onClick={() => setShowGuestSelector(!showGuestSelector)}
-                                                    className="bg-white/5 px-4 py-3 border border-white/10 outline-none font-sans text-sm hover:border-carapita-gold text-white min-w-[200px] text-left flex justify-between items-center"
-                                                >
-                                                    <span>{hospedes} {hospedes === 1 ? t('booking_hospede') : t('booking_hospedes')}</span>
-                                                    <span className="text-[10px] opacity-50">▼</span>
-                                                </button>
+                                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12 min-w-full">
+                                        {/* Left Side: Calendar + Guests + Cupons */}
+                                        <div className="lg:col-span-1 space-y-6">
+                                            <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-sm">
+                                                <h4 className="font-serif text-xl mb-6 text-white text-center border-b border-white/10 pb-4">
+                                                    {t('booking_selecione_datas')}
+                                                </h4>
+                                                <SeletorCalendario
+                                                    quartoId={quartosEncontrados?.[0]?.id || ''}
+                                                    onSelect={(start, end) => {
+                                                        setCheckIn(start);
+                                                        setCheckOut(end);
+                                                    }}
+                                                />
+                                            </div>
 
-                                                {showGuestSelector && (
-                                                    <div className="absolute top-full left-0 mt-2 bg-carapita-green border border-white/20 p-5 shadow-2xl z-50 w-[320px] rounded-sm">
-                                                        <div className="flex justify-between items-center mb-6">
-                                                            <div>
-                                                                <div className="text-white text-sm font-semibold">Adultos (18+)</div>
-                                                            </div>
-                                                            <div className="flex items-center gap-4">
-                                                                <button
-                                                                    onClick={() => setAdultos(Math.max(1, adultos - 1))}
-                                                                    className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors disabled:opacity-30 disabled:hover:border-white/30 disabled:hover:text-white"
-                                                                    disabled={adultos <= 1}
-                                                                >−</button>
-                                                                <span className="text-white font-serif text-lg w-4 text-center">{adultos}</span>
-                                                                <button
-                                                                    onClick={() => setAdultos(Math.min(10, adultos + 1))}
-                                                                    className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors"
-                                                                >+</button>
-                                                            </div>
-                                                        </div>
+                                            <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-sm">
+                                                <h4 className="font-serif text-lg mb-6 text-white uppercase tracking-widest text-center border-b border-white/10 pb-4">{t('booking_num_hospedes')}</h4>
 
-                                                        <div className="flex justify-between items-center mb-6">
-                                                            <div>
-                                                                <div className="text-white text-sm font-semibold">Crianças (5-17 anos)</div>
-                                                            </div>
-                                                            <div className="flex items-center gap-4">
-                                                                <button
-                                                                    onClick={() => setCriancas(Math.max(0, criancas - 1))}
-                                                                    className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors disabled:opacity-30 disabled:hover:border-white/30 disabled:hover:text-white"
-                                                                    disabled={criancas <= 0}
-                                                                >−</button>
-                                                                <span className="text-white font-serif text-lg w-4 text-center">{criancas}</span>
-                                                                <button
-                                                                    onClick={() => setCriancas(Math.min(10, criancas + 1))}
-                                                                    className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors"
-                                                                >+</button>
-                                                            </div>
+                                                <div className="space-y-4">
+                                                    <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                                                        <div>
+                                                            <div className="text-white text-sm font-semibold">Adultos (18+)</div>
                                                         </div>
+                                                        <div className="flex items-center gap-4">
+                                                            <button
+                                                                onClick={() => setAdultos(Math.max(1, adultos - 1))}
+                                                                className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors disabled:opacity-30"
+                                                                disabled={adultos <= 1}
+                                                            >−</button>
+                                                            <span className="text-white font-serif text-lg w-4 text-center">{adultos}</span>
+                                                            <button
+                                                                onClick={() => setAdultos(Math.min(10, adultos + 1))}
+                                                                className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors"
+                                                            >+</button>
+                                                        </div>
+                                                    </div>
 
-                                                        <div className="text-[10px] text-white/50 italic mt-4 pt-4 border-t border-white/10">
-                                                            Crianças devem ter pelo menos 5 anos
+                                                    <div className="flex justify-between items-center pt-2">
+                                                        <div>
+                                                            <div className="text-white text-sm font-semibold">Crianças (5-17)</div>
                                                         </div>
+                                                        <div className="flex items-center gap-4">
+                                                            <button
+                                                                onClick={() => setCriancas(Math.max(0, criancas - 1))}
+                                                                className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors disabled:opacity-30"
+                                                                disabled={criancas <= 0}
+                                                            >−</button>
+                                                            <span className="text-white font-serif text-lg w-4 text-center">{criancas}</span>
+                                                            <button
+                                                                onClick={() => setCriancas(Math.min(10, criancas + 1))}
+                                                                className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors"
+                                                            >+</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-sm">
+                                                <h4 className="font-serif text-lg mb-6 text-white uppercase tracking-widest text-center border-b border-white/10 pb-4">Cupão Promocional</h4>
+                                                <div className="flex flex-col gap-2">
+                                                    <div className="flex gap-2">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Ex: CARAPITA10"
+                                                            value={cupomCodigo}
+                                                            onChange={e => {
+                                                                setCupomCodigo(e.target.value.toUpperCase());
+                                                                if (cupomAplicado) {
+                                                                    setCupomAplicado(null);
+                                                                    setCupomMensagem({ text: '', type: '' });
+                                                                }
+                                                            }}
+                                                            className="flex-1 bg-transparent border border-white/20 px-4 py-3 text-white focus:border-carapita-gold outline-none text-sm uppercase rounded-lg text-center tracking-widest"
+                                                        />
+                                                        <button
+                                                            onClick={validarCupom}
+                                                            className="bg-carapita-gold text-carapita-dark px-4 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-colors"
+                                                        >
+                                                            Aplicar
+                                                        </button>
+                                                    </div>
+                                                    {cupomMensagem.text && (
+                                                        <p className={`text-[10px] text-center uppercase tracking-widest font-bold mt-2 ${cupomMensagem.type === 'error' ? 'text-red-400' : cupomMensagem.type === 'success' ? 'text-green-400' : 'text-carapita-gold'}`}>
+                                                            {cupomMensagem.text}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Right Side: Rooms */}
+                                        <div className="lg:col-span-3">
+                                            <h2 className="font-serif text-2xl lg:text-3xl mb-8 text-white border-b border-white/10 pb-4 uppercase tracking-widest">{t('booking_alojamentos_disp')}</h2>
+                                            <div className="space-y-8">
+                                                {(quartosEncontrados || []).length > 0 ? (
+                                                    quartosEncontrados?.map((q) => {
+                                                        const fotos = parseFotos(q.fotos);
+                                                        const mainFoto = fotos.find(f => f.isMain)?.url || fotos[0]?.url || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&auto=format&fit=crop';
+                                                        let comodidades: string[] = [];
+                                                        try { comodidades = JSON.parse(q.comodidades || '[]'); } catch { }
+                                                        const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
+
+                                                        return (
+                                                            <div key={q.id} className="bg-[#1C2621] border border-white/10 rounded-[2rem] hover:border-carapita-gold/50 shadow-2xl transition-all duration-700 flex flex-col xl:flex-row overflow-hidden group">
+                                                                {/* Foto Hero + Thumbnails */}
+                                                                <div className="w-full xl:w-[45%] h-full shrink-0 relative flex flex-col">
+                                                                    <div
+                                                                        className="w-full h-64 xl:h-[300px] relative overflow-hidden cursor-pointer"
+                                                                        onClick={() => { if (fotos.length > 0) { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); } }}
+                                                                    >
+                                                                        <img src={mainFoto} alt={q.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                                                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center">
+                                                                            <Camera className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500 drop-shadow-lg" size={32} strokeWidth={1.5} />
+                                                                        </div>
+                                                                    </div>
+                                                                    {/* Thumbnails na parte inferior da box da foto */}
+                                                                    {fotos.length > 1 && (
+                                                                        <div className="flex bg-[#151D18] p-2 gap-2 overflow-x-auto scrollbar-none border-t border-white/5">
+                                                                            {fotos.slice(0, 4).map((f, i) => (
+                                                                                <div
+                                                                                    key={i}
+                                                                                    onClick={() => { setLightboxFotos(fotos.map(fx => fx.url)); setLightboxIdx(i); }}
+                                                                                    className="h-16 w-24 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden border border-white/10 hover:border-carapita-gold transition-colors"
+                                                                                >
+                                                                                    <img src={f.url} className="w-full h-full object-cover" />
+                                                                                </div>
+                                                                            ))}
+                                                                            {fotos.length > 4 && (
+                                                                                <div
+                                                                                    onClick={() => { setLightboxFotos(fotos.map(fx => fx.url)); setLightboxIdx(4); }}
+                                                                                    className="h-16 w-24 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden border border-white/10 bg-black/50 flex items-center justify-center text-white/70 hover:text-white hover:border-carapita-gold transition-colors text-xs font-bold"
+                                                                                >
+                                                                                    +{fotos.length - 4}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Detalhes do Quarto */}
+                                                                <div className="p-8 flex-1 flex flex-col justify-between">
+                                                                    <div className="mb-6 xl:mb-0">
+                                                                        <div className="flex justify-between items-start mb-4 border-b border-white/5 pb-4">
+                                                                            <div>
+                                                                                <h3 className="font-serif text-2xl lg:text-3xl text-white group-hover:text-carapita-gold transition-colors">{q.nome}</h3>
+                                                                                <p className="text-[10px] uppercase tracking-widest text-carapita-gold font-bold mt-2">{q.tipo}</p>
+                                                                            </div>
+                                                                            <div className="text-right">
+                                                                                <div className="flex items-baseline gap-1 justify-end">
+                                                                                    <span className="text-lg font-serif text-carapita-gold opacity-80">€</span>
+                                                                                    <span className="text-4xl font-serif text-white">{Number(q.preco_base).toFixed(0)}</span>
+                                                                                </div>
+                                                                                <p className="text-[9px] text-white/40 uppercase tracking-wide mt-1">{lang === 'PT' ? 'Preço total aproximado' : 'Approx. Total Price'}</p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <p className="text-sm text-white/60 mb-6 leading-relaxed font-light line-clamp-3">{q.descricao}</p>
+
+                                                                        {topBullets.length > 0 && (
+                                                                            <ul className="flex flex-wrap gap-x-6 gap-y-3 mb-6">
+                                                                                {topBullets.map((c, i) => (
+                                                                                    <li key={i} className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/70 font-bold">
+                                                                                        <div className="w-1 h-1 bg-carapita-gold rounded-full"></div> {c}
+                                                                                    </li>
+                                                                                ))}
+                                                                            </ul>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Call to Action */}
+                                                                    <div className="flex flex-col-reverse sm:flex-row justify-between items-center bg-[#151D18] border border-white/5 rounded-2xl p-4 mt-auto">
+                                                                        {q.video_url ? (
+                                                                            <a href={q.video_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-carapita-gold hover:text-white transition-colors py-2 px-4">
+                                                                                <PlayCircle size={24} />
+                                                                                <span className="text-[10px] font-bold uppercase tracking-widest">Ver Vídeo</span>
+                                                                            </a>
+                                                                        ) : <div />}
+
+                                                                        <button onClick={() => iniciarReserva(q.id)} className="w-full sm:w-auto bg-carapita-gold text-carapita-dark px-10 py-4 rounded-xl text-[11px] uppercase tracking-mega font-bold hover:bg-white transition-all duration-500 shadow-xl group/btn flex items-center justify-center gap-3">
+                                                                            Selecionar <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <div className="py-24 text-center border border-dashed border-white/20 rounded-[2rem] bg-white/5">
+                                                        <Search size={48} className="mx-auto text-white/20 mb-4" />
+                                                        <p className="text-lg text-white font-serif tracking-wide mb-2">Nenhum alojamento disponível</p>
+                                                        <p className="text-sm text-white/40">Por favor, ajuste as datas da sua estadia.</p>
                                                     </div>
                                                 )}
                                             </div>
-                                            {checkIn && checkOut && (
-                                                <div className="flex items-center gap-3 bg-carapita-gold/10 border border-carapita-gold/30 px-4 py-3">
-                                                    <Calendar size={14} className="text-carapita-gold" />
-                                                    <span className="text-xs font-sans text-white font-bold">{checkIn} → {checkOut}</span>
-                                                </div>
-                                            )}
                                         </div>
-
-                                        {/* Calendário Interativo Real */}
-                                        <div className="mb-12">
-                                            <h4 className="font-serif text-xl mb-6 text-white border-b border-white/10 pb-4">
-                                                {t('booking_selecione_datas')}
-                                            </h4>
-                                            <SeletorCalendario
-                                                quartoId={quartosEncontrados?.[0]?.id || ''}
-                                                onSelect={(start, end) => {
-                                                    setCheckIn(start);
-                                                    setCheckOut(end);
-                                                }}
-                                            />
-                                        </div>
-
-                                        {/* Lista de Quartos */}
-                                        <h2 className="font-serif text-3xl mb-10 text-white border-b border-white/10 pb-4 uppercase tracking-widest">{t('booking_alojamentos_disp')}</h2>
-                                        <div className="space-y-8">
-                                            {(quartosEncontrados || []).length > 0 ? (
-                                                quartosEncontrados?.map((q) => {
-                                                    const fotos = parseFotos(q.fotos);
-                                                    const mainFoto = fotos.find(f => f.isMain)?.url || fotos[0]?.url || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&auto=format&fit=crop';
-                                                    let comodidades: string[] = [];
-                                                    try { comodidades = JSON.parse(q.comodidades || '[]'); } catch { }
-                                                    const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
-
-                                                    return (
-                                                        <div key={q.id} className="bg-white/5 border border-carapita-gold/30 hover:border-carapita-gold hover:shadow-[0_20px_40px_rgba(212,175,55,0.1)] transition-all duration-700 group flex flex-col md:flex-row overflow-hidden block">
-                                                            {/* Foto Hero */}
-                                                            <div
-                                                                className="w-full md:w-64 h-56 shrink-0 relative overflow-hidden cursor-pointer"
-                                                                onClick={() => { if (fotos.length > 0) { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); } }}
-                                                            >
-                                                                <img src={mainFoto} alt={q.nome} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
-                                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center border-r border-carapita-gold/20">
-                                                                    <Camera className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500 drop-shadow-lg" size={28} strokeWidth={1.5} />
-                                                                </div>
-                                                                {fotos.length > 1 && (
-                                                                    <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white px-2 py-1 text-[8px] uppercase tracking-widest font-bold">
-                                                                        +{fotos.length - 1} Fotos
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            {/* Detalhes do Quarto */}
-                                                            <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
-                                                                <div>
-                                                                    <div className="flex justify-between items-start mb-2 border-b border-carapita-gold/10 pb-3">
-                                                                        <div>
-                                                                            <h3 className="font-serif text-2xl text-white group-hover:text-carapita-gold transition-colors">{q.nome}</h3>
-                                                                            <p className="text-[9px] uppercase tracking-widest text-carapita-gold font-bold mt-1.5">{q.tipo}</p>
-                                                                        </div>
-                                                                        <div className="text-right">
-                                                                            <div className="flex items-baseline gap-1 justify-end">
-                                                                                <span className="text-sm font-serif text-carapita-gold">€</span>
-                                                                                <span className="text-3xl font-serif text-white group-hover:text-carapita-gold transition-colors">{Number(q.preco_base).toFixed(0)}</span>
-                                                                            </div>
-                                                                            <p className="text-[8px] text-white/40 uppercase tracking-widest mt-1">{lang === 'PT' ? 'A partir de' : 'Starting from'}</p>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <p className="text-xs text-white/50 my-4 line-clamp-2 leading-relaxed font-light">{q.descricao}</p>
-
-                                                                    {topBullets.length > 0 && (
-                                                                        <ul className="flex flex-wrap gap-x-5 gap-y-2 mb-6">
-                                                                            {topBullets.map((c, i) => (
-                                                                                <li key={i} className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-white/60 font-bold">
-                                                                                    <div className="w-1 h-1 bg-carapita-gold rounded-full"></div> {c}
-                                                                                </li>
-                                                                            ))}
-                                                                        </ul>
-                                                                    )}
-                                                                </div>
-
-                                                                {/* Call to Action */}
-                                                                <div className="flex justify-between items-center">
-                                                                    <button onClick={() => iniciarReserva(q.id)} className="bg-transparent border border-carapita-gold text-carapita-gold px-8 py-3 text-[9px] uppercase tracking-widest font-bold hover:bg-carapita-gold hover:text-white transition-all duration-500 flex items-center gap-3 group/btn">
-                                                                        Selecionar Alojamento <ChevronRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
-                                                                    </button>
-                                                                    {q.video_url && (
-                                                                        <a href={q.video_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-carapita-gold hover:text-white transition-colors">
-                                                                            <PlayCircle size={20} />
-                                                                            <span className="text-[9px] font-bold uppercase tracking-widest">Ver Vídeo</span>
-                                                                        </a>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })
-                                            ) : (
-                                                <div className="py-16 text-center border border-dashed border-gray-200 bg-gray-50/50">
-                                                    <p className="text-sm text-carapita-muted font-bold uppercase tracking-widest">Nenhum alojamento disponível</p>
-                                                    <p className="text-xs text-gray-400 mt-2">Por favor, ajuste as datas da sua estadia.</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </>
+                                    </div>
                                 )}
 
                                 {bookingStep === 'extras' && (
@@ -1419,9 +1514,22 @@ export default function Home() {
                                     <div className="mb-10 pb-6 border-b border-white/10">
                                         <div className="flex justify-between items-baseline mb-2">
                                             <span className="text-xs tracking-widest uppercase text-white/40">{t('summary_total')}</span>
-                                            <span className="text-4xl font-serif text-carapita-gold">€{totalEstadia().toFixed(2).replace('.', ',')}</span>
+                                            <div className="text-right">
+                                                {cupomAplicado && (
+                                                    <span className="block text-[11px] text-white/40 line-through mb-1 tracking-widest uppercase">
+                                                        {(totalEstadia() + valorDesconto()).toFixed(2).replace('.', ',')}
+                                                    </span>
+                                                )}
+                                                <span className="text-4xl font-serif text-carapita-gold">€{totalEstadia().toFixed(2).replace('.', ',')}</span>
+                                            </div>
                                         </div>
-                                        <p className="text-[9px] text-white/30 italic uppercase">{t('summary_taxas')}</p>
+                                        {cupomAplicado && (
+                                            <div className="flex justify-between items-center mb-2 text-green-400 text-[10px] uppercase tracking-widest font-bold">
+                                                <span>Desconto Aplicado ({cupomAplicado.codigo}):</span>
+                                                <span>- €{valorDesconto().toFixed(2).replace('.', ',')}</span>
+                                            </div>
+                                        )}
+                                        <p className="text-[9px] text-white/30 italic uppercase mt-2">{t('summary_taxas')}</p>
                                     </div>
 
                                     <div className="space-y-4 font-sans text-[11px] uppercase tracking-widest text-white/60">

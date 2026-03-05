@@ -87,12 +87,28 @@ model Reserva {
   codigo_reserva_externo String?
   extras_ids             String?
   requerimentos_especiais String?
+  cupom_id               String?
   criado_em              DateTime @default(now())
   atualizado_em          DateTime @updatedAt
 
   quarto  Quarto  @relation(fields: [quarto_id], references: [id])
   hospede Hospede @relation(fields: [hospede_id], references: [id])
   canal   Canal   @relation(fields: [canal_id], references: [id])
+  cupom   Cupom?  @relation(fields: [cupom_id], references: [id])
+}
+
+model Cupom {
+  id               String   @id @default(uuid())
+  codigo           String   @unique
+  tipo_desconto    String   @default("PERCENTUAL")
+  valor_desconto   Decimal
+  limite_usos      Int?     
+  usos_atuais      Int      @default(0)
+  data_validade    DateTime?
+  ativo            Boolean  @default(true)
+  criado_em        DateTime @default(now())
+
+  reservas         Reserva[]
 }
 
 model TarifaSazonal {

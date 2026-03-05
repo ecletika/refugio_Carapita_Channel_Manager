@@ -15,6 +15,7 @@ export default function AdminSidebar() {
         { icon: Home, label: 'Alojamento & Extras', path: '/admin/quartos' },
         { icon: RefreshCw, label: 'Integrações', path: '/admin/integracoes' },
         { icon: TrendingUp, label: 'Tarifas & Bloqueios', path: '/admin/tarifas' },
+        { icon: Sparkles, label: 'Cupons', path: '/admin/cupons' },
         { icon: BarChart2, label: 'Relatórios', path: '/admin/relatorios' },
         { icon: MapPin, label: 'Passeios', path: '/admin/passeios' },
         { icon: Settings, label: 'Contactos & Redes', path: '/admin/configuracoes' },
