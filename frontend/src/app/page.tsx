@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from 'react';
-import { ChevronRight, Calendar, Users, Menu, MapPin, X, Check, Camera, ChevronLeft, Instagram, Facebook, PlayCircle, Search } from 'lucide-react';
+import { Instagram, MapPin, Search, Calendar, Users, ChevronLeft, ChevronRight, CheckCircle, Camera, Star, Clock, Trophy, Coffee, ArrowRight, Menu, X, Instagram as InstagramIcon, Facebook as FacebookIcon, Facebook } from 'lucide-react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { useRouter } from 'next/navigation';
 import SeletorCalendario from '../components/SeletorCalendario';
 import { useEffect } from 'react';
@@ -77,7 +79,7 @@ const RoomImageGallery = ({ fotos, quartoNome, onClick }: { fotos: FotoObj[], qu
     const currentImg = fotos.length > 0 ? fotos[idx].url : 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&auto=format&fit=crop';
 
     return (
-        <div className="w-full h-full min-h-[300px] xl:h-[300px] relative overflow-hidden cursor-pointer group/slider" onClick={onClick}>
+        <div className="w-full h-full min-h-[280px] xl:h-full relative overflow-hidden cursor-pointer group/slider" onClick={onClick}>
             <img src={currentImg} alt={quartoNome} className="w-full h-full object-cover group-hover/slider:scale-105 transition-transform duration-1000" />
             <div className="absolute inset-0 bg-black/0 group-hover/slider:bg-black/20 transition-colors duration-500 flex items-center justify-center">
                 <Camera className="text-white opacity-0 group-hover/slider:opacity-100 transition-opacity duration-500 drop-shadow-lg" size={32} strokeWidth={1.5} />
@@ -637,55 +639,14 @@ export default function Home() {
     return (
         <main className="min-h-screen bg-carapita-green flex flex-col font-sans selection:bg-carapita-gold selection:text-white">
 
-            {/* Header / Navigation */}
-            <header className={`fixed top-0 w-full z-50 px-4 md:px-12 py-4 md:py-6 flex items-center justify-between transition-all duration-700 ${scrolled ? 'bg-carapita-green shadow-lg py-3 md:py-4 border-b border-white/5 text-white' : 'bg-transparent text-white border-b border-white/20'}`}>
-                {/* Left: Navigation Menu */}
-                <nav className="flex-1 hidden lg:block">
-                    <ul className="flex gap-10 text-[10px] uppercase tracking-mega font-medium">
-                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('a-essencia')}>{t('menu_casa')}</li>
-                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('alojamento')}>{t('menu_alojamento')}</li>
-                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('passeios')}>{t('menu_passeios')}</li>
-                        <li className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('contatos')}>{t('menu_contatos')}</li>
-                    </ul>
-                </nav>
-
-                {/* Center: Logo (Elegante e Imponente) - Incorporating the new luxury logo */}
-                <div className="flex-shrink-0 text-center mx-2 md:mx-4 relative group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                    <div className={`relative w-16 h-16 md:w-28 md:h-28 rounded-full overflow-hidden border-2 transition-all duration-700 p-0.5 shadow-2xl ${scrolled ? 'border-carapita-gold bg-carapita-green' : 'border-white/40 bg-white/10 backdrop-blur-sm'}`}>
-                        <img
-                            src="/logo.jpg"
-                            alt="Refúgio Carapita Logo"
-                            className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-1000"
-                        />
-                    </div>
-                </div>
-
-                {/* Right: Admin & Auth */}
-                <div className="flex-1 flex justify-end items-center gap-3 md:gap-6">
-                    <button onClick={() => setLang(lang === 'PT' ? 'EN' : 'PT')} className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-white hover:text-carapita-gold transition-colors">
-                        {lang === 'PT' ? 'EN' : 'PT'}
-                    </button>
-
-                    <button
-                        onClick={() => {
-                            const token = localStorage.getItem('token');
-                            if (token) router.push('/perfil');
-                            else router.push('/login');
-                        }}
-                        className={`hidden md:block px-6 py-2 rounded-full text-[10px] uppercase tracking-widest transition-all duration-300 border ${scrolled
-                            ? 'border-white/20 text-white hover:bg-white hover:text-carapita-green'
-                            : 'border-white text-white hover:bg-white hover:text-carapita-dark'
-                            }`}
-                    >
-                        {mounted && isLoggedIn ? t('btn_conta') : t('btn_login')}
-                    </button>
-
-                    <button onClick={() => setShowBookingScreen(true)} className={`text-[8px] md:text-[10px] uppercase tracking-mega font-bold rounded-full px-4 md:px-8 py-2 md:py-3 transition-all duration-500 bg-carapita-dark text-white hover:bg-carapita-gold text-center`}>
-                        <span className="hidden md:inline">{t('btn_reservar_now')}</span>
-                        <span className="md:hidden">{t('btn_reservar')}</span>
-                    </button>
-                </div>
-            </header>
+            <Header
+                lang={lang}
+                setLang={setLang}
+                mounted={mounted}
+                isLoggedIn={isLoggedIn}
+                onReservar={() => setShowBookingScreen(true)}
+                scrolled={scrolled}
+            />
 
             {/* Hero Banner */}
             <section className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black">
@@ -840,8 +801,8 @@ export default function Home() {
                     </h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    {passeios.map((passeio, idx) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {passeios.slice(0, 4).map((passeio, idx) => (
                         <div key={idx} className="group flex flex-col items-center text-center cursor-pointer" onClick={() => setPasseioSelecionado(passeio)}>
                             <div className="w-full h-64 md:h-72 overflow-hidden mb-6 relative border border-white/10">
                                 <img src={passeio.img} alt={passeio.nome} className="w-full h-full object-cover transform duration-700 group-hover:scale-105 filter group-hover:brightness-110" />
@@ -855,86 +816,19 @@ export default function Home() {
                         </div>
                     ))}
                 </div>
+
+                <div className="mt-16 text-center">
+                    <button
+                        onClick={() => router.push('/passeios')}
+                        className="px-10 py-4 bg-transparent border border-carapita-gold text-carapita-gold text-[10px] uppercase tracking-mega font-bold rounded-full hover:bg-carapita-gold hover:text-white transition-all duration-500"
+                    >
+                        Ver Todos os Passeios e Roteiros
+                    </button>
+                </div>
             </section>
 
             {/* Footer Padrão Relais & Châteaux */}
-            <footer id="contatos" className="bg-carapita-dark text-white py-24 px-6 md:px-16 border-t-[12px] border-carapita-gold mt-auto">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-16">
-                    <div className="w-full lg:w-1/4 md:w-1/3 text-center md:text-left flex flex-col justify-between">
-                        <div className="flex flex-col items-center md:items-start group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-carapita-gold/50 mb-6 p-0.5 bg-carapita-dark group-hover:border-carapita-gold transition-all duration-500 shadow-xl">
-                                <img src="/logo.jpg" alt="Refúgio Carapita Logo" className="w-full h-full object-cover" />
-                            </div>
-                            <h2 className="text-2xl font-serif font-light uppercase tracking-widest">
-                                Refúgio<br /><span className="text-carapita-gold text-lg tracking-mega">Carapita</span>
-                            </h2>
-                        </div>
-                        <div className="flex gap-4 justify-center md:justify-start mt-8">
-                            {siteConfigs.linkInstagram && (
-                                <a href={siteConfigs.linkInstagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-carapita-gold hover:border-carapita-gold transition-all duration-300">
-                                    <Instagram size={16} />
-                                </a>
-                            )}
-                            {siteConfigs.linkFacebook && (
-                                <a href={siteConfigs.linkFacebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-carapita-gold hover:border-carapita-gold transition-all duration-300">
-                                    <Facebook size={16} />
-                                </a>
-                            )}
-                            {siteConfigs.linkAirbnb && (
-                                <a href={siteConfigs.linkAirbnb} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-[#FF5A5F] hover:border-[#FF5A5F] transition-all duration-300 group">
-                                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation" focusable="false" className="w-5 h-5 fill-white"><path d="m16 1c2.008 0 3.463.963 4.751 3.269l.533 1.025c1.954 3.83 6.114 12.54 7.1 14.836l.145.353c.667 1.591.91 2.472.96 3.396l.011.415c0 3.447-2.541 6.27-5.688 6.651l-.312.022c-1.928 0-3.391-.853-4.75-2.827-1.359 1.974-2.822 2.827-4.75 2.827-3.132 0-5.688-2.583-5.978-5.836l-.022-.4c0-.924.243-1.805.91-3.396l.144-.351c.987-2.296 5.147-11.006 7.101-14.836l.533-1.025c1.288-2.306 2.743-3.269 4.751-3.269zm0 2c-1.282 0-2.12.63-3 2.193l-.533 1.026c-1.936 3.792-6.081 12.474-7.057 14.753-.567 1.354-.755 2.05-.79 2.76l-.01.329c0 2.21 1.7 4.1 3.91 4.385l.29.015c1.47 0 2.463-.67 3.513-2.193l.301-.453.307-.453c.48-.702 1.018-1.513 1.637-2.457l1.452-2.214 1.452 2.214c.619.944 1.157 1.755 1.637 2.457l.307.453.301.453c1.05 1.523 2.043 2.193 3.513 2.193 2.227 0 4.1-1.888 4.2-4.1l.01-.3c0-.71-.188-1.406-.755-2.76l-.035-.082c-.976-2.279-5.122-10.96-7.077-14.793l-.533-1.026c-.88-1.563-1.718-2.193-3-2.193zm0 13a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path></svg>
-                                </a>
-                            )}
-                            {siteConfigs.linkBooking && (
-                                <a href={siteConfigs.linkBooking} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-[#003580] hover:border-[#003580] transition-all duration-300 text-white font-bold text-xs uppercase cursor-pointer">
-                                    B.
-                                </a>
-                            )}
-                        </div>
-                    </div>
-                    <div className="w-full lg:w-3/4 md:w-2/3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 text-center md:text-left">
-                        <div className="flex flex-col gap-4 text-xs font-light text-white/70">
-                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">{t('footer_acasa')}</h5>
-                            <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('a-essencia')}>{t('footer_a_essencia')}</span>
-                            <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('alojamento')}>{t('alojamento_tag')}</span>
-                            <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollTo('passeios')}>{t('footer_atracoes')}</span>
-                        </div>
-                        <div className="flex flex-col gap-4 text-xs font-light text-white/70">
-                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">{t('footer_contatos')}</h5>
-                            <p>{siteConfigs.endereco || 'Rua da Paz, S/N, Ourém, Portugal'}</p>
-                            <p>{siteConfigs.telefoneReservas || '+351 967 244 938'}</p>
-                            <p>{siteConfigs.emailContato || 'contato@refugiocarapita.com'}</p>
-                        </div>
-                        <div className="flex flex-col gap-4 text-xs font-light text-white/70">
-                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">{t('footer_legal')}</h5>
-                            <a href="#" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_politicas')}</a>
-                            <a href="#" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_termos')}</a>
-                            <a href="/politica-cancelamento" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_politica_cancelamento')}</a>
-                            <a href="/regras-hospedes" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_regras')}</a>
-                        </div>
-                        <div className="flex flex-col gap-4 text-xs font-light text-white/70">
-                            <h5 className="text-white tracking-mega uppercase font-medium mb-4">{t('footer_regras_casa_tit')}</h5>
-                            <p>{t('footer_checkin')}</p>
-                            <p>{t('footer_checkout')}</p>
-                            <p>{t('footer_max_pessoas')}</p>
-                            <a href="/regras-da-casa" className="hover:text-carapita-gold transition-colors duration-300 font-bold underline mt-2 w-fit mx-auto md:mx-0 inline-block">{t('footer_saiba_mais')}</a>
-
-                            <div className="mt-8 flex flex-col gap-3 border-t border-white/10 pt-6">
-                                <a href="https://www.livroreclamacoes.pt/INICIO/" target="_blank" rel="noopener noreferrer" className="hover:text-carapita-gold transition-colors duration-300 flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></svg>
-                                    Livro de Reclamações
-                                </a>
-                                <a href="/tratamento-dados" className="hover:text-carapita-gold transition-colors duration-300">
-                                    Política de Proteção de Dados
-                                </a>
-                                <a href="https://rnt.turismodeportugal.pt/RNT/RNAL.aspx?nr=172760" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-carapita-gold transition-colors duration-300 inline-block mt-2">
-                                    RNET 172760
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <Footer lang={lang} siteConfigs={siteConfigs} />
             {/* Modal de Detalhes do Passeio */}
             {passeioSelecionado && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -1205,9 +1099,9 @@ export default function Home() {
                                                         const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
 
                                                         return (
-                                                            <div key={q.id} className="bg-[#1C2621] border border-white/10 rounded-[2rem] hover:border-carapita-gold/50 shadow-2xl transition-all duration-700 flex flex-col xl:flex-row overflow-hidden group">
+                                                            <div key={q.id} className="bg-[#1C2621] border border-white/10 rounded-[2.5rem] hover:border-carapita-gold/50 shadow-2xl transition-all duration-700 flex flex-col md:flex-row overflow-hidden group min-h-[350px]">
                                                                 {/* Foto Hero com setas em vez de Thumbnails */}
-                                                                <div className="w-full xl:w-[45%] h-full shrink-0 relative flex flex-col">
+                                                                <div className="w-full md:w-[35%] lg:w-[30%] xl:w-[32%] shrink-0 relative flex flex-col overflow-hidden">
                                                                     {(() => {
                                                                         // Usando um pequeno hack ou criando subcomponente inline? Melhor criar um component. 
                                                                         // Mas como não podemos exportar facilmente e usar hook no meio do map:

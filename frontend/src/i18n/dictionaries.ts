@@ -104,7 +104,21 @@ export const dictionaries = {
         booking_politica_garantia_texto: 'O depósito, não é reembolsável, no valor integral da estadia, incluindo taxa, será cobrado 02 dias antes da chegada.',
         form_info_contato: 'Informação de Contacto',
         form_faturacao: 'Endereço de Faturação',
-        form_requerimentos_desc: 'Pode adicionar aqui informações como idade das crianças, pedidos de restaurante, dietas especiais ou animais de estimação.'
+        form_requerimentos_desc: 'Pode adicionar aqui informações como idade das crianças, pedidos de restaurante, dietas especiais ou animais de estimação.',
+
+        contact_tag: 'Contatos',
+        contact_title: 'Sinta-se em',
+        contact_title_casa: 'Casa',
+        contact_subtitle: 'Estamos à sua disposição para qualquer dúvida, pedido especial ou reserva direta. A nossa equipa responderá o mais breve possível.',
+        contact_form_title: 'Envie-nos uma Mensagem',
+        contact_name: 'Nome Completo',
+        contact_subject: 'Assunto',
+        contact_message: 'Mensagem',
+        contact_send: 'Enviar Mensagem',
+        contact_success: 'Mensagem enviada com sucesso! Entraremos em contacto em breve.',
+        contact_error: 'Erro ao enviar a mensagem. Por favor, tente novamente.',
+        contact_info_title: 'Informações de Contacto',
+        contact_info_desc: 'Encontre-nos no coração de Portugal ou ligue-nos diretamente.',
     },
     EN: {
         menu_casa: 'The House',
@@ -211,6 +225,20 @@ export const dictionaries = {
         booking_politica_garantia_texto: 'The deposit is non-refundable, in the full amount of the stay, including tax, and will be charged 2 days before arrival.',
         form_info_contato: 'Contact Information',
         form_faturacao: 'Billing Address',
-        form_requerimentos_desc: 'You can add information here such as ages of children, restaurant requests, special diets, or pets.'
+        form_requerimentos_desc: 'You can add information here such as ages of children, restaurant requests, special diets, or pets.',
+
+        contact_tag: 'Contacts',
+        contact_title: 'Feel at',
+        contact_title_casa: 'Home',
+        contact_subtitle: 'We are at your disposal for any questions, special requests, or direct bookings. Our team will respond as soon as possible.',
+        contact_form_title: 'Send us a Message',
+        contact_name: 'Full Name',
+        contact_subject: 'Subject',
+        contact_message: 'Message',
+        contact_send: 'Send Message',
+        contact_success: 'Message sent successfully! We will get in touch soon.',
+        contact_error: 'Error sending the message. Please try again.',
+        contact_info_title: 'Contact Information',
+        contact_info_desc: 'Find us in the heart of Portugal or call us directly.',
     }
 };
