@@ -827,7 +827,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Footer Padrão Relais & Châteaux */}
+            {/* Footer Acomodações Encantadora em Ourem */}
             <Footer lang={lang} siteConfigs={siteConfigs} />
             {/* Modal de Detalhes do Passeio */}
             {passeioSelecionado && (
