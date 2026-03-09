@@ -57,7 +57,7 @@ export default function Footer({ lang, siteConfigs }: FooterProps) {
                         )}
                     </div>
                 </div>
-                <div className="w-full lg:w-3/4 md:w-2/3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 text-center md:text-left">
+                <div className="w-full lg:w-3/4 md:w-2/3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 text-center md:text-left">
                     <div className="flex flex-col gap-4 text-xs font-light text-white/70">
                         <h5 className="text-white tracking-mega uppercase font-medium mb-4">{t('footer_acasa')}</h5>
                         <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollToOrNavigate('a-essencia')}>{t('footer_a_essencia')}</span>
@@ -70,24 +70,18 @@ export default function Footer({ lang, siteConfigs }: FooterProps) {
                         <h5 className="text-white tracking-mega uppercase font-medium mb-4">Institucional</h5>
                         <a href="https://www.livroreclamacoes.pt/INICIO/" target="_blank" rel="noopener noreferrer" className="hover:text-carapita-gold transition-colors duration-300 flex items-center justify-center md:justify-start gap-2">
                             <BookOpen size={14} className="text-carapita-gold" />
-                            Livro de Reclamações
+                            {t('footer_livro_reclamacoes')}
                         </a>
                         <a href="/tratamento-dados" className="hover:text-carapita-gold transition-colors duration-300 flex items-center justify-center md:justify-start gap-2">
                             <ShieldCheck size={14} className="text-carapita-gold" />
-                            Política de Dados
+                            {t('footer_politica_dados')}
                         </a>
                         <div className="flex items-center justify-center md:justify-start gap-2 text-white/40">
-                            <FileText size={14} />
-                            <span>RNET 172760</span>
+                            <FileText size={14} className="text-carapita-gold" />
+                            <span>{t('footer_rnet')}</span>
                         </div>
-                    </div>
-
-                    <div className="flex flex-col gap-4 text-xs font-light text-white/70">
-                        <h5 className="text-white tracking-mega uppercase font-medium mb-4">{t('footer_legal')}</h5>
-                        <a href="#" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_politicas')}</a>
-                        <a href="#" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_termos')}</a>
-                        <a href="/politica-cancelamento" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_politica_cancelamento')}</a>
                         <a href="/regras-hospedes" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_regras')}</a>
+                        <a href="/politica-cancelamento" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_politica_cancelamento')}</a>
                     </div>
 
                     <div className="flex flex-col gap-4 text-xs font-light text-white/70">
