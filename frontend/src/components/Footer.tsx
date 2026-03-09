@@ -30,8 +30,8 @@ export default function Footer({ lang, siteConfigs }: FooterProps) {
                         <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-carapita-gold/50 mb-6 p-0.5 bg-carapita-dark group-hover:border-carapita-gold transition-all duration-500 shadow-xl">
                             <img src="/logo.jpg" alt="Refúgio Carapita Logo" className="w-full h-full object-cover" />
                         </div>
-                        <h2 className="text-2xl font-serif font-light uppercase tracking-widest">
-                            Refúgio<br /><span className="text-carapita-gold text-lg tracking-mega">Carapita</span>
+                        <h2 className="text-xl md:text-2xl font-serif font-light uppercase tracking-widest whitespace-nowrap">
+                            Refúgio <span className="text-carapita-gold text-lg md:text-xl tracking-mega">Carapita</span>
                         </h2>
                     </div>
                     <div className="flex gap-4 justify-center md:justify-start mt-8">
