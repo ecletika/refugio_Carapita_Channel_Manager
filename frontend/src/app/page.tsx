@@ -1085,60 +1085,56 @@ export default function Home() {
                                                         const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
 
                                                         return (
-                                                            <div key={q.id} className="bg-[#1C2621] border border-white/10 rounded-3xl hover:border-carapita-gold/50 shadow-2xl transition-all duration-700 flex flex-col md:flex-row overflow-hidden group">
-                                                                {/* Foto Hero com setas em vez de Thumbnails */}
-                                                                    <div className="w-full md:w-[35%] lg:w-[30%] xl:w-[32%] shrink-0 relative flex flex-col overflow-hidden aspect-video md:aspect-auto">
-                                                                    {(() => {
-                                                                        // Usando um pequeno hack ou criando subcomponente inline? Melhor criar um component. 
-                                                                        // Mas como não podemos exportar facilmente e usar hook no meio do map:
-                                                                        // Em React não podemos chamar useState dentro de map. Então vamos usar um wrapper component.
-                                                                        return <RoomImageGallery fotos={fotos} quartoNome={q.nome} onClick={() => { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); }} />;
-                                                                    })()}
+                                                            <div key={q.id} className="bg-[#1C2621] border border-white/10 rounded-2xl hover:border-carapita-gold/50 shadow-lg transition-all duration-700 flex flex-col md:flex-row overflow-hidden group md:h-40 lg:h-44">
+                                                                {/* Foto Quadrada Compacta */}
+                                                                <div className="w-full md:w-40 lg:w-48 shrink-0 relative overflow-hidden h-48 md:h-full">
+                                                                    <RoomImageGallery fotos={fotos} quartoNome={q.nome} onClick={() => { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); }} />
                                                                 </div>
 
-                                                                {/* Detalhes do Quarto */}
-                                                                <div className="p-5 flex-1 flex flex-col justify-between">
-                                                                    <div className="mb-6 xl:mb-0">
-                                                                        <div className="flex justify-between items-start mb-4 border-b border-white/5 pb-4">
-                                                                            <div>
-                                                                                <h3 className="font-serif text-xl lg:text-2xl text-white group-hover:text-carapita-gold transition-colors">{q.nome}</h3>
-                                                                                <p className="text-[9px] uppercase tracking-widest text-carapita-gold font-bold mt-1">{q.tipo}</p>
+                                                                {/* Detalhes do Quarto em Faixa Horizontal */}
+                                                                <div className="p-4 md:p-5 flex-1 flex flex-col justify-between">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div className="flex-1 min-w-0 pr-4">
+                                                                            <div className="flex items-center gap-3">
+                                                                                <h3 className="font-serif text-lg lg:text-xl text-white group-hover:text-carapita-gold transition-colors truncate">{q.nome}</h3>
+                                                                                <span className="hidden sm:inline-block text-[8px] uppercase tracking-widest text-carapita-gold font-bold border border-carapita-gold/30 px-2 py-0.5 rounded">{q.tipo}</span>
                                                                             </div>
-                                                                            <div className="text-right">
-                                                                                <div className="flex items-baseline gap-1 justify-end">
-                                                                                    <span className="text-base font-serif text-carapita-gold opacity-80">€</span>
-                                                                                    <span className="text-3xl font-serif text-white">{Number(q.preco_base).toFixed(0)}</span>
-                                                                                </div>
-                                                                                <p className="text-[9px] text-white/40 uppercase tracking-wide mt-1">{lang === 'PT' ? 'Preço total aproximado' : 'Approx. Total Price'}</p>
-                                                                            </div>
+                                                                            
+                                                                            <p className="text-[11px] text-white/50 mt-1 line-clamp-1 md:line-clamp-2 leading-relaxed font-light">{q.descricao}</p>
+                                                                            
+                                                                            {topBullets.length > 0 && (
+                                                                                <ul className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+                                                                                    {topBullets.slice(0, 3).map((c, i) => (
+                                                                                        <li key={i} className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-white/40 font-bold">
+                                                                                            <div className="w-1 h-1 bg-carapita-gold/50 rounded-full"></div> {c}
+                                                                                        </li>
+                                                                                    ))}
+                                                                                </ul>
+                                                                            )}
                                                                         </div>
 
-                                                                        <p className="text-sm text-white/60 mb-6 leading-relaxed font-light line-clamp-3">{q.descricao}</p>
+                                                                        <div className="text-right shrink-0 border-l border-white/5 pl-4">
+                                                                            <div className="flex items-baseline gap-0.5 justify-end">
+                                                                                <span className="text-xs font-serif text-carapita-gold opacity-80">€</span>
+                                                                                <span className="text-2xl lg:text-3xl font-serif text-white leading-none">{Number(q.preco_base).toFixed(0)}</span>
+                                                                            </div>
+                                                                            <p className="text-[8px] text-white/30 uppercase tracking-tighter mt-1 whitespace-nowrap">Por Noite</p>
 
-                                                                        {topBullets.length > 0 && (
-                                                                            <ul className="flex flex-wrap gap-x-6 gap-y-3 mb-6">
-                                                                                {topBullets.map((c, i) => (
-                                                                                    <li key={i} className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/70 font-bold">
-                                                                                        <div className="w-1 h-1 bg-carapita-gold rounded-full"></div> {c}
-                                                                                    </li>
-                                                                                ))}
-                                                                            </ul>
-                                                                        )}
+                                                                            <button onClick={() => iniciarReserva(q.id)} className="mt-3 bg-carapita-gold text-carapita-dark px-4 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all duration-300 shadow-md flex items-center gap-2">
+                                                                                Reservar
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
 
-                                                                    {/* Call to Action */}
-                                                                    <div className="flex flex-col-reverse sm:flex-row justify-between items-center bg-[#151D18] border border-white/5 rounded-2xl p-4 mt-auto">
-                                                                        {q.video_url ? (
-                                                                            <a href={q.video_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-carapita-gold hover:text-white transition-colors py-2 px-4">
-                                                                                <CirclePlay size={24} />
-                                                                                <span className="text-[10px] font-bold uppercase tracking-widest">Ver Vídeo</span>
+                                                                    {/* Footer do Card com Vídeo */}
+                                                                    {q.video_url && (
+                                                                        <div className="mt-auto pt-2 border-t border-white/5">
+                                                                            <a href={q.video_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-carapita-gold hover:text-white transition-colors">
+                                                                                <CirclePlay size={16} />
+                                                                                <span className="text-[9px] font-bold uppercase tracking-widest">Ver Vídeo</span>
                                                                             </a>
-                                                                        ) : <div />}
-
-                                                                        <button onClick={() => iniciarReserva(q.id)} className="w-full sm:w-auto bg-carapita-gold text-carapita-dark px-10 py-4 rounded-xl text-[11px] uppercase tracking-mega font-bold hover:bg-white transition-all duration-500 shadow-xl group/btn flex items-center justify-center gap-3">
-                                                                            Selecionar <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
-                                                                        </button>
-                                                                    </div>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         );
