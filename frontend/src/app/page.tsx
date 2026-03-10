@@ -1085,56 +1085,68 @@ export default function Home() {
                                                         const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
 
                                                         return (
-                                                            <div key={q.id} className="bg-[#1C2621] border border-white/10 rounded-2xl hover:border-carapita-gold/50 shadow-lg transition-all duration-700 flex flex-col md:flex-row overflow-hidden group md:h-40 lg:h-44">
-                                                                {/* Foto Quadrada Compacta */}
-                                                                <div className="w-full md:w-40 lg:w-48 shrink-0 relative overflow-hidden h-48 md:h-full">
+                                                            <div key={q.id} className="bg-[#1C2621]/80 backdrop-blur-sm border border-white/10 rounded-2xl hover:border-carapita-gold/40 shadow-xl transition-all duration-500 flex flex-col md:flex-row overflow-hidden group">
+                                                                {/* Image Container - Aspect Ratio Fix */}
+                                                                <div className="w-full md:w-[280px] lg:w-[320px] shrink-0 relative overflow-hidden aspect-video md:aspect-square lg:aspect-video">
                                                                     <RoomImageGallery fotos={fotos} quartoNome={q.nome} onClick={() => { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); }} />
                                                                 </div>
 
-                                                                {/* Detalhes do Quarto em Faixa Horizontal */}
-                                                                <div className="p-4 md:p-5 flex-1 flex flex-col justify-between">
-                                                                    <div className="flex justify-between items-start">
-                                                                        <div className="flex-1 min-w-0 pr-4">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <h3 className="font-serif text-lg lg:text-xl text-white group-hover:text-carapita-gold transition-colors truncate">{q.nome}</h3>
-                                                                                <span className="hidden sm:inline-block text-[8px] uppercase tracking-widest text-carapita-gold font-bold border border-carapita-gold/30 px-2 py-0.5 rounded">{q.tipo}</span>
+                                                                {/* Content Area - Premium Spacing */}
+                                                                <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
+                                                                    <div>
+                                                                        <div className="flex justify-between items-start gap-4 mb-4">
+                                                                            <div className="min-w-0 pr-2">
+                                                                                <div className="flex items-center gap-2 mb-1">
+                                                                                    <span className="text-[8px] uppercase tracking-[0.2em] text-carapita-gold font-bold">{q.tipo}</span>
+                                                                                    <div className="w-1 h-1 bg-white/20 rounded-full"></div>
+                                                                                    <span className="text-[8px] uppercase tracking-[0.2em] text-white/40 font-bold">Refúgio Premium</span>
+                                                                                </div>
+                                                                                <h3 className="font-serif text-xl lg:text-2xl text-white group-hover:text-carapita-gold transition-colors leading-tight">
+                                                                                    {q.nome}
+                                                                                </h3>
                                                                             </div>
-                                                                            
-                                                                            <p className="text-[11px] text-white/50 mt-1 line-clamp-1 md:line-clamp-2 leading-relaxed font-light">{q.descricao}</p>
-                                                                            
-                                                                            {topBullets.length > 0 && (
-                                                                                <ul className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
-                                                                                    {topBullets.slice(0, 3).map((c, i) => (
-                                                                                        <li key={i} className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-white/40 font-bold">
-                                                                                            <div className="w-1 h-1 bg-carapita-gold/50 rounded-full"></div> {c}
-                                                                                        </li>
-                                                                                    ))}
-                                                                                </ul>
+                                                                            <div className="text-right shrink-0">
+                                                                                <div className="flex items-baseline gap-1 justify-end">
+                                                                                    <span className="text-sm font-serif text-carapita-gold">€</span>
+                                                                                    <span className="text-3xl lg:text-4xl font-serif text-white">{Number(q.preco_base).toFixed(0)}</span>
+                                                                                </div>
+                                                                                <p className="text-[9px] text-white/30 uppercase tracking-widest mt-1">Por Noite</p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <p className="text-sm text-white/50 mb-6 leading-relaxed font-light line-clamp-2 italic">
+                                                                            "{q.descricao}"
+                                                                        </p>
+
+                                                                        {topBullets.length > 0 && (
+                                                                            <div className="flex flex-wrap gap-4">
+                                                                                {topBullets.slice(0, 4).map((c, i) => (
+                                                                                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/5 rounded-full text-[9px] uppercase tracking-widest text-white/60 font-medium">
+                                                                                        <div className="w-1.5 h-1.5 bg-carapita-gold/60 rounded-full"></div>
+                                                                                        {c}
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    <div className="mt-8 flex items-center justify-between pt-6 border-t border-white/5">
+                                                                        <div className="flex items-center gap-4">
+                                                                            {q.video_url && (
+                                                                                <a href={q.video_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-carapita-gold hover:text-white transition-colors group/video">
+                                                                                    <CirclePlay size={18} className="transition-transform group-hover/video:scale-110" />
+                                                                                    <span className="text-[10px] font-bold uppercase tracking-widest">Vídeo Tour</span>
+                                                                                </a>
                                                                             )}
                                                                         </div>
 
-                                                                        <div className="text-right shrink-0 border-l border-white/5 pl-4">
-                                                                            <div className="flex items-baseline gap-0.5 justify-end">
-                                                                                <span className="text-xs font-serif text-carapita-gold opacity-80">€</span>
-                                                                                <span className="text-2xl lg:text-3xl font-serif text-white leading-none">{Number(q.preco_base).toFixed(0)}</span>
-                                                                            </div>
-                                                                            <p className="text-[8px] text-white/30 uppercase tracking-tighter mt-1 whitespace-nowrap">Por Noite</p>
-
-                                                                            <button onClick={() => iniciarReserva(q.id)} className="mt-3 bg-carapita-gold text-carapita-dark px-4 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all duration-300 shadow-md flex items-center gap-2">
-                                                                                Reservar
-                                                                            </button>
-                                                                        </div>
+                                                                        <button 
+                                                                            onClick={() => iniciarReserva(q.id)} 
+                                                                            className="bg-carapita-gold text-carapita-dark px-8 py-3 rounded-xl text-[10px] uppercase tracking-mega font-black hover:bg-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl"
+                                                                        >
+                                                                            Selecionar Alojamento
+                                                                        </button>
                                                                     </div>
-
-                                                                    {/* Footer do Card com Vídeo */}
-                                                                    {q.video_url && (
-                                                                        <div className="mt-auto pt-2 border-t border-white/5">
-                                                                            <a href={q.video_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-carapita-gold hover:text-white transition-colors">
-                                                                                <CirclePlay size={16} />
-                                                                                <span className="text-[9px] font-bold uppercase tracking-widest">Ver Vídeo</span>
-                                                                            </a>
-                                                                        </div>
-                                                                    )}
                                                                 </div>
                                                             </div>
                                                         );
