@@ -981,13 +981,13 @@ export default function Home() {
                             {/* Coluna do Calendário e Filtros */}
                             <div className="w-full xl:w-auto xl:flex-shrink-0">
                                 {bookingStep === 'selection' && (
-                                    <div className="flex flex-col xl:flex-row gap-8">
-                                        {/* Left Side: Calendar + Guests + Cupons */}
-                                        <div className="w-full xl:w-[320px] xl:flex-shrink-0 space-y-3">
-                                            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm">
-                                                <h4 className="font-serif text-xl mb-6 text-white text-center border-b border-white/10 pb-4">
-                                                    {t('booking_selecione_datas')}
-                                                </h4>
+                                    <div className="w-full space-y-8">
+                                        {/* 📅 Calendário Gigante e Horizontal */}
+                                        <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] backdrop-blur-md shadow-2xl">
+                                            <h4 className="font-serif text-2xl mb-8 text-white text-center border-b border-white/10 pb-6 uppercase tracking-[0.4em]">
+                                                {t('booking_selecione_datas')}
+                                            </h4>
+                                            <div className="max-w-[1100px] mx-auto">
                                                 <SeletorCalendario
                                                     quartoId={quartosEncontrados?.[0]?.id || ''}
                                                     onSelect={(start, end) => {
@@ -996,168 +996,112 @@ export default function Home() {
                                                     }}
                                                 />
                                             </div>
-
-                                            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm">
-                                                <h4 className="font-serif text-base mb-4 text-white uppercase tracking-widest text-center border-b border-white/10 pb-3">{t('booking_num_hospedes')}</h4>
-
-                                                <div className="space-y-4">
-                                                    <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                                                        <div>
-                                                            <div className="text-white text-sm font-semibold">Adultos (18+)</div>
-                                                        </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <button
-                                                                onClick={() => setAdultos(Math.max(1, adultos - 1))}
-                                                                className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors disabled:opacity-30"
-                                                                disabled={adultos <= 1}
-                                                            >−</button>
-                                                            <span className="text-white font-serif text-lg w-4 text-center">{adultos}</span>
-                                                            <button
-                                                                onClick={() => setAdultos(Math.min(10, adultos + 1))}
-                                                                className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors"
-                                                            >+</button>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex justify-between items-center pt-2">
-                                                        <div>
-                                                            <div className="text-white text-sm font-semibold">Crianças (5-17)</div>
-                                                        </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <button
-                                                                onClick={() => setCriancas(Math.max(0, criancas - 1))}
-                                                                className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors disabled:opacity-30"
-                                                                disabled={criancas <= 0}
-                                                            >−</button>
-                                                            <span className="text-white font-serif text-lg w-4 text-center">{criancas}</span>
-                                                            <button
-                                                                onClick={() => setCriancas(Math.min(10, criancas + 1))}
-                                                                className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold transition-colors"
-                                                            >+</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm">
-                                                <h4 className="font-serif text-base mb-4 text-white uppercase tracking-widest text-center border-b border-white/10 pb-3">Cupão Promocional</h4>
-                                                <div className="flex flex-col gap-2">
-                                                    <div className="flex gap-2">
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Ex: CARAPITA10"
-                                                            value={cupomCodigo}
-                                                            onChange={e => {
-                                                                setCupomCodigo(e.target.value.toUpperCase());
-                                                                if (cupomAplicado) {
-                                                                    setCupomAplicado(null);
-                                                                    setCupomMensagem({ text: '', type: '' });
-                                                                }
-                                                            }}
-                                                            className="flex-1 bg-transparent border border-white/20 px-4 py-3 text-white focus:border-carapita-gold outline-none text-sm uppercase rounded-lg text-center tracking-widest"
-                                                        />
-                                                        <button
-                                                            onClick={validarCupom}
-                                                            className="bg-carapita-gold text-carapita-dark px-4 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-colors"
-                                                        >
-                                                            Aplicar
-                                                        </button>
-                                                    </div>
-                                                    {cupomMensagem.text && (
-                                                        <p className={`text-[10px] text-center uppercase tracking-widest font-bold mt-2 ${cupomMensagem.type === 'error' ? 'text-red-400' : cupomMensagem.type === 'success' ? 'text-green-400' : 'text-carapita-gold'}`}>
-                                                            {cupomMensagem.text}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
                                         </div>
 
-                                        {/* Right Side: Rooms */}
-                                        <div className="flex-1 min-w-0">
-                                            <h2 className="font-serif text-lg lg:text-xl mb-4 text-white border-b border-white/10 pb-2 uppercase tracking-widest">{t('booking_alojamentos_disp')}</h2>
-                                            <div className="space-y-4">
-                                                {(quartosEncontrados || []).length > 0 ? (
-                                                    quartosEncontrados?.map((q) => {
-                                                        const fotos = parseFotos(q.fotos);
-                                                        const mainFoto = fotos.find(f => f.isMain)?.url || fotos[0]?.url || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&auto=format&fit=crop';
-                                                        let comodidades: string[] = [];
-                                                        try { comodidades = JSON.parse(q.comodidades || '[]'); } catch { }
-                                                        const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
+                                        <div className="flex flex-col xl:flex-row gap-10 items-start">
+                                            {/* Left: Filters & Summaries */}
+                                            <div className="w-full xl:w-[320px] shrink-0 space-y-6">
+                                                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm">
+                                                    <h4 className="font-serif text-base mb-6 text-white uppercase tracking-widest text-center border-b border-white/10 pb-4">{t('booking_num_hospedes')}</h4>
+                                                    <div className="space-y-6">
+                                                        <div className="flex justify-between items-center border-b border-white/10 pb-6">
+                                                            <div><div className="text-white text-sm font-semibold">Adultos (18+)</div></div>
+                                                            <div className="flex items-center gap-4">
+                                                                <button onClick={() => setAdultos(Math.max(1, adultos - 1))} className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold disabled:opacity-30" disabled={adultos <= 1}>−</button>
+                                                                <span className="text-white font-serif text-lg w-4 text-center">{adultos}</span>
+                                                                <button onClick={() => setAdultos(Math.min(10, adultos + 1))} className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold">+</button>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex justify-between items-center pt-2">
+                                                            <div><div className="text-white text-sm font-semibold">Crianças (5-17)</div></div>
+                                                            <div className="flex items-center gap-4">
+                                                                <button onClick={() => setCriancas(Math.max(0, criancas - 1))} className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold disabled:opacity-30" disabled={criancas <= 0}>−</button>
+                                                                <span className="text-white font-serif text-lg w-4 text-center">{criancas}</span>
+                                                                <button onClick={() => setCriancas(Math.min(10, criancas + 1))} className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold">+</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                                        return (
-                                                            <div key={q.id} className="bg-[#1C2621]/80 backdrop-blur-sm border border-white/10 rounded-2xl hover:border-carapita-gold/40 shadow-xl transition-all duration-500 flex flex-col md:flex-row overflow-hidden group">
-                                                                {/* Image Container - Aspect Ratio Fix */}
-                                                                <div className="w-full md:w-[280px] lg:w-[320px] shrink-0 relative overflow-hidden aspect-video md:aspect-square lg:aspect-video">
-                                                                    <RoomImageGallery fotos={fotos} quartoNome={q.nome} onClick={() => { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); }} />
-                                                                </div>
+                                                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
+                                                    <h4 className="font-serif text-base mb-5 text-white uppercase tracking-widest text-center border-b border-white/10 pb-3">Cupão</h4>
+                                                    <div className="flex gap-2">
+                                                        <input type="text" placeholder="Código" value={cupomCodigo} onChange={e => setCupomCodigo(e.target.value.toUpperCase())} className="flex-1 bg-transparent border border-white/20 px-4 py-3 text-white focus:border-carapita-gold outline-none text-xs uppercase rounded-lg text-center" />
+                                                        <button onClick={validarCupom} className="bg-carapita-gold text-carapita-dark px-4 py-3 rounded-lg text-[10px] font-bold uppercase">OK</button>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                                                {/* Content Area - Premium Spacing */}
-                                                                <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
-                                                                    <div>
-                                                                        <div className="flex justify-between items-start gap-4 mb-4">
-                                                                            <div className="min-w-0 pr-2">
-                                                                                <div className="flex items-center gap-2 mb-1">
-                                                                                    <span className="text-[8px] uppercase tracking-[0.2em] text-carapita-gold font-bold">{q.tipo}</span>
-                                                                                    <div className="w-1 h-1 bg-white/20 rounded-full"></div>
-                                                                                    <span className="text-[8px] uppercase tracking-[0.2em] text-white/40 font-bold">Refúgio Premium</span>
-                                                                                </div>
-                                                                                <h3 className="font-serif text-xl lg:text-2xl text-white group-hover:text-carapita-gold transition-colors leading-tight">
-                                                                                    {q.nome}
-                                                                                </h3>
-                                                                            </div>
-                                                                            <div className="text-right shrink-0">
-                                                                                <div className="flex items-baseline gap-1 justify-end">
-                                                                                    <span className="text-sm font-serif text-carapita-gold">€</span>
-                                                                                    <span className="text-3xl lg:text-4xl font-serif text-white">{Number(q.preco_base).toFixed(0)}</span>
-                                                                                </div>
-                                                                                <p className="text-[9px] text-white/30 uppercase tracking-widest mt-1">Por Noite</p>
-                                                                            </div>
-                                                                        </div>
+                                            {/* Right: Rooms List */}
+                                            <div className="flex-1 min-w-0">
+                                                <h2 className="font-serif text-xl lg:text-2xl mb-6 text-white border-b border-white/10 pb-4 uppercase tracking-[0.2em]">{t('booking_alojamentos_disp')}</h2>
+                                                <div className="space-y-8">
+                                                    {(quartosEncontrados || []).length > 0 ? (
+                                                        quartosEncontrados?.map((q) => {
+                                                            const fotos = parseFotos(q.fotos);
+                                                            let comodidades: string[] = [];
+                                                            try { comodidades = JSON.parse(q.comodidades || '[]'); } catch { }
+                                                            const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
 
-                                                                        <p className="text-sm text-white/50 mb-6 leading-relaxed font-light line-clamp-2 italic">
-                                                                            "{q.descricao}"
-                                                                        </p>
-
-                                                                        {topBullets.length > 0 && (
-                                                                            <div className="flex flex-wrap gap-4">
-                                                                                {topBullets.slice(0, 4).map((c, i) => (
-                                                                                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/5 rounded-full text-[9px] uppercase tracking-widest text-white/60 font-medium">
-                                                                                        <div className="w-1.5 h-1.5 bg-carapita-gold/60 rounded-full"></div>
-                                                                                        {c}
-                                                                                    </div>
-                                                                                ))}
-                                                                            </div>
-                                                                        )}
+                                                            return (
+                                                                <div key={q.id} className="bg-[#1C2621]/80 backdrop-blur-sm border border-white/10 rounded-2xl hover:border-carapita-gold/40 shadow-xl transition-all duration-500 flex flex-col md:flex-row overflow-hidden group">
+                                                                    <div className="w-full md:w-[280px] lg:w-[320px] shrink-0 relative overflow-hidden aspect-video md:aspect-square lg:aspect-video">
+                                                                        <RoomImageGallery fotos={fotos} quartoNome={q.nome} onClick={() => { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); }} />
                                                                     </div>
-
-                                                                    <div className="mt-8 flex items-center justify-between pt-6 border-t border-white/5">
-                                                                        <div className="flex items-center gap-4">
-                                                                            {q.video_url && (
-                                                                                <a href={q.video_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-carapita-gold hover:text-white transition-colors group/video">
-                                                                                    <CirclePlay size={18} className="transition-transform group-hover/video:scale-110" />
-                                                                                    <span className="text-[10px] font-bold uppercase tracking-widest">Vídeo Tour</span>
-                                                                                </a>
+                                                                    <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
+                                                                        <div>
+                                                                            <div className="flex justify-between items-start gap-4 mb-4">
+                                                                                <div className="min-w-0 pr-2">
+                                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                                        <span className="text-[8px] uppercase tracking-[0.2em] text-carapita-gold font-bold">{q.tipo}</span>
+                                                                                        <div className="w-1 h-1 bg-white/20 rounded-full"></div>
+                                                                                        <span className="text-[8px] uppercase tracking-[0.2em] text-white/40 font-bold">Refúgio Premium</span>
+                                                                                    </div>
+                                                                                    <h3 className="font-serif text-xl lg:text-2xl text-white group-hover:text-carapita-gold transition-colors leading-tight">{q.nome}</h3>
+                                                                                </div>
+                                                                                <div className="text-right shrink-0">
+                                                                                    <div className="flex items-baseline gap-1 justify-end">
+                                                                                        <span className="text-sm font-serif text-carapita-gold">€</span>
+                                                                                        <span className="text-3xl lg:text-4xl font-serif text-white">{Number(q.preco_base).toFixed(0)}</span>
+                                                                                    </div>
+                                                                                    <p className="text-[9px] text-white/30 uppercase tracking-widest mt-1">Por Noite</p>
+                                                                                </div>
+                                                                            </div>
+                                                                            <p className="text-sm text-white/50 mb-6 leading-relaxed font-light line-clamp-2 italic">"{q.descricao}"</p>
+                                                                            {topBullets.length > 0 && (
+                                                                                <div className="flex flex-col gap-2 mb-6">
+                                                                                    {topBullets.map((c, i) => (
+                                                                                        <div key={i} className="flex items-center gap-3 text-[10px] uppercase tracking-[0.1em] text-white/70 font-bold border-b border-white/5 pb-2 last:border-0">
+                                                                                            <div className="w-1.5 h-1.5 bg-carapita-gold rounded-full"></div>
+                                                                                            {c}
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
                                                                             )}
                                                                         </div>
-
-                                                                        <button 
-                                                                            onClick={() => iniciarReserva(q.id)} 
-                                                                            className="bg-carapita-gold text-carapita-dark px-8 py-3 rounded-xl text-[10px] uppercase tracking-mega font-black hover:bg-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl"
-                                                                        >
-                                                                            Selecionar Alojamento
-                                                                        </button>
+                                                                        <div className="mt-8 flex items-center justify-between pt-6 border-t border-white/5">
+                                                                            <div className="flex items-center gap-4">
+                                                                                {q.video_url && (
+                                                                                    <a href={q.video_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-carapita-gold hover:text-white transition-colors group/video">
+                                                                                        <CirclePlay size={18} className="transition-transform group-hover/video:scale-110" />
+                                                                                        <span className="text-[10px] font-bold uppercase tracking-widest">Vídeo Tour</span>
+                                                                                    </a>
+                                                                                )}
+                                                                            </div>
+                                                                            <button onClick={() => iniciarReserva(q.id)} className="bg-carapita-gold text-carapita-dark px-8 py-3 rounded-xl text-[10px] uppercase tracking-mega font-black hover:bg-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl">Selecionar Alojamento</button>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        );
-                                                    })
-                                                ) : (
-                                                    <div className="py-24 text-center border border-dashed border-white/20 rounded-[2rem] bg-white/5">
-                                                        <Search size={48} className="mx-auto text-white/20 mb-4" />
-                                                        <p className="text-lg text-white font-serif tracking-wide mb-2">Nenhum alojamento disponível</p>
-                                                        <p className="text-sm text-white/40">Por favor, ajuste as datas da sua estadia.</p>
-                                                    </div>
-                                                )}
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <div className="py-24 text-center border border-dashed border-white/20 rounded-[2rem] bg-white/5">
+                                                            <Search size={48} className="mx-auto text-white/20 mb-4" />
+                                                            <p className="text-lg text-white font-serif tracking-wide mb-2">Nenhum alojamento disponível</p>
+                                                            <p className="text-sm text-white/40">Por favor, ajuste as datas da sua estadia.</p>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
