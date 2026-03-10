@@ -117,12 +117,12 @@ export default function AdminConfiguracoes() {
 
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold flex items-center gap-2"><Mail size={12} /> E-mail Público</label>
-                            <input name="emailContato" value={configs.emailContato} onChange={handleChange} className="border-b border-gray-200 py-2 outline-none focus:border-carapita-gold text-sm" placeholder="contato@refugiocarapita.com" />
+                            <input name="emailContato" value={configs.emailContato} onChange={handleChange} className="border-b border-gray-200 py-2 outline-none focus:border-carapita-gold text-sm" placeholder="contato@refugiocarapita.pt" />
                         </div>
 
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold flex items-center gap-2"><MapPin size={12} /> Endereço Completo</label>
-                            <input name="endereco" value={configs.endereco} onChange={handleChange} className="border-b border-gray-200 py-2 outline-none focus:border-carapita-gold text-sm" placeholder="Rua da Paz S/N, Ourém" />
+                            <input name="endereco" value={configs.endereco} onChange={handleChange} className="border-b border-gray-200 py-2 outline-none focus:border-carapita-gold text-sm" placeholder="Rua D. Afonso IV, 450, Ourém" />
                         </div>
                     </div>
 

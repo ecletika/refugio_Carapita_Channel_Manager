@@ -332,12 +332,12 @@ export default function PerfilHospede() {
                                     <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
                                         <MapPin className="text-carapita-gold" size={20} />
                                         <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Local</span>
-                                        <p className="text-xs text-white line-clamp-2">{configs?.endereco || 'R. Dom Afonso Quarto Conde de Ourém IV 450, 2490-480 Ourém'}</p>
+                                        <p className="text-xs text-white line-clamp-2">{configs?.endereco || 'Rua D. Afonso IV, 450, 2490-378 Ourém'}</p>
                                     </div>
                                     <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
                                         <User className="text-carapita-gold" size={20} />
                                         <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Anfitrião</span>
-                                        <p className="text-xs text-white line-clamp-2">Leonardo Azevedo</p>
+                                        <p className="text-xs text-white line-clamp-2">Leonardo Guede Azevedo</p>
                                     </div>
                                     <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
                                         <Phone className="text-carapita-gold" size={20} />
@@ -387,7 +387,7 @@ export default function PerfilHospede() {
                             <div className="mb-6 border-b border-white/10 pb-4 flex justify-between items-center flex-wrap gap-4">
                                 <div>
                                     <h2 className="text-2xl font-serif text-white">Acompanhantes do Grupo</h2>
-                                    <p className="text-[10px] text-white/50 tracking-widest uppercase mt-1">Registe familiares/passageiros adicionais para o SEF/AIMA</p>
+                                    <p className="text-[10px] text-white/50 tracking-widest uppercase mt-1">Registe familiares/passageiros adicionais para o AIMA</p>
                                 </div>
                                 <button onClick={addDependente} className="bg-carapita-dark text-carapita-gold hover:bg-carapita-gold hover:text-carapita-dark border border-carapita-gold/50 transition-colors px-6 py-2 uppercase text-[10px] font-bold tracking-mega flex items-center gap-2">
                                     <Plus size={14} /> Adicionar Pessoa

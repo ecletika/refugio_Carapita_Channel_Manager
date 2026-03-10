@@ -968,7 +968,7 @@ export default function Home() {
                             <div className="space-y-3 text-[11px] text-white/50 font-sans uppercase tracking-widest">
                                 <p className="flex items-start gap-2">
                                     <MapPin size={14} className="text-carapita-gold shrink-0" />
-                                    <span>{siteConfigs.endereco || 'R. Dom Afonso Quarto Conde de Ourém IV 450, 2490-480 Ourém'}</span>
+                                    <span>{siteConfigs.endereco || 'Rua D. Afonso IV, 450, 2490-378 Ourém'}</span>
                                 </p>
                                 <p className="flex items-center gap-2">
                                     <Users size={14} className="text-carapita-gold" />
@@ -976,7 +976,7 @@ export default function Home() {
                                 </p>
                                 <p className="flex items-center gap-2">
                                     <ChevronRight size={14} className="text-carapita-gold" />
-                                    <span>{siteConfigs.emailContato || 'refugiocarapita.com'}</span>
+                                    <span>{siteConfigs.emailContato || 'contato@refugiocarapita.pt'}</span>
                                 </p>
                             </div>
                         </div>

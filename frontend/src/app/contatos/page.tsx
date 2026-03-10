@@ -94,7 +94,7 @@ export default function ContatosPage() {
                             <div>
                                 <h4 className="text-white font-medium mb-1 uppercase tracking-widest text-xs">Endereço</h4>
                                 <p className="text-white/60 font-light leading-relaxed">
-                                    {siteConfigs.endereco || 'Rua da Paz, S/N, Ourém, Portugal'}
+                                    {siteConfigs.endereco || 'Rua D. Afonso IV, 450, 2490-378 Ourém'}
                                 </p>
                             </div>
                         </div>
