@@ -72,7 +72,7 @@ export default function PasseiosPage() {
             />
 
             {/* Hero Section */}
-            <section className="relative pt-40 pb-20 px-6 md:px-12 text-center">
+            <section className="relative pt-48 pb-20 px-6 md:px-12 text-center">
                 <div className="max-w-4xl mx-auto">
                     <span className="text-carapita-gold uppercase tracking-mega text-xs font-semibold block mb-4 animate-fade-in">
                         {t('passeios_tag')}

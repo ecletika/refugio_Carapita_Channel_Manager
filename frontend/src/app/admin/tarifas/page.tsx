@@ -36,6 +36,7 @@ export default function AdminTarifasBloqueios() {
     // Tarifas
     const [tarifas, setTarifas] = useState<TarifaSazonal[]>([]);
     const [novaTarifa, setNovaTarifa] = useState({ quarto_id: '', data_inicio: '', data_fim: '', preco_noite: 0, motivo: '', politica_cancelamento: 'FLEXIVEL', minima_estadia: 2 });
+    const [editandoTarifaId, setEditandoTarifaId] = useState<string | null>(null);
     
     // Bloqueios
     const [bloqueios, setBloqueios] = useState<Bloqueio[]>([]);
@@ -72,16 +73,32 @@ export default function AdminTarifasBloqueios() {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
+            const payload = editandoTarifaId ? { ...novaTarifa, id: editandoTarifaId } : novaTarifa;
             const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(novaTarifa)
+                body: JSON.stringify(payload)
             });
             if (resp.ok) {
                 setNovaTarifa({ quarto_id: '', data_inicio: '', data_fim: '', preco_noite: 0, motivo: '', politica_cancelamento: 'FLEXIVEL', minima_estadia: 2 });
+                setEditandoTarifaId(null);
                 fetchData();
             }
         } catch (e) { alert("Erro ao salvar tarifa"); }
+    };
+
+    const handleEditarTarifa = (t: TarifaSazonal) => {
+        setEditandoTarifaId(t.id);
+        setNovaTarifa({
+            quarto_id: t.quarto_id,
+            data_inicio: t.data_inicio.split('T')[0],
+            data_fim: t.data_fim.split('T')[0],
+            preco_noite: t.preco_noite,
+            motivo: t.motivo || '',
+            politica_cancelamento: t.politica_cancelamento || 'FLEXIVEL',
+            minima_estadia: t.minima_estadia || 2
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleDeletarTarifa = async (id: string) => {
@@ -153,9 +170,24 @@ export default function AdminTarifasBloqueios() {
                     <div className="space-y-12">
                         {/* Formulário Tarifas */}
                         <div className="bg-white border border-gray-100 p-8 shadow-xl hover:shadow-2xl transition-all duration-500">
-                            <div className="flex items-center gap-3 mb-8">
-                                <Plus size={18} className="text-carapita-gold" />
-                                <h2 className="font-serif text-xl text-carapita-dark">Nova Época Especial</h2>
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-3">
+                                    <Plus size={18} className="text-carapita-gold" />
+                                    <h2 className="font-serif text-xl text-carapita-dark">
+                                        {editandoTarifaId ? 'Editar Época Especial' : 'Nova Época Especial'}
+                                    </h2>
+                                </div>
+                                {editandoTarifaId && (
+                                    <button 
+                                        onClick={() => {
+                                            setEditandoTarifaId(null);
+                                            setNovaTarifa({ quarto_id: '', data_inicio: '', data_fim: '', preco_noite: 0, motivo: '', politica_cancelamento: 'FLEXIVEL', minima_estadia: 2 });
+                                        }}
+                                        className="text-[9px] uppercase tracking-widest text-red-500 font-bold hover:underline"
+                                    >
+                                        Cancelar Edição
+                                    </button>
+                                )}
                             </div>
                             <form onSubmit={handleSalvarTarifa} className="space-y-6">
                                 <div className="space-y-1">
@@ -202,7 +234,7 @@ export default function AdminTarifasBloqueios() {
                                     </div>
                                 </div>
                                 <button className="w-full bg-carapita-dark text-white py-4 text-[10px] uppercase tracking-mega hover:bg-carapita-gold transition-all duration-500 shadow-xl shadow-carapita-dark/10">
-                                    Aplicar Tarifa Especial
+                                    {editandoTarifaId ? 'Guardar Alterações' : 'Aplicar Tarifa Especial'}
                                 </button>
                             </form>
                         </div>
@@ -244,9 +276,14 @@ export default function AdminTarifasBloqueios() {
                                                 <span className="text-2xl font-serif text-carapita-dark">{Number(t.preco_noite).toFixed(0)}</span>
                                             </div>
                                         </div>
-                                        <button onClick={() => handleDeletarTarifa(t.id)} className="w-8 h-8 border border-gray-50 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all duration-300 ml-2 shrink-0">
-                                            <Trash2 size={14} />
-                                        </button>
+                                        <div className="flex gap-2 shrink-0 ml-2">
+                                            <button onClick={() => handleEditarTarifa(t)} className="w-8 h-8 border border-gray-50 flex items-center justify-center text-gray-300 hover:text-carapita-gold hover:bg-carapita-gold/5 transition-all duration-300">
+                                                <Plus size={14} className="rotate-45" /> {/* Using Plus rotated for edit or just another icon */}
+                                            </button>
+                                            <button onClick={() => handleDeletarTarifa(t.id)} className="w-8 h-8 border border-gray-50 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all duration-300">
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))
                             )}

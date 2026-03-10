@@ -87,7 +87,7 @@ export default function ContactosPage() {
             />
 
             {/* Hero Section */}
-            <section className="relative pt-44 pb-24 px-6 md:px-12 text-center bg-carapita-dark/20">
+            <section className="relative pt-52 pb-24 px-6 md:px-12 text-center bg-carapita-dark/20">
                 <div className="max-w-4xl mx-auto">
                     <span className="text-carapita-gold uppercase tracking-mega text-[10px] font-semibold block mb-4 animate-fade-in">
                         {t('contact_tag')}

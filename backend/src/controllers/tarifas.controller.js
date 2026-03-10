@@ -28,6 +28,7 @@ class TarifasController {
     // 2. Criar ou Atualizar Tarifa
     static async upsert(req, res) {
         try {
+            const { id } = req.body;
             const quartoId = req.body.quartoId || req.body.quarto_id;
             const dataInicio = req.body.dataInicio || req.body.data_inicio;
             const dataFim = req.body.dataFim || req.body.data_fim;
@@ -40,26 +41,44 @@ class TarifasController {
                 return res.status(400).json({ error: 'Dados incompletos' });
             }
 
-            const { data: novaTarifa, error } = await supabase
-                .from('TarifaSazonal')
-                .insert([{
-                    id: crypto.randomUUID(),
-                    quarto_id: quartoId,
-                    data_inicio: new Date(dataInicio).toISOString(),
-                    data_fim: new Date(dataFim).toISOString(),
-                    preco_noite: Number(precoNoite),
-                    motivo: motivo || null,
-                    politica_cancelamento: politicaCancelamento,
-                    minima_estadia: Number(minimaEstadia)
-                }])
-                .select()
-                .single();
+            const payload = {
+                quarto_id: quartoId,
+                data_inicio: new Date(dataInicio).toISOString(),
+                data_fim: new Date(dataFim).toISOString(),
+                preco_noite: Number(precoNoite),
+                motivo: motivo || null,
+                politica_cancelamento: politicaCancelamento,
+                minima_estadia: Number(minimaEstadia)
+            };
+
+            let result;
+            if (id) {
+                // Update
+                result = await supabase
+                    .from('TarifaSazonal')
+                    .update(payload)
+                    .eq('id', id)
+                    .select()
+                    .single();
+            } else {
+                // Insert
+                result = await supabase
+                    .from('TarifaSazonal')
+                    .insert([{
+                        id: crypto.randomUUID(),
+                        ...payload
+                    }])
+                    .select()
+                    .single();
+            }
+
+            const { data, error } = result;
 
             if (error) {
-                console.error('Supabase Insert Error:', error);
+                console.error('Supabase Error:', error);
                 throw error;
             }
-            return res.status(201).json({ status: 'success', data: novaTarifa });
+            return res.status(id ? 200 : 201).json({ status: 'success', data });
         } catch (error) {
             console.error('Erro salvar tarifa:', error.message || error);
             return res.status(500).json({ error: 'Erro ao salvar tarifa' });
