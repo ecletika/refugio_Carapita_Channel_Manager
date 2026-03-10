@@ -155,11 +155,22 @@ class TarifasController {
             while (dataAtual <= dataLimite) {
                 const isoData = dataAtual.toISOString().split('T')[0];
 
-                const tarifaSazonal = tarifasSazonais?.find(t => {
+                // Filtra todas as tarifas que cobrem esta data
+                const tarifasAplicáveis = tarifasSazonais?.filter(t => {
                     const tInStr = t.data_inicio.split('T')[0];
                     const tOutStr = t.data_fim.split('T')[0];
                     return isoData >= tInStr && isoData <= tOutStr;
-                });
+                }) || [];
+
+                // Se houver mais de uma, escolhemos a que tiver o menor período (mais específica)
+                let tarifaSazonal = null;
+                if (tarifasAplicáveis.length > 0) {
+                    tarifaSazonal = tarifasAplicáveis.reduce((prev, curr) => {
+                        const duracaoPrev = new Date(prev.data_fim).getTime() - new Date(prev.data_inicio).getTime();
+                        const duracaoCurr = new Date(curr.data_fim).getTime() - new Date(curr.data_inicio).getTime();
+                        return duracaoCurr < duracaoPrev ? curr : prev;
+                    });
+                }
 
                 const estaReservada = reservasExistentes?.some(r => {
                     const rInStr = r.data_check_in.split('T')[0];

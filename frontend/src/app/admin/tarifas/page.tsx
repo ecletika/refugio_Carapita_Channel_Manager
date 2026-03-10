@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Plus, Trash2, Calendar, Home, Euro, Info, Lock, Moon, ShieldAlert } from 'lucide-react';
+import { TrendingUp, Plus, Trash2, Calendar, Home, Euro, Info, Lock, Moon, ShieldAlert, Edit2 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
 interface Quarto {
@@ -278,7 +278,7 @@ export default function AdminTarifasBloqueios() {
                                         </div>
                                         <div className="flex gap-2 shrink-0 ml-2">
                                             <button onClick={() => handleEditarTarifa(t)} className="w-8 h-8 border border-gray-50 flex items-center justify-center text-gray-300 hover:text-carapita-gold hover:bg-carapita-gold/5 transition-all duration-300">
-                                                <Plus size={14} className="rotate-45" /> {/* Using Plus rotated for edit or just another icon */}
+                                                <Edit2 size={14} />
                                             </button>
                                             <button onClick={() => handleDeletarTarifa(t.id)} className="w-8 h-8 border border-gray-50 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all duration-300">
                                                 <Trash2 size={14} />
