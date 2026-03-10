@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Instagram, MapPin, Search, Calendar, Users, ChevronLeft, ChevronRight, CheckCircle, Camera, Star, Clock, Trophy, Coffee, ArrowRight, Menu, X, Instagram as InstagramIcon, Facebook as FacebookIcon, Facebook } from 'lucide-react';
+import { Instagram, MapPin, Search, Calendar, Users, ChevronLeft, ChevronRight, CircleCheck, Camera, Star, Clock, Trophy, Coffee, ArrowRight, Menu, X, CirclePlay, User, Plus, Check, Instagram as InstagramIcon, Facebook as FacebookIcon, Facebook } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useRouter } from 'next/navigation';
@@ -1144,7 +1144,7 @@ export default function Home() {
                                                                     <div className="flex flex-col-reverse sm:flex-row justify-between items-center bg-[#151D18] border border-white/5 rounded-2xl p-4 mt-auto">
                                                                         {q.video_url ? (
                                                                             <a href={q.video_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-carapita-gold hover:text-white transition-colors py-2 px-4">
-                                                                                <PlayCircle size={24} />
+                                                                                <CirclePlay size={24} />
                                                                                 <span className="text-[10px] font-bold uppercase tracking-widest">Ver Vídeo</span>
                                                                             </a>
                                                                         ) : <div />}

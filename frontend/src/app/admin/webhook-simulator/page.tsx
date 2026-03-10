@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Send, Terminal, AlertCircle, CheckCircle } from 'lucide-react';
+import { Send, Terminal, CircleAlert, CircleCheck } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
 export default function WebhookSimulator() {
@@ -93,9 +93,9 @@ export default function WebhookSimulator() {
                                 </div>
                                 <div className="flex items-center gap-2 text-[9px]">
                                     {response.status === 200 ? (
-                                        <><CheckCircle size={10} className="text-green-500" /> Webhook processado com sucesso</>
+                                        <><CircleCheck size={10} className="text-green-500" /> Webhook processado com sucesso</>
                                     ) : (
-                                        <><AlertCircle size={10} className="text-red-500" /> Falha no servidor</>
+                                        <><CircleAlert size={10} className="text-red-500" /> Falha no servidor</>
                                     )}
                                 </div>
                             </div>

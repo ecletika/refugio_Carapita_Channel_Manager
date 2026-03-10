@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CreditCard, FileText, CheckCircle, Clock, AlertTriangle, ArrowLeft, Download, ExternalLink, Home, LogOut, Loader2, Shield } from 'lucide-react';
+import { CreditCard, FileText, CircleCheck, Clock, AlertTriangle, ArrowLeft, Download, ExternalLink, Home, LogOut, Loader2, Shield } from 'lucide-react';
 
 interface Parcela {
     tipo: string;
@@ -306,7 +306,7 @@ function PagamentosContent() {
                                     <div className={`flex items-center justify-between p-4 border ${dadosPagamento.resumo.pagou_inicial ? 'border-green-500/30 bg-green-900/10' : 'border-yellow-500/30 bg-yellow-900/10'}`}>
                                         <div className="flex items-center gap-3">
                                             {dadosPagamento.resumo.pagou_inicial
-                                                ? <CheckCircle className="text-green-400 shrink-0" size={20} />
+                                                ? <CircleCheck className="text-green-400 shrink-0" size={20} />
                                                 : <Clock className="text-yellow-400 shrink-0" size={20} />}
                                             <div>
                                                 <p className="text-white text-sm font-medium">1.ª Prestação — 50% Iniciais</p>
@@ -326,7 +326,7 @@ function PagamentosContent() {
                                             'border-white/10 bg-black/10 opacity-60'}`}>
                                         <div className="flex items-center gap-3">
                                             {dadosPagamento.resumo.pagou_total
-                                                ? <CheckCircle className="text-green-400 shrink-0" size={20} />
+                                                ? <CircleCheck className="text-green-400 shrink-0" size={20} />
                                                 : dadosPagamento.resumo.pagou_inicial
                                                     ? <AlertTriangle className="text-yellow-400 shrink-0" size={20} />
                                                     : <Clock className="text-white/30 shrink-0" size={20} />}
@@ -377,7 +377,7 @@ function PagamentosContent() {
 
                             {dadosPagamento.resumo.pagou_total && (
                                 <div className="bg-green-900/20 border border-green-500/30 p-6 flex items-center gap-4">
-                                    <CheckCircle className="text-green-400 shrink-0" size={32} />
+                                    <CircleCheck className="text-green-400 shrink-0" size={32} />
                                     <div>
                                         <h4 className="text-green-400 font-bold text-sm uppercase tracking-widest">Reserva Totalmente Paga 🎊</h4>
                                         <p className="text-white/60 text-xs mt-1">A sua reserva está 100% confirmada. Estamos à sua espera!</p>

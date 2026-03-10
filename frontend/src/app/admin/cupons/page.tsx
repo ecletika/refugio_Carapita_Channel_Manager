@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, CheckCircle2, Ticket, Percent } from 'lucide-react';
+import { Plus, Trash2, CircleCheck, Ticket, Percent } from 'lucide-react';
 
 export default function CuponsAdmin() {
     const [cupons, setCupons] = useState<any[]>([]);
@@ -132,7 +132,7 @@ export default function CuponsAdmin() {
                             </div>
 
                             <div className="mt-6 pt-4 border-t border-gray-50 flex items-center gap-2">
-                                <CheckCircle2 size={16} className={cupom.ativo ? "text-green-500" : "text-gray-300"} />
+                                <CircleCheck size={16} className={cupom.ativo ? "text-green-500" : "text-gray-300"} />
                                 <span className={cupom.ativo ? "text-xs font-medium text-green-600" : "text-xs font-medium text-gray-400"}>
                                     {cupom.ativo ? 'Em vigor' : 'Inativo'}
                                 </span>

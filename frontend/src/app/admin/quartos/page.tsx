@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Edit2, CheckCircle, XCircle, RefreshCw, Upload, Euro, Users, Home, Camera, Info, Link, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Edit2, CircleCheck, CircleX, RefreshCw, Upload, Euro, Users, Home, Camera, Info, Link, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 import { AdminExtrasContent } from './ExtrasContent';
 
@@ -434,9 +434,9 @@ export default function AdminQuartos() {
                                                     className={`text-[9px] uppercase tracking-widest font-bold flex items-center gap-1 transition-all hover:scale-105 active:scale-95 ${q.ativo ? 'text-green-600' : 'text-red-500 opacity-60 hover:opacity-100'}`}
                                                 >
                                                     {q.ativo ? (
-                                                        <><CheckCircle size={10} /> Ativo</>
+                                                        <><CircleCheck size={10} /> Ativo</>
                                                     ) : (
-                                                        <><XCircle size={10} /> Inativo</>
+                                                        <><CircleX size={10} /> Inativo</>
                                                     )}
                                                 </button>
                                             </div>
@@ -720,7 +720,7 @@ export default function AdminQuartos() {
                         <div className="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-100 flex justify-end gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
                             <button type="button" onClick={() => setEditQuarto(null)} className="px-6 py-3 border border-gray-200 text-[9px] uppercase tracking-widest text-gray-500 hover:bg-gray-50 transition-colors">Cancelar</button>
                             <button onClick={handleSave} className="px-8 py-3 bg-carapita-dark text-white text-[9px] uppercase tracking-widest font-bold hover:bg-carapita-gold transition-colors flex items-center gap-2">
-                                <CheckCircle size={14} /> Salvar
+                                <CircleCheck size={14} /> Salvar
                             </button>
                         </div>
 

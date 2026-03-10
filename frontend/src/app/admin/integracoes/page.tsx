@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import {
-    RefreshCw, Link, CheckCircle, AlertCircle, Trash2,
+    RefreshCw, Link, CircleCheck, CircleAlert, Trash2,
     Save, Plus, Database, Globe, Info, ExternalLink
 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';

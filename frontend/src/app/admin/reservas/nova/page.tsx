@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Calendar, User, Home, Euro, ArrowRight, ArrowLeft,
-    CheckCircle, Info, Hash, MapPin, Phone, Mail, Plus, X, Sparkles
+    CircleCheck, Info, Hash, MapPin, Phone, Mail, Plus, X, Sparkles
 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
@@ -232,7 +232,7 @@ export default function NovaReservaManual() {
                                         >
                                             <div className="flex justify-between items-start mb-2">
                                                 <h4 className="font-serif text-lg text-carapita-dark">{q.nome}</h4>
-                                                {formData.quartoId === q.id && <CheckCircle size={16} className="text-carapita-gold" />}
+                                                {formData.quartoId === q.id && <CircleCheck size={16} className="text-carapita-gold" />}
                                             </div>
                                             <div className="flex justify-between items-center text-[10px] text-gray-400 uppercase tracking-widest">
                                                 <span>{q.capacidade} Hóspedes</span>
@@ -333,7 +333,7 @@ export default function NovaReservaManual() {
                                 disabled={loading}
                                 className="bg-carapita-gold text-white px-12 py-4 text-[10px] uppercase tracking-mega flex items-center gap-3 hover:bg-carapita-dark transition-all duration-500 shadow-xl"
                             >
-                                {loading ? 'A processar...' : 'Confirmar Reserva'} <CheckCircle size={14} />
+                                {loading ? 'A processar...' : 'Confirmar Reserva'} <CircleCheck size={14} />
                             </button>
                         )
                         }
