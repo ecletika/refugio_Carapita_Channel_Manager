@@ -43,6 +43,7 @@ export const dictionaries = {
         footer_checkout: 'Check-out até às 11:00',
         footer_max_pessoas: 'Máximo de 4 pessoas',
         footer_saiba_mais: 'Saiba mais',
+        footer_politica_cancelamento: 'Política de Cancelamento',
         hospedes_criancas_aviso: 'Crianças apenas acima de 5 anos.',
 
         booking_step_personalize: 'Personalize a Sua Estadia',
@@ -163,6 +164,7 @@ export const dictionaries = {
         footer_checkout: 'Check-out before 11:00 AM',
         footer_max_pessoas: 'Maximum of 4 guests',
         footer_saiba_mais: 'Learn more',
+        footer_politica_cancelamento: 'Cancellation Policy',
         hospedes_criancas_aviso: 'Children above 5 years old only.',
 
         booking_step_personalize: 'Personalize Your Stay',

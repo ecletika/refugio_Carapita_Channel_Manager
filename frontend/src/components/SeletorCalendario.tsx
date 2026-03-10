@@ -174,9 +174,11 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
                 <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} className="p-1 hover:bg-white/5 text-white rounded-full transition-colors"><ChevronRight size={16} /></button>
             </div>
 
-            <div className="flex flex-col md:flex-row lg:flex-col gap-6 w-full">
-                {renderMonth(new Date(currentDate))}
-                <div className="hidden md:block">
+            <div className="flex flex-col md:flex-row gap-8 w-full">
+                <div className="flex-1">
+                    {renderMonth(new Date(currentDate))}
+                </div>
+                <div className="flex-1 hidden md:block">
                     {renderMonth(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
                 </div>
             </div>

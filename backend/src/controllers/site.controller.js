@@ -55,7 +55,7 @@ class SiteController {
     // ---- Configuracoes (Contactos / Redes Sociais) ----
     static async obterConfiguracoes(req, res) {
         try {
-            const { data, error } = await supabase.from('Configuracao').select('*');
+            const { data, error } = await supabase.supabaseAdmin.from('Configuracao').select('*');
             if (error) throw error;
 
             // Format to a simple object { chave: valor }
@@ -71,17 +71,44 @@ class SiteController {
             const updates = req.body; // Expects object { chave: valor, chave2: valor2 }
             const promises = Object.keys(updates).map(async (chave) => {
                 const valor = updates[chave];
-                const { data: existente } = await supabase.from('Configuracao').select('id').eq('chave', chave).single();
+                const { data: existente } = await supabase.supabaseAdmin.from('Configuracao').select('id').eq('chave', chave).single();
                 if (existente) {
-                    return supabase.from('Configuracao').update({ valor }).eq('id', existente.id);
+                    return supabase.supabaseAdmin.from('Configuracao').update({ valor }).eq('id', existente.id);
                 } else {
                     const newId = crypto.randomUUID();
-                    return supabase.from('Configuracao').insert([{ id: newId, chave, valor }]);
+                    return supabase.supabaseAdmin.from('Configuracao').insert([{ id: newId, chave, valor }]);
                 }
             });
             await Promise.all(promises);
             return res.json({ status: 'success' });
         } catch (error) { return res.status(500).json({ error: 'Erro ao salvar configs' }); }
+    }
+
+    // ---- Mensagens de Contato ----
+    static async enviarMensagemContato(req, res) {
+        try {
+            const { nome, email, assunto, mensagem } = req.body;
+            if (!nome || !email || !mensagem) {
+                return res.status(400).json({ error: 'Campos obrigatórios faltando' });
+            }
+
+            const newId = crypto.randomUUID();
+            const { error } = await supabase.from('MensagemContato').insert([{
+                id: newId,
+                nome,
+                email,
+                assunto: assunto || 'Sem Assunto',
+                mensagem,
+                criado_em: new Date().toISOString()
+            }]);
+
+            if (error) throw error;
+
+            return res.json({ status: 'success', message: 'Mensagem enviada com sucesso' });
+        } catch (error) {
+            console.error('Erro enviar mensagem:', error);
+            return res.status(500).json({ error: 'Erro ao processar sua mensagem. Tente novamente mais tarde.' });
+        }
     }
 }
 

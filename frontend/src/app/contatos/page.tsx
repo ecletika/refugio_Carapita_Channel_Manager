@@ -42,14 +42,35 @@ export default function ContatosPage() {
         fetchConfigs();
     }, []);
 
+    const [formData, setFormData] = useState({
+        nome: '',
+        email: '',
+        assunto: '',
+        mensagem: ''
+    });
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setFormStatus('loading');
-        // Simulate API call
-        setTimeout(() => {
-            setFormStatus('success');
-            (e.target as HTMLFormElement).reset();
-        }, 1500);
+        
+        try {
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/contato`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            const json = await resp.json();
+            
+            if (json.status === 'success') {
+                setFormStatus('success');
+                setFormData({ nome: '', email: '', assunto: '', mensagem: '' });
+            } else {
+                setFormStatus('error');
+            }
+        } catch (error) {
+            console.error('Erro ao enviar:', error);
+            setFormStatus('error');
+        }
     };
 
     if (!mounted) return null;
@@ -168,6 +189,8 @@ export default function ContatosPage() {
                                 <input
                                     type="text"
                                     required
+                                    value={formData.nome}
+                                    onChange={e => setFormData({ ...formData, nome: e.target.value })}
                                     className="w-full bg-carapita-dark/50 border border-white/10 rounded-2xl px-6 py-4 text-white font-light focus:outline-none focus:border-carapita-gold transition-all"
                                     placeholder="Ex: João Silva"
                                 />
@@ -177,6 +200,8 @@ export default function ContatosPage() {
                                 <input
                                     type="email"
                                     required
+                                    value={formData.email}
+                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
                                     className="w-full bg-carapita-dark/50 border border-white/10 rounded-2xl px-6 py-4 text-white font-light focus:outline-none focus:border-carapita-gold transition-all"
                                     placeholder="email@exemplo.com"
                                 />
@@ -188,9 +213,11 @@ export default function ContatosPage() {
                             <input
                                 type="text"
                                 required
-                                className="w-full bg-carapita-dark/50 border border-white/10 rounded-2xl px-6 py-4 text-white font-light focus:outline-none focus:border-carapita-gold transition-all"
-                                placeholder="Reserva, Dúvida, Evento..."
-                            />
+                                    value={formData.assunto}
+                                    onChange={e => setFormData({ ...formData, assunto: e.target.value })}
+                                    className="w-full bg-carapita-dark/50 border border-white/10 rounded-2xl px-6 py-4 text-white font-light focus:outline-none focus:border-carapita-gold transition-all"
+                                    placeholder="Reserva, Dúvida, Evento..."
+                                />
                         </div>
 
                         <div className="space-y-2">
@@ -198,6 +225,8 @@ export default function ContatosPage() {
                             <textarea
                                 required
                                 rows={5}
+                                value={formData.mensagem}
+                                onChange={e => setFormData({ ...formData, mensagem: e.target.value })}
                                 className="w-full bg-carapita-dark/50 border border-white/10 rounded-2xl px-6 py-4 text-white font-light focus:outline-none focus:border-carapita-gold transition-all resize-none"
                                 placeholder="Como podemos ajudar?"
                             ></textarea>
@@ -239,7 +268,7 @@ export default function ContatosPage() {
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3106.321855653456!2d-8.583333!3d39.65!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd18900000000000%3A0x0!2zMznCsDM5JzAwLjAiTiA4wrAzNScwMC4wIlc!5e0!3m2!1spt!2spt!4v1700000000000!5m2!1spt!2spt"
                         width="100%"
                         height="100%"
-                        style={{ border: 0, filter: 'grayscale(1) contrast(1.2) invert(0.9) opacity(0.8)' }}
+                        style={{ border: 0 }}
                         allowFullScreen
                         loading="lazy"
                         referrerPolicy="no-referrer-when-downgrade"

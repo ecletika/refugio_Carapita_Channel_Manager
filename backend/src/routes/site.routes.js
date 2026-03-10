@@ -13,4 +13,7 @@ router.delete('/passeios/:id', authMiddleware, SiteController.deletarPasseio);
 router.get('/configuracoes', SiteController.obterConfiguracoes);
 router.post('/configuracoes', authMiddleware, SiteController.salvarConfiguracoes);
 
+// Mensagens de Contato
+router.post('/contato', SiteController.enviarMensagemContato);
+
 module.exports = router;

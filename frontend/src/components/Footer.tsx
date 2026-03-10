@@ -76,10 +76,15 @@ export default function Footer({ lang, siteConfigs }: FooterProps) {
                             <ShieldCheck size={14} className="text-carapita-gold" />
                             {t('footer_politica_dados')}
                         </a>
-                        <div className="flex items-center justify-center md:justify-start gap-2 text-white/40">
+                        <a 
+                            href="https://rnt.turismodeportugal.pt/RNT/RNAL.aspx?nr=172760" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center justify-center md:justify-start gap-2 hover:text-carapita-gold transition-colors duration-300"
+                        >
                             <FileText size={14} className="text-carapita-gold" />
                             <span>{t('footer_rnet')}</span>
-                        </div>
+                        </a>
                         <a href="/regras-hospedes" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_regras')}</a>
                         <a href="/politica-cancelamento" className="hover:text-carapita-gold transition-colors duration-300">{t('footer_politica_cancelamento')}</a>
                     </div>

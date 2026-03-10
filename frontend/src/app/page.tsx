@@ -745,9 +745,16 @@ export default function Home() {
             </section>
 
             {/* Galeria de Alojamento c/ Abas (Fotos Reais do Airbnb) */}
-            <section id="alojamento" className="pb-20 lg:pb-32 px-4 md:px-8 max-w-[1400px] mx-auto w-full">
+            <section id="alojamento" className="pb-20 lg:pb-32 px-4 md:px-8 max-w-[1400px] mx-auto w-full scroll-mt-32">
                 <div className="text-center mb-12 lg:mb-16">
-                    <span className="text-carapita-gold uppercase tracking-mega text-[10px] font-semibold block mb-4">{t('alojamento_tag')}</span>
+                    <a 
+                        href="https://rnt.turismodeportugal.pt/RNT/RNAL.aspx?nr=172760" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-carapita-gold uppercase tracking-mega text-[10px] font-semibold block mb-4 hover:underline"
+                    >
+                        {t('alojamento_tag')}
+                    </a>
                     <h3 className="text-3xl md:text-5xl font-serif text-white font-light mb-8 lg:mb-12">{t('alojamento_title')}</h3>
 
                     {/* Seletor de Alojamento */}
@@ -981,13 +988,30 @@ export default function Home() {
                             {/* Coluna do Calendário e Filtros */}
                             <div className="w-full xl:w-auto xl:flex-shrink-0">
                                 {bookingStep === 'selection' && (
-                                    <div className="w-full space-y-8">
-                                        {/* 📅 Calendário Gigante e Horizontal */}
-                                        <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] backdrop-blur-md shadow-2xl">
-                                            <h4 className="font-serif text-2xl mb-8 text-white text-center border-b border-white/10 pb-6 uppercase tracking-[0.4em]">
-                                                {t('booking_selecione_datas')}
-                                            </h4>
-                                            <div className="max-w-[1100px] mx-auto">
+                                    <div className="flex flex-col gap-8 w-full">
+                                        {/* Bloco Superior: Calendário Imersivo */}
+                                        <div className="w-full bg-[#1C2621]/80 backdrop-blur-xl border border-white/10 p-8 md:p-12 rounded-[2.5rem] shadow-2xl">
+                                            <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
+                                                <div className="text-left">
+                                                    <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-2">{t('booking_step_1')}</span>
+                                                    <h3 className="font-serif text-3xl text-white uppercase tracking-widest leading-tight">
+                                                        {t('booking_selecione_datas')}
+                                                    </h3>
+                                                </div>
+                                                <div className="flex items-center gap-4 bg-white/5 p-2 rounded-full border border-white/10">
+                                                    <div className="px-6 py-2">
+                                                        <span className="block text-[8px] uppercase tracking-widest text-white/40 mb-1">Check-in</span>
+                                                        <span className="text-white font-serif text-sm">{checkIn || '---'}</span>
+                                                    </div>
+                                                    <div className="w-px h-8 bg-white/10"></div>
+                                                    <div className="px-6 py-2">
+                                                        <span className="block text-[8px] uppercase tracking-widest text-white/40 mb-1">Check-out</span>
+                                                        <span className="text-white font-serif text-sm">{checkOut || '---'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="w-full">
                                                 <SeletorCalendario
                                                     quartoId={quartosEncontrados?.[0]?.id || ''}
                                                     onSelect={(start, end) => {
@@ -998,44 +1022,40 @@ export default function Home() {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col xl:flex-row gap-10 items-start">
-                                            {/* Left: Filters & Summaries */}
-                                            <div className="w-full xl:w-[320px] shrink-0 space-y-6">
+                                        <div className="flex flex-col xl:flex-row gap-8 items-start">
+                                            {/* Coluna da Esquerda: Filtros e Extras rápidos */}
+                                            <div className="w-full xl:w-72 shrink-0 space-y-6">
                                                 <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm">
-                                                    <h4 className="font-serif text-base mb-6 text-white uppercase tracking-widest text-center border-b border-white/10 pb-4">{t('booking_num_hospedes')}</h4>
-                                                    <div className="space-y-6">
-                                                        <div className="flex justify-between items-center border-b border-white/10 pb-6">
-                                                            <div><div className="text-white text-sm font-semibold">Adultos (18+)</div></div>
+                                                    <h4 className="font-serif text-[10px] mb-6 text-white uppercase tracking-widest text-center border-b border-white/10 pb-4">{t('booking_num_hospedes')}</h4>
+                                                    <div className="space-y-4">
+                                                        <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl">
+                                                            <div className="text-white text-[10px] font-semibold uppercase tracking-widest">Adultos</div>
                                                             <div className="flex items-center gap-4">
-                                                                <button onClick={() => setAdultos(Math.max(1, adultos - 1))} className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold disabled:opacity-30" disabled={adultos <= 1}>−</button>
-                                                                <span className="text-white font-serif text-lg w-4 text-center">{adultos}</span>
-                                                                <button onClick={() => setAdultos(Math.min(10, adultos + 1))} className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold">+</button>
+                                                                <button onClick={() => setAdultos(Math.max(1, adultos - 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold disabled:opacity-20" disabled={adultos <= 1}>−</button>
+                                                                <span className="text-white font-serif text-base w-4 text-center">{adultos}</span>
+                                                                <button onClick={() => setAdultos(Math.min(10, adultos + 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold">+</button>
                                                             </div>
                                                         </div>
-                                                        <div className="flex justify-between items-center pt-2">
-                                                            <div><div className="text-white text-sm font-semibold">Crianças (5-17)</div></div>
+                                                        <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl">
+                                                            <div className="text-white text-[10px] font-semibold uppercase tracking-widest">Crianças</div>
                                                             <div className="flex items-center gap-4">
-                                                                <button onClick={() => setCriancas(Math.max(0, criancas - 1))} className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold disabled:opacity-30" disabled={criancas <= 0}>−</button>
-                                                                <span className="text-white font-serif text-lg w-4 text-center">{criancas}</span>
-                                                                <button onClick={() => setCriancas(Math.min(10, criancas + 1))} className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-carapita-gold hover:text-carapita-gold">+</button>
+                                                                <button onClick={() => setCriancas(Math.max(0, criancas - 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold disabled:opacity-20" disabled={criancas <= 0}>−</button>
+                                                                <span className="text-white font-serif text-base w-4 text-center">{criancas}</span>
+                                                                <button onClick={() => setCriancas(Math.min(10, criancas + 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold">+</button>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
-                                                    <h4 className="font-serif text-base mb-5 text-white uppercase tracking-widest text-center border-b border-white/10 pb-3">Cupão</h4>
-                                                    <div className="flex gap-2">
-                                                        <input type="text" placeholder="Código" value={cupomCodigo} onChange={e => setCupomCodigo(e.target.value.toUpperCase())} className="flex-1 bg-transparent border border-white/20 px-4 py-3 text-white focus:border-carapita-gold outline-none text-xs uppercase rounded-lg text-center" />
-                                                        <button onClick={validarCupom} className="bg-carapita-gold text-carapita-dark px-4 py-3 rounded-lg text-[10px] font-bold uppercase">OK</button>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Right: Rooms List */}
+                                            {/* Coluna da Direita: Lista de Quartos Slim */}
                                             <div className="flex-1 min-w-0">
-                                                <h2 className="font-serif text-xl lg:text-2xl mb-6 text-white border-b border-white/10 pb-4 uppercase tracking-[0.2em]">{t('booking_alojamentos_disp')}</h2>
-                                                <div className="space-y-8">
+                                                <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
+                                                    <h2 className="font-serif text-lg text-white uppercase tracking-[0.3em]">{t('booking_alojamentos_disp')}</h2>
+                                                    <span className="text-[9px] text-white/40 uppercase tracking-widest">{quartosEncontrados?.length || 0} {t('booking_unidades_encontradas')}</span>
+                                                </div>
+                                                
+                                                <div className="space-y-4">
                                                     {(quartosEncontrados || []).length > 0 ? (
                                                         quartosEncontrados?.map((q) => {
                                                             const fotos = parseFotos(q.fotos);
@@ -1044,51 +1064,40 @@ export default function Home() {
                                                             const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
 
                                                             return (
-                                                                <div key={q.id} className="bg-[#1C2621]/80 backdrop-blur-sm border border-white/10 rounded-2xl hover:border-carapita-gold/40 shadow-xl transition-all duration-500 flex flex-col md:flex-row overflow-hidden group">
-                                                                    <div className="w-full md:w-[280px] lg:w-[320px] shrink-0 relative overflow-hidden aspect-video md:aspect-square lg:aspect-video">
+                                                                <div key={q.id} className="bg-[#1C2621]/95 backdrop-blur-md border border-white/10 rounded-2xl hover:border-carapita-gold/40 shadow-2xl transition-all duration-500 flex flex-col lg:flex-row overflow-hidden group min-h-[180px]">
+                                                                    <div className="w-full lg:w-[260px] shrink-0 relative overflow-hidden h-40 lg:h-auto">
                                                                         <RoomImageGallery fotos={fotos} quartoNome={q.nome} onClick={() => { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); }} />
                                                                     </div>
-                                                                    <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
-                                                                        <div>
-                                                                            <div className="flex justify-between items-start gap-4 mb-4">
-                                                                                <div className="min-w-0 pr-2">
-                                                                                    <div className="flex items-center gap-2 mb-1">
-                                                                                        <span className="text-[8px] uppercase tracking-[0.2em] text-carapita-gold font-bold">{q.tipo}</span>
-                                                                                        <div className="w-1 h-1 bg-white/20 rounded-full"></div>
-                                                                                        <span className="text-[8px] uppercase tracking-[0.2em] text-white/40 font-bold">Refúgio Premium</span>
-                                                                                    </div>
-                                                                                    <h3 className="font-serif text-xl lg:text-2xl text-white group-hover:text-carapita-gold transition-colors leading-tight">{q.nome}</h3>
+                                                                    <div className="p-6 flex-1 flex flex-col justify-between">
+                                                                        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                                                                            <div className="flex-1">
+                                                                                <div className="flex items-center gap-2 mb-2">
+                                                                                    <span className="text-[8px] uppercase tracking-widest text-carapita-gold font-bold">{q.tipo}</span>
+                                                                                    <div className="w-1 h-1 bg-white/10 rounded-full"></div>
+                                                                                    <span className="text-[8px] uppercase tracking-widest text-white/30 font-bold">Refúgio Carapita</span>
                                                                                 </div>
-                                                                                <div className="text-right shrink-0">
-                                                                                    <div className="flex items-baseline gap-1 justify-end">
-                                                                                        <span className="text-sm font-serif text-carapita-gold">€</span>
-                                                                                        <span className="text-3xl lg:text-4xl font-serif text-white">{Number(q.preco_base).toFixed(0)}</span>
-                                                                                    </div>
-                                                                                    <p className="text-[9px] text-white/30 uppercase tracking-widest mt-1">Por Noite</p>
-                                                                                </div>
-                                                                            </div>
-                                                                            <p className="text-sm text-white/50 mb-6 leading-relaxed font-light line-clamp-2 italic">"{q.descricao}"</p>
-                                                                            {topBullets.length > 0 && (
-                                                                                <div className="flex flex-col gap-2 mb-6">
+                                                                                <h3 className="font-serif text-xl text-white group-hover:text-carapita-gold transition-colors">{q.nome}</h3>
+                                                                                <p className="text-xs text-white/40 my-3 line-clamp-1 italic font-light">"{q.descricao}"</p>
+                                                                                
+                                                                                <div className="flex flex-col gap-2 mt-4">
                                                                                     {topBullets.map((c, i) => (
-                                                                                        <div key={i} className="flex items-center gap-3 text-[10px] uppercase tracking-[0.1em] text-white/70 font-bold border-b border-white/5 pb-2 last:border-0">
-                                                                                            <div className="w-1.5 h-1.5 bg-carapita-gold rounded-full"></div>
+                                                                                        <div key={i} className="flex items-center gap-2 text-[9px] uppercase tracking-widest text-white/50">
+                                                                                            <div className="w-1 h-1 bg-carapita-gold/30 rounded-full"></div>
                                                                                             {c}
                                                                                         </div>
                                                                                     ))}
                                                                                 </div>
-                                                                            )}
-                                                                        </div>
-                                                                        <div className="mt-8 flex items-center justify-between pt-6 border-t border-white/5">
-                                                                            <div className="flex items-center gap-4">
-                                                                                {q.video_url && (
-                                                                                    <a href={q.video_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-carapita-gold hover:text-white transition-colors group/video">
-                                                                                        <CirclePlay size={18} className="transition-transform group-hover/video:scale-110" />
-                                                                                        <span className="text-[10px] font-bold uppercase tracking-widest">Vídeo Tour</span>
-                                                                                    </a>
-                                                                                )}
                                                                             </div>
-                                                                            <button onClick={() => iniciarReserva(q.id)} className="bg-carapita-gold text-carapita-dark px-8 py-3 rounded-xl text-[10px] uppercase tracking-mega font-black hover:bg-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl">Selecionar Alojamento</button>
+                                                                            <div className="text-right shrink-0 md:border-l md:border-white/5 md:pl-8 flex flex-col justify-between h-full min-h-[120px] w-full md:w-auto">
+                                                                                <div>
+                                                                                    <div className="flex items-baseline gap-1 justify-end">
+                                                                                        <span className="text-xs font-serif text-carapita-gold">€</span>
+                                                                                        <span className="text-3xl font-serif text-white">{Number(q.preco_base).toFixed(0)}</span>
+                                                                                    </div>
+                                                                                    <p className="text-[8px] text-white/30 uppercase tracking-widest">Preço por Noite</p>
+                                                                                </div>
+                                                                                <button onClick={() => iniciarReserva(q.id)} className="mt-6 bg-carapita-gold text-carapita-dark px-8 py-3 rounded-xl text-[10px] uppercase tracking-widest font-black hover:bg-white transition-all shadow-xl whitespace-nowrap">Reservar Agora</button>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1096,9 +1105,9 @@ export default function Home() {
                                                         })
                                                     ) : (
                                                         <div className="py-24 text-center border border-dashed border-white/20 rounded-[2rem] bg-white/5">
-                                                            <Search size={48} className="mx-auto text-white/20 mb-4" />
-                                                            <p className="text-lg text-white font-serif tracking-wide mb-2">Nenhum alojamento disponível</p>
-                                                            <p className="text-sm text-white/40">Por favor, ajuste as datas da sua estadia.</p>
+                                                            <Search size={48} className="mx-auto text-white/10 mb-6" />
+                                                            <p className="text-white text-lg font-serif tracking-widest mb-2 leading-relaxed">Nenhum alojamento disponível</p>
+                                                            <p className="text-white/30 text-xs uppercase tracking-widest">Tente alterar as datas de sua estadia</p>
                                                         </div>
                                                     )}
                                                 </div>
@@ -1106,7 +1115,6 @@ export default function Home() {
                                         </div>
                                     </div>
                                 )}
-
                                 {bookingStep === 'extras' && (
                                     <div className="animate-fade-in max-w-4xl mx-auto">
                                         <div className="text-center mb-16">
