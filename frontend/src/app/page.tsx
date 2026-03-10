@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Instagram, MapPin, Search, Calendar, Users, ChevronLeft, ChevronRight, CircleCheck, Camera, Star, Clock, Trophy, Coffee, ArrowRight, Menu, X, CirclePlay, User, Plus, Check, Instagram as InstagramIcon, Facebook as FacebookIcon, Facebook } from 'lucide-react';
+import { Instagram, MapPin, Search, Calendar, Users, ChevronLeft, ChevronRight, CircleCheck, Camera, Star, Clock, Trophy, Coffee, ArrowRight, Menu, X, CirclePlay, User, Plus, Check, Instagram as InstagramIcon, Facebook as FacebookIcon, Facebook, CheckCircle2, AlertCircle, Percent, Square, Info } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useRouter } from 'next/navigation';
@@ -1046,7 +1046,7 @@ export default function Home() {
 
                                         <div className="flex flex-col xl:flex-row gap-8 items-start">
                                             {/* Coluna da Esquerda: Filtros e Extras rápidos */}
-                                            <div className="w-full xl:w-72 shrink-0 space-y-6">
+                                            <div className="w-full xl:w-72 shrink-0 space-y-6 xl:-mt-1">
                                                 <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm">
                                                     <h4 className="font-serif text-[10px] mb-6 text-white uppercase tracking-widest text-center border-b border-white/10 pb-4">{t('booking_num_hospedes')}</h4>
                                                     <div className="space-y-4">
@@ -1058,12 +1058,17 @@ export default function Home() {
                                                                 <button onClick={() => setAdultos(Math.min(10, adultos + 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold">+</button>
                                                             </div>
                                                         </div>
-                                                        <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl">
-                                                            <div className="text-white text-[10px] font-semibold uppercase tracking-widest">Crianças</div>
-                                                            <div className="flex items-center gap-4">
-                                                                <button onClick={() => setCriancas(Math.max(0, criancas - 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold disabled:opacity-20" disabled={criancas <= 0}>−</button>
-                                                                <span className="text-white font-serif text-base w-4 text-center">{criancas}</span>
-                                                                <button onClick={() => setCriancas(Math.min(10, criancas + 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold">+</button>
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl">
+                                                                <div className="text-white text-[10px] font-semibold uppercase tracking-widest">Crianças</div>
+                                                                <div className="flex items-center gap-4">
+                                                                    <button onClick={() => setCriancas(Math.max(0, criancas - 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold disabled:opacity-20" disabled={criancas <= 0}>−</button>
+                                                                    <span className="text-white font-serif text-base w-4 text-center">{criancas}</span>
+                                                                    <button onClick={() => setCriancas(Math.min(10, criancas + 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold">+</button>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-[11px] text-carapita-gold/80 italic text-left mt-1 ml-1 flex items-center gap-1">
+                                                                <AlertCircle size={10} /> Crianças devem ter pelo menos 5 anos
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1086,40 +1091,71 @@ export default function Home() {
                                                             const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
 
                                                             return (
-                                                                <div key={q.id} className="bg-[#1C2621]/95 backdrop-blur-md border border-white/10 rounded-2xl hover:border-carapita-gold/40 shadow-2xl transition-all duration-500 flex flex-col lg:flex-row overflow-hidden group min-h-[180px]">
-                                                                    <div className="w-full lg:w-[260px] shrink-0 relative overflow-hidden h-40 lg:h-auto">
-                                                                        <RoomImageGallery fotos={fotos} quartoNome={q.nome} onClick={() => { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); }} />
-                                                                    </div>
-                                                                    <div className="p-6 flex-1 flex flex-col justify-between">
-                                                                        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                                                                            <div className="flex-1">
-                                                                                <div className="flex items-center gap-2 mb-2">
-                                                                                    <span className="text-[8px] uppercase tracking-widest text-carapita-gold font-bold">{q.tipo}</span>
-                                                                                    <div className="w-1 h-1 bg-white/10 rounded-full"></div>
-                                                                                    <span className="text-[8px] uppercase tracking-widest text-white/30 font-bold">Refúgio Carapita</span>
-                                                                                </div>
-                                                                                <h3 className="font-serif text-xl text-white group-hover:text-carapita-gold transition-colors">{q.nome}</h3>
-                                                                                <p className="text-xs text-white/40 my-3 line-clamp-1 italic font-light">"{q.descricao}"</p>
-                                                                                
-                                                                                <div className="flex flex-col gap-2 mt-4">
-                                                                                    {topBullets.map((c, i) => (
-                                                                                        <div key={i} className="flex items-center gap-2 text-[9px] uppercase tracking-widest text-white/50">
-                                                                                            <div className="w-1 h-1 bg-carapita-gold/30 rounded-full"></div>
-                                                                                            {c}
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
+                                                                <div key={q.id} className="bg-white rounded-2xl overflow-hidden border border-[#E8E0DC] flex flex-col transition-all duration-300 shadow-[0_2px_16px_rgba(107,39,55,0.08)] mb-6">
+                                                                    <div className="flex flex-col lg:flex-row min-h-[280px] relative">
+                                                                        <div className="absolute top-0 right-0 bg-[#4A1A25] text-white text-xs font-semibold py-2 px-[18px] rounded-bl-[10px] tracking-[0.04em] z-10">
+                                                                            Melhor Oferta
+                                                                        </div>
+                                                                        <div className="w-full lg:w-[460px] lg:min-w-[460px] shrink-0 relative overflow-hidden bg-[#e8ddd8] h-56 lg:h-[380px]">
+                                                                            <RoomImageGallery fotos={fotos} quartoNome={q.nome} onClick={() => { setLightboxFotos(fotos.map(f => f.url)); setLightboxIdx(0); }} />
+                                                                        </div>
+                                                                        
+                                                                        <div className="flex-1 p-[24px] lg:p-[28px] flex flex-col gap-3 font-sans">
+                                                                            <div className="flex justify-between items-start">
+                                                                                <div className="font-serif text-[22px] font-semibold text-[#1a1a1a]">{q.nome}</div>
+                                                                                <span className="text-[12px] text-[#6B2737] underline cursor-pointer font-medium whitespace-nowrap">Ver detalhes</span>
                                                                             </div>
-                                                                            <div className="text-right shrink-0 md:border-l md:border-white/5 md:pl-8 flex flex-col justify-between h-full min-h-[120px] w-full md:w-auto">
-                                                                                <div>
-                                                                                    <div className="flex items-baseline gap-1 justify-end">
-                                                                                        <span className="text-xs font-serif text-carapita-gold">€</span>
-                                                                                        <span className="text-3xl font-serif text-white">{Number(q.preco_base).toFixed(0)}</span>
+                                                                            
+                                                                            <div className="flex flex-wrap gap-5 mt-1">
+                                                                                <div className="flex items-center gap-[6px] text-[13px] text-[#555] font-normal">
+                                                                                    <Users size={18} className="text-[#6B2737]" strokeWidth={1.8} /> Dormem {(q as any).capacidade_maxima || (q as any).capacidade || 2}
+                                                                                </div>
+                                                                                {topBullets.map((c, i) => (
+                                                                                    <div key={i} className="flex items-center gap-[6px] text-[13px] text-[#555] font-normal capitalize">
+                                                                                        {c.toLowerCase().includes('m²') ? <Square size={18} className="text-[#6B2737]" strokeWidth={1.8} /> : <CheckCircle2 size={18} className="text-[#6B2737]" strokeWidth={1.8} />}
+                                                                                        {c}
                                                                                     </div>
-                                                                                    <p className="text-[8px] text-white/30 uppercase tracking-widest">Preço por Noite</p>
-                                                                                </div>
-                                                                                <button onClick={() => iniciarReserva(q.id)} className="mt-6 bg-carapita-gold text-carapita-dark px-8 py-3 rounded-xl text-[10px] uppercase tracking-widest font-black hover:bg-white transition-all shadow-xl whitespace-nowrap">Reservar Agora</button>
+                                                                                ))}
                                                                             </div>
+                                                                            
+                                                                            <div className="text-[14px] text-[#555] -mt-1 leading-relaxed line-clamp-3">{q.descricao}</div>
+                                                                            
+                                                                            <div className="mt-auto pt-2 flex items-center gap-2 text-[12.5px] font-medium text-[#E07A2F]">
+                                                                                <AlertCircle size={16} /> Apenas 3 quartos disponíveis neste período
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <div className="border-t border-[#E8E0DC] py-[18px] px-6 lg:px-[28px] flex flex-col md:flex-row items-center justify-between gap-5 flex-wrap bg-white">
+                                                                        <div className="flex flex-col gap-2.5">
+                                                                            <div className="flex items-center gap-2.5">
+                                                                                <span className="text-[14px] font-semibold text-[#1a1a1a]">Tarifa Flexível</span>
+                                                                                <span className="bg-[#d4edda] text-[#2E7D5E] rounded-full py-[3px] px-[10px] text-[11px] font-bold flex items-center gap-1">
+                                                                                    <Percent size={10} color="#2E7D5E" /> %
+                                                                                </span>
+                                                                                <span className="text-[12px] text-[#6B2737] underline cursor-pointer font-medium ml-2 hidden lg:inline">Ver detalhes</span>
+                                                                            </div>
+                                                                            <div className="flex flex-col gap-[7px]">
+                                                                                <div className="flex items-center gap-2 text-[13px] text-[#555]">
+                                                                                    <div className="w-[28px] h-[28px] bg-[#f0f0f0] rounded-md flex items-center justify-center text-[14px]">☕</div>
+                                                                                    Pequeno-almoço opcional
+                                                                                </div>
+                                                                                <div className="flex items-center gap-2 text-[13px] text-[#555]">
+                                                                                    <div className="w-[18px] h-[18px] rounded-full bg-[#555] text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+                                                                                        <Info size={11} strokeWidth={4} color="white" />
+                                                                                    </div>
+                                                                                    Cancelamento flexível
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        
+                                                                        <div className="flex flex-col lg:items-end gap-3 w-full lg:w-auto mt-4 lg:mt-0 pt-4 lg:pt-0 border-t border-[#E8E0DC] lg:border-t-0">
+                                                                            <div className="font-serif text-[22px] font-bold text-[#1a1a1a] leading-none">
+                                                                                € {Number(q.preco_base).toFixed(0)} <span className="font-sans text-[13px] font-normal text-[#888]">/ noite</span>
+                                                                            </div>
+                                                                            <button onClick={() => iniciarReserva(q.id)} className="bg-[#4A1A25] hover:bg-[#6B2737] active:translate-y-0 hover:-translate-y-[1px] text-white border-none rounded-[10px] py-[13px] px-[32px] text-[15px] font-semibold font-sans tracking-[0.02em] transition-all w-full lg:w-auto text-center shadow-[0_2px_8px_rgba(74,26,37,0.15)]">
+                                                                                Selecionar
+                                                                            </button>
                                                                         </div>
                                                                     </div>
                                                                 </div>

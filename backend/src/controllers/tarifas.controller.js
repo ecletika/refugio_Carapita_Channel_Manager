@@ -51,13 +51,30 @@ class TarifasController {
                 minima_estadia: Number(minimaEstadia)
             };
 
+            let finalId = id;
+
+            if (!finalId) {
+                // Verificar se a tarifa já existe para as exatas mesmas datas e alojamento
+                const { data: existente } = await supabase
+                    .from('TarifaSazonal')
+                    .select('id')
+                    .eq('quarto_id', quartoId)
+                    .eq('data_inicio', payload.data_inicio)
+                    .eq('data_fim', payload.data_fim)
+                    .limit(1);
+                    
+                if (existente && existente.length > 0) {
+                    finalId = existente[0].id;
+                }
+            }
+
             let result;
-            if (id) {
+            if (finalId) {
                 // Update
                 result = await supabase
                     .from('TarifaSazonal')
                     .update(payload)
-                    .eq('id', id)
+                    .eq('id', finalId)
                     .select()
                     .single();
             } else {
@@ -159,7 +176,7 @@ class TarifasController {
                 const tarifasAplicáveis = tarifasSazonais?.filter(t => {
                     const tInStr = t.data_inicio.split('T')[0];
                     const tOutStr = t.data_fim.split('T')[0];
-                    return isoData >= tInStr && isoData <= tOutStr;
+                    return isoData >= tInStr && isoData < tOutStr;
                 }) || [];
 
                 // Se houver mais de uma, escolhemos a que tiver o menor período (mais específica)
@@ -168,6 +185,11 @@ class TarifasController {
                     tarifaSazonal = tarifasAplicáveis.reduce((prev, curr) => {
                         const duracaoPrev = new Date(prev.data_fim).getTime() - new Date(prev.data_inicio).getTime();
                         const duracaoCurr = new Date(curr.data_fim).getTime() - new Date(curr.data_inicio).getTime();
+                        
+                        // Tie-breaker: se mesma duração, ganha o valor mais alto
+                        if (duracaoCurr === duracaoPrev) {
+                            return Number(curr.preco_noite) > Number(prev.preco_noite) ? curr : prev;
+                        }
                         return duracaoCurr < duracaoPrev ? curr : prev;
                     });
                 }

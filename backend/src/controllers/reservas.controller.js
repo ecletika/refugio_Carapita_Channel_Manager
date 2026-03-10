@@ -132,12 +132,27 @@ class ReservasController {
             while (d < dFim && limit < 1000) {
                 limit++;
                 const currentYmd = d.toISOString().split('T')[0];
-                const t = tarifas?.find(tf => {
+                const tarifasAplicaveis = tarifas?.filter(tf => {
                     const tInStr = tf.data_inicio.split('T')[0];
                     const tOutStr = tf.data_fim.split('T')[0];
-                    return currentYmd >= tInStr && currentYmd <= tOutStr;
-                });
-                valorTotal += Number(t ? t.preco_noite : quarto.preco_base);
+                    return currentYmd >= tInStr && currentYmd < tOutStr;
+                }) || [];
+
+                let tarifaSazonal = null;
+                if (tarifasAplicaveis.length > 0) {
+                    tarifaSazonal = tarifasAplicaveis.reduce((prev, curr) => {
+                        const duracaoPrev = new Date(prev.data_fim).getTime() - new Date(prev.data_inicio).getTime();
+                        const duracaoCurr = new Date(curr.data_fim).getTime() - new Date(curr.data_inicio).getTime();
+                        
+                        if (duracaoCurr === duracaoPrev) {
+                            return Number(curr.preco_noite) > Number(prev.preco_noite) ? curr : prev;
+                        }
+                        
+                        return duracaoCurr < duracaoPrev ? curr : prev;
+                    });
+                }
+
+                valorTotal += Number(tarifaSazonal ? tarifaSazonal.preco_noite : quarto.preco_base);
                 d.setUTCDate(d.getUTCDate() + 1);
             }
 
