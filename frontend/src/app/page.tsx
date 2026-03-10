@@ -745,7 +745,7 @@ export default function Home() {
             </section>
 
             {/* Galeria de Alojamento c/ Abas (Fotos Reais do Airbnb) */}
-            <section id="alojamento" className="pb-20 lg:pb-32 px-4 md:px-8 max-w-[1400px] mx-auto w-full scroll-mt-32">
+            <section id="alojamento" className="pb-20 lg:pb-32 px-4 md:px-8 max-w-[1400px] mx-auto w-full scroll-mt-44">
                 <div className="text-center mb-12 lg:mb-16">
                     <a 
                         href="https://rnt.turismodeportugal.pt/RNT/RNAL.aspx?nr=172760" 
@@ -1232,7 +1232,7 @@ export default function Home() {
                                             </section>
 
                                             <section>
-                                                <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">{t('form_info_contato')}</h4>
+                                                <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">{t('form_info_contacto')}</h4>
                                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                                     <div className="col-span-1">
                                                         <label className="text-[10px] uppercase text-white/40 block mb-2">Prefixo</label>

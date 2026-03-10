@@ -38,7 +38,7 @@ export default function Header({ scrolled: propScrolled, lang, setLang, mounted,
         { label: t('menu_casa'), id: 'a-essencia', type: 'scroll' },
         { label: t('menu_alojamento'), id: 'alojamento', type: 'scroll' },
         { label: t('menu_passeios'), path: '/passeios', type: 'link' },
-        { label: t('menu_contatos'), path: '/contatos', type: 'link' },
+        { label: t('menu_contactos'), path: '/contactos', type: 'link' },
     ];
 
     const scrollToOrNavigate = (id: string) => {

@@ -22,7 +22,7 @@ export default function AdminSidebar() {
     ];
 
     return (
-        <aside className="fixed left-0 top-0 h-full w-20 bg-carapita-dark flex flex-col items-center py-8 gap-8 z-50 border-r border-white/5 shadow-2xl">
+        <aside className="fixed left-0 top-0 h-full w-20 bg-carapita-dark flex flex-col items-center py-8 gap-8 z-50 border-r border-white/5 shadow-2xl overflow-y-auto overflow-x-hidden scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <div className="mb-4 cursor-pointer group" onClick={() => router.push('/')}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-carapita-gold/10 group-hover:bg-carapita-gold transition-all duration-500">
                     <span className="text-carapita-gold group-hover:text-carapita-dark text-2xl font-serif">R</span>

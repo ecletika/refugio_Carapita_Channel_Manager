@@ -30,7 +30,7 @@ export default function TratamentoDados() {
                             <li><strong>NIF:</strong> <span>260876640</span></li>
                             <li><strong>Morada:</strong> <span>Rua D. Afonso IV, 450, 2490-378 Ourém</span></li>
                             <li><strong>Telemóvel:</strong> <span>+351 967 244 938</span></li>
-                            <li><strong>E-mail:</strong> <span>contato@refugiocarapita.pt</span></li>
+                            <li><strong>E-mail:</strong> <span>contacto@refugiocarapita.pt</span></li>
                         </ul>
                     </section>
 
@@ -41,7 +41,7 @@ export default function TratamentoDados() {
                         </p>
                         <ul className="list-disc pl-5 space-y-2 mt-4 text-white/70">
                             <li>Dados de Identificação: Nome, apelido, número do documento de identificação civil ou passaporte (obrigatório pela AIMA - Agência para a Integração Migrações e Asilo para hóspedes estrangeiros).</li>
-                            <li>Dados de Contato: E-mail, número de telefone e morada completa.</li>
+                            <li>Dados de Contacto: E-mail, número de telefone e morada completa.</li>
                             <li>Dados de Pagamento: Informações de faturação. Transações por cartão, MBWAY ou paypal são efetuadas por prestadores que garantem a conformidade legal.</li>
                         </ul>
                     </section>
@@ -85,7 +85,7 @@ export default function TratamentoDados() {
                             <li>Solicitar o apagamento dos seus dados (Direito a Ser Esquecido), desde que tal não contrarie normas ou imposições legais;</li>
                             <li>Retirar o seu consentimento para comunicações de marketing a qualquer momento.</li>
                         </ul>
-                        <p className="mt-6">Para exercer qualquer um destes direitos, utilize o e-mail: <strong>contato@refugiocarapita.pt</strong> indicando no assunto "Proteção de Dados".</p>
+                        <p className="mt-6">Para exercer qualquer um destes direitos, utilize o e-mail: <strong>contacto@refugiocarapita.pt</strong> indicando no assunto "Proteção de Dados".</p>
                     </section>
 
                 </div>

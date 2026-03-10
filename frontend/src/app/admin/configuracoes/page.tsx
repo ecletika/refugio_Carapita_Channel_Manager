@@ -96,7 +96,7 @@ export default function AdminConfiguracoes() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    {/* Contatos Primarios */}
+                    {/* Contactos Primários */}
                     <div className="bg-white p-8 border border-gray-100 shadow-sm space-y-6">
                         <h3 className="text-xl font-serif text-carapita-dark mb-6 border-b border-gray-50 pb-4">Detalhes de Contacto</h3>
 
@@ -117,7 +117,7 @@ export default function AdminConfiguracoes() {
 
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] uppercase tracking-widest text-carapita-muted font-bold flex items-center gap-2"><Mail size={12} /> E-mail Público</label>
-                            <input name="emailContato" value={configs.emailContato} onChange={handleChange} className="border-b border-gray-200 py-2 outline-none focus:border-carapita-gold text-sm" placeholder="contato@refugiocarapita.pt" />
+                            <input name="emailContato" value={configs.emailContato} onChange={handleChange} className="border-b border-gray-200 py-2 outline-none focus:border-carapita-gold text-sm" placeholder="contacto@refugiocarapita.pt" />
                         </div>
 
                         <div className="flex flex-col gap-2">

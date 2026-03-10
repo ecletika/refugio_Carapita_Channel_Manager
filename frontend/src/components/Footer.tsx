@@ -23,7 +23,7 @@ export default function Footer({ lang, siteConfigs }: FooterProps) {
     };
 
     return (
-        <footer id="contatos" className="bg-carapita-dark text-white py-24 px-6 md:px-16 border-t-[12px] border-carapita-gold mt-auto">
+        <footer id="contactos" className="bg-carapita-dark text-white py-24 px-6 md:px-16 border-t-[12px] border-carapita-gold mt-auto">
             <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-16">
                 <div className="w-full lg:w-1/4 md:w-1/3 text-center md:text-left flex flex-col justify-between">
                     <div className="flex flex-col items-center md:items-start group cursor-pointer" onClick={() => router.push('/')}>
@@ -63,7 +63,7 @@ export default function Footer({ lang, siteConfigs }: FooterProps) {
                         <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollToOrNavigate('a-essencia')}>{t('footer_a_essencia')}</span>
                         <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => scrollToOrNavigate('alojamento')}>{t('alojamento_tag')}</span>
                         <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => router.push('/passeios')}>{t('footer_atracoes')}</span>
-                        <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => router.push('/contatos')}>{t('menu_contatos')}</span>
+                        <span className="hover:text-carapita-gold transition-colors duration-300 cursor-pointer" onClick={() => router.push('/contactos')}>{t('menu_contactos')}</span>
                     </div>
 
                     <div className="flex flex-col gap-4 text-xs font-light text-white/70">
