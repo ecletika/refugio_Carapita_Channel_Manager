@@ -79,7 +79,7 @@ const RoomImageGallery = ({ fotos, quartoNome, onClick }: { fotos: FotoObj[], qu
     const currentImg = fotos.length > 0 ? fotos[idx].url : 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&auto=format&fit=crop';
 
     return (
-        <div className="w-full h-full min-h-[280px] xl:h-full relative overflow-hidden cursor-pointer group/slider" onClick={onClick}>
+        <div className="w-full h-full relative overflow-hidden cursor-pointer group/slider" onClick={onClick}>
             <img src={currentImg} alt={quartoNome} className="w-full h-full object-cover group-hover/slider:scale-105 transition-transform duration-1000" />
             <div className="absolute inset-0 bg-black/0 group-hover/slider:bg-black/20 transition-colors duration-500 flex items-center justify-center">
                 <Camera className="text-white opacity-0 group-hover/slider:opacity-100 transition-opacity duration-500 drop-shadow-lg" size={32} strokeWidth={1.5} />
@@ -951,54 +951,40 @@ export default function Home() {
             {/* --- NOVA TELA DE RESERVAS IMERSIVA --- */}
             {showBookingScreen && (
                 <div className="fixed inset-0 z-[200] bg-carapita-green overflow-y-auto animate-fade-in font-serif">
-                    {/* Header Banner Estilo Casa da Calçada */}
-                    <div className="relative h-[60vh] w-full overflow-hidden">
+                    {/* Header Compacto Premium */}
+                    <div className="relative h-32 md:h-48 w-full overflow-hidden bg-carapita-dark border-b border-carapita-gold/20">
                         {heroImages.map((img, idx) => (
                             <img
                                 key={idx}
                                 src={img}
-                                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${currentHeroIndex === idx ? 'opacity-100' : 'opacity-0'}`}
+                                className={`absolute inset-0 w-full h-full object-cover opacity-20 transition-opacity duration-1000 ${currentHeroIndex === idx ? 'opacity-20' : 'opacity-0'}`}
                             />
                         ))}
-                        <div className="absolute inset-0 bg-black/20"></div>
-
-                        {/* Info Box Flutuante */}
-                        <div className="absolute bottom-10 left-6 md:left-20 bg-carapita-green/90 backdrop-blur p-8 shadow-2xl max-w-sm border-t-4 border-carapita-gold">
-                            <h2 className="text-2xl text-white mb-4 tracking-widest uppercase">Refúgio Carapita</h2>
-                            <div className="space-y-3 text-[11px] text-white/50 font-sans uppercase tracking-widest">
-                                <p className="flex items-start gap-2">
-                                    <MapPin size={14} className="text-carapita-gold shrink-0" />
-                                    <span>{siteConfigs.endereco || 'Rua D. Afonso IV, 450, 2490-378 Ourém'}</span>
-                                </p>
-                                <p className="flex items-center gap-2">
-                                    <Users size={14} className="text-carapita-gold" />
-                                    <span>{siteConfigs.telefoneReservas || '+351 967 244 938'}</span>
-                                </p>
-                                <p className="flex items-center gap-2">
-                                    <ChevronRight size={14} className="text-carapita-gold" />
-                                    <span>{siteConfigs.emailContato || 'contato@refugiocarapita.pt'}</span>
-                                </p>
+                        
+                        <div className="absolute inset-0 flex items-center justify-between px-6 md:px-20">
+                            <div className="flex flex-col">
+                                <h2 className="text-xl md:text-3xl text-white tracking-[0.2em] uppercase font-serif">Refúgio <span className="text-carapita-gold">Carapita</span></h2>
+                                <p className="text-[9px] text-white/40 tracking-widest uppercase mt-1 hidden md:block">{siteConfigs.endereco || 'Rua D. Afonso IV, 450, 2490-378 Ourém'}</p>
                             </div>
-                        </div>
 
-                        {/* Botão Fechar */}
-                        <button
-                            onClick={() => setShowBookingScreen(false)}
-                            className="absolute top-8 right-8 bg-white/10 hover:bg-white/20 p-3 rounded-full text-white backdrop-blur transition-all"
-                        >
-                            <X size={24} />
-                        </button>
+                            <button
+                                onClick={() => setShowBookingScreen(false)}
+                                className="bg-white/10 hover:bg-carapita-gold hover:text-carapita-dark p-3 rounded-full text-white backdrop-blur transition-all border border-white/10"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="max-w-[1600px] mx-auto py-12 px-4 md:px-8">
-                        <div className="flex flex-col xl:flex-row gap-8 xl:gap-10 items-start">
+                    <div className="max-w-[1240px] mx-auto py-3 px-4 md:px-6">
+                        <div className="flex flex-col xl:flex-row gap-6 items-start">
                             {/* Coluna do Calendário e Filtros */}
                             <div className="w-full xl:w-auto xl:flex-shrink-0">
                                 {bookingStep === 'selection' && (
                                     <div className="flex flex-col xl:flex-row gap-8">
                                         {/* Left Side: Calendar + Guests + Cupons */}
-                                        <div className="w-full xl:w-[420px] xl:flex-shrink-0 space-y-5">
-                                            <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-sm">
+                                        <div className="w-full xl:w-[320px] xl:flex-shrink-0 space-y-3">
+                                            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm">
                                                 <h4 className="font-serif text-xl mb-6 text-white text-center border-b border-white/10 pb-4">
                                                     {t('booking_selecione_datas')}
                                                 </h4>
@@ -1011,8 +997,8 @@ export default function Home() {
                                                 />
                                             </div>
 
-                                            <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-sm">
-                                                <h4 className="font-serif text-lg mb-6 text-white uppercase tracking-widest text-center border-b border-white/10 pb-4">{t('booking_num_hospedes')}</h4>
+                                            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm">
+                                                <h4 className="font-serif text-base mb-4 text-white uppercase tracking-widest text-center border-b border-white/10 pb-3">{t('booking_num_hospedes')}</h4>
 
                                                 <div className="space-y-4">
                                                     <div className="flex justify-between items-center border-b border-white/10 pb-4">
@@ -1053,8 +1039,8 @@ export default function Home() {
                                                 </div>
                                             </div>
 
-                                            <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-sm">
-                                                <h4 className="font-serif text-lg mb-6 text-white uppercase tracking-widest text-center border-b border-white/10 pb-4">Cupão Promocional</h4>
+                                            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm">
+                                                <h4 className="font-serif text-base mb-4 text-white uppercase tracking-widest text-center border-b border-white/10 pb-3">Cupão Promocional</h4>
                                                 <div className="flex flex-col gap-2">
                                                     <div className="flex gap-2">
                                                         <input
@@ -1088,8 +1074,8 @@ export default function Home() {
 
                                         {/* Right Side: Rooms */}
                                         <div className="flex-1 min-w-0">
-                                            <h2 className="font-serif text-2xl lg:text-3xl mb-8 text-white border-b border-white/10 pb-4 uppercase tracking-widest">{t('booking_alojamentos_disp')}</h2>
-                                            <div className="space-y-8">
+                                            <h2 className="font-serif text-lg lg:text-xl mb-4 text-white border-b border-white/10 pb-2 uppercase tracking-widest">{t('booking_alojamentos_disp')}</h2>
+                                            <div className="space-y-4">
                                                 {(quartosEncontrados || []).length > 0 ? (
                                                     quartosEncontrados?.map((q) => {
                                                         const fotos = parseFotos(q.fotos);
@@ -1099,9 +1085,9 @@ export default function Home() {
                                                         const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
 
                                                         return (
-                                                            <div key={q.id} className="bg-[#1C2621] border border-white/10 rounded-[2.5rem] hover:border-carapita-gold/50 shadow-2xl transition-all duration-700 flex flex-col md:flex-row overflow-hidden group min-h-[350px]">
+                                                            <div key={q.id} className="bg-[#1C2621] border border-white/10 rounded-3xl hover:border-carapita-gold/50 shadow-2xl transition-all duration-700 flex flex-col md:flex-row overflow-hidden group">
                                                                 {/* Foto Hero com setas em vez de Thumbnails */}
-                                                                <div className="w-full md:w-[35%] lg:w-[30%] xl:w-[32%] shrink-0 relative flex flex-col overflow-hidden">
+                                                                    <div className="w-full md:w-[35%] lg:w-[30%] xl:w-[32%] shrink-0 relative flex flex-col overflow-hidden aspect-video md:aspect-auto">
                                                                     {(() => {
                                                                         // Usando um pequeno hack ou criando subcomponente inline? Melhor criar um component. 
                                                                         // Mas como não podemos exportar facilmente e usar hook no meio do map:
@@ -1111,17 +1097,17 @@ export default function Home() {
                                                                 </div>
 
                                                                 {/* Detalhes do Quarto */}
-                                                                <div className="p-8 flex-1 flex flex-col justify-between">
+                                                                <div className="p-5 flex-1 flex flex-col justify-between">
                                                                     <div className="mb-6 xl:mb-0">
                                                                         <div className="flex justify-between items-start mb-4 border-b border-white/5 pb-4">
                                                                             <div>
-                                                                                <h3 className="font-serif text-2xl lg:text-3xl text-white group-hover:text-carapita-gold transition-colors">{q.nome}</h3>
-                                                                                <p className="text-[10px] uppercase tracking-widest text-carapita-gold font-bold mt-2">{q.tipo}</p>
+                                                                                <h3 className="font-serif text-xl lg:text-2xl text-white group-hover:text-carapita-gold transition-colors">{q.nome}</h3>
+                                                                                <p className="text-[9px] uppercase tracking-widest text-carapita-gold font-bold mt-1">{q.tipo}</p>
                                                                             </div>
                                                                             <div className="text-right">
                                                                                 <div className="flex items-baseline gap-1 justify-end">
-                                                                                    <span className="text-lg font-serif text-carapita-gold opacity-80">€</span>
-                                                                                    <span className="text-4xl font-serif text-white">{Number(q.preco_base).toFixed(0)}</span>
+                                                                                    <span className="text-base font-serif text-carapita-gold opacity-80">€</span>
+                                                                                    <span className="text-3xl font-serif text-white">{Number(q.preco_base).toFixed(0)}</span>
                                                                                 </div>
                                                                                 <p className="text-[9px] text-white/40 uppercase tracking-wide mt-1">{lang === 'PT' ? 'Preço total aproximado' : 'Approx. Total Price'}</p>
                                                                             </div>

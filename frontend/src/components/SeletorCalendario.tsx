@@ -128,7 +128,7 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
                 <div
                     key={dStr}
                     onClick={() => handleDateClick(dStr)}
-                    className={`p-1 border border-white/5 flex flex-col items-center justify-center cursor-pointer transition-all h-14 relative
+                    className={`p-1 border border-white/5 flex flex-col items-center justify-center cursor-pointer transition-all h-10 relative
                         ${isSelected ? 'bg-carapita-gold text-white border-carapita-gold' : ''}
                         ${isInRange ? 'bg-carapita-gold/20' : 'hover:bg-white/5'}
                         ${!isDisponivel ? 'opacity-50 cursor-not-allowed bg-black/20' : ''}
@@ -141,9 +141,9 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
                             </span>
                         </div>
                     )}
-                    <span className={`text-sm font-bold z-10 ${isSelected ? 'text-white' : 'text-white/90'}`}>{d}</span>
+                    <span className={`text-xs font-bold z-10 ${isSelected ? 'text-white' : 'text-white/90'}`}>{d}</span>
                     {info && (
-                        <span className={`text-[10px] mt-1 z-10 font-bold ${isSelected ? 'text-white' : 'text-carapita-gold'} ${!isDisponivel ? 'line-through opacity-40' : ''}`}>
+                        <span className={`text-[8px] mt-0.5 z-10 font-bold ${isSelected ? 'text-white' : 'text-carapita-gold'} ${!isDisponivel ? 'line-through opacity-40' : ''}`}>
                             €{info.preco}
                         </span>
                     )}
@@ -153,7 +153,7 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
 
         return (
             <div className="flex-1 min-w-0">
-                <h4 className="text-center font-serif uppercase tracking-widest mb-4 text-white text-sm md:text-base">{monthName} {year}</h4>
+                <h4 className="text-center font-serif uppercase tracking-widest mb-2 text-white text-xs md:text-sm">{monthName} {year}</h4>
                 <div className="grid grid-cols-7 text-[10px] text-center text-white/40 mb-2 uppercase tracking-tighter">
                     <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
                 </div>
@@ -166,17 +166,19 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
 
     return (
         <div className="bg-transparent animate-fade-in w-full">
-            <div className="flex justify-between items-center mb-6">
-                <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))} className="p-2 hover:bg-white/5 text-white rounded-full transition-colors"><ChevronLeft size={20} /></button>
+            <div className="flex justify-between items-center mb-4">
+                <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))} className="p-1 hover:bg-white/5 text-white rounded-full transition-colors"><ChevronLeft size={16} /></button>
                 <div className="text-center">
-                    <span className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold">Selecione as Datas</span>
+                    <span className="text-[9px] uppercase tracking-widest text-carapita-gold font-bold">Calendário</span>
                 </div>
-                <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} className="p-2 hover:bg-white/5 text-white rounded-full transition-colors"><ChevronRight size={20} /></button>
+                <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} className="p-1 hover:bg-white/5 text-white rounded-full transition-colors"><ChevronRight size={16} /></button>
             </div>
 
             <div className="flex flex-col md:flex-row lg:flex-col gap-6 w-full">
                 {renderMonth(new Date(currentDate))}
-                {renderMonth(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
+                <div className="hidden md:block">
+                    {renderMonth(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
+                </div>
             </div>
 
             <div className="mt-8 pt-8 border-t border-white/10 flex justify-between items-center">
