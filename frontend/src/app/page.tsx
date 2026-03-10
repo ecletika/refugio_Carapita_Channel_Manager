@@ -958,43 +958,65 @@ export default function Home() {
             {/* --- NOVA TELA DE RESERVAS IMERSIVA --- */}
             {showBookingScreen && (
                 <div className="fixed inset-0 z-[200] bg-carapita-green overflow-y-auto animate-fade-in font-serif">
-                    {/* Header Compacto Premium */}
-                    <div className="relative h-32 md:h-48 w-full overflow-hidden bg-carapita-dark border-b border-carapita-gold/20">
+                    {/* Header Compacto Premium - Reduced Height */}
+                    <div className="relative h-20 md:h-24 w-full overflow-hidden bg-carapita-dark border-b border-carapita-gold/20 sticky top-0 z-[210]">
                         {heroImages.map((img, idx) => (
                             <img
                                 key={idx}
                                 src={img}
-                                className={`absolute inset-0 w-full h-full object-cover opacity-20 transition-opacity duration-1000 ${currentHeroIndex === idx ? 'opacity-20' : 'opacity-0'}`}
+                                className={`absolute inset-0 w-full h-full object-cover opacity-10 transition-opacity duration-1000 ${currentHeroIndex === idx ? 'opacity-10' : 'opacity-0'}`}
                             />
                         ))}
                         
-                        <div className="absolute inset-0 flex items-center justify-between px-6 md:px-20">
+                        <div className="absolute inset-0 flex items-center justify-between px-6 md:px-12">
                             <div className="flex flex-col">
-                                <h2 className="text-xl md:text-3xl text-white tracking-[0.2em] uppercase font-serif">Refúgio <span className="text-carapita-gold">Carapita</span></h2>
-                                <p className="text-[9px] text-white/40 tracking-widest uppercase mt-1 hidden md:block">{siteConfigs.endereco || 'Rua D. Afonso IV, 450, 2490-378 Ourém'}</p>
+                                <h2 className="text-lg md:text-xl text-white tracking-[0.2em] uppercase font-serif">Refúgio <span className="text-carapita-gold">Carapita</span></h2>
+                                <p className="text-[7px] text-white/40 tracking-widest uppercase mt-0.5 hidden md:block">Processo de Reserva</p>
+                            </div>
+
+                            {/* Stepper Minimalista */}
+                            <div className="hidden md:flex items-center gap-8">
+                                {[
+                                    { step: 'selection', label: t('booking_step_1'), icon: <Calendar size={12} /> },
+                                    { step: 'extras', label: 'Extras', icon: <Plus size={12} /> },
+                                    { step: 'details', label: 'Dados', icon: <User size={12} /> }
+                                ].map((s, idx) => (
+                                    <div key={s.step} className="flex items-center gap-3">
+                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] border transition-all ${
+                                            bookingStep === s.step ? 'bg-carapita-gold border-carapita-gold text-carapita-dark' : 
+                                            idx < ['selection', 'extras', 'details'].indexOf(bookingStep) ? 'bg-white/10 border-white/20 text-white/40' : 'bg-transparent border-white/20 text-white/40'
+                                        }`}>
+                                            {s.icon}
+                                        </div>
+                                        <span className={`text-[9px] uppercase tracking-widest font-bold ${bookingStep === s.step ? 'text-white' : 'text-white/20'}`}>
+                                            {s.label}
+                                        </span>
+                                        {idx < 2 && <div className="w-4 h-px bg-white/10 ml-2"></div>}
+                                    </div>
+                                ))}
                             </div>
 
                             <button
                                 onClick={() => setShowBookingScreen(false)}
-                                className="bg-white/10 hover:bg-carapita-gold hover:text-carapita-dark p-3 rounded-full text-white backdrop-blur transition-all border border-white/10"
+                                className="bg-white/5 hover:bg-carapita-gold hover:text-carapita-dark p-2 rounded-full text-white backdrop-blur transition-all border border-white/10"
                             >
-                                <X size={20} />
+                                <X size={18} />
                             </button>
                         </div>
                     </div>
 
-                    <div className="max-w-[1240px] mx-auto py-3 px-4 md:px-6">
-                        <div className="flex flex-col xl:flex-row gap-6 items-start">
-                            {/* Coluna do Calendário e Filtros */}
-                            <div className="w-full xl:w-auto xl:flex-shrink-0">
+                    <div className="max-w-[1400px] mx-auto py-6 px-4 md:px-8">
+                        <div className="flex flex-col xl:flex-row gap-8 items-start">
+                            {/* Conteúdo Principal */}
+                            <div className="flex-1 w-full min-w-0">
                                 {bookingStep === 'selection' && (
                                     <div className="flex flex-col gap-8 w-full">
                                         {/* Bloco Superior: Calendário Imersivo */}
-                                        <div className="w-full bg-[#1C2621]/80 backdrop-blur-xl border border-white/10 p-8 md:p-12 rounded-[2.5rem] shadow-2xl">
-                                            <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
+                                        <div className="w-full bg-[#1C2621]/80 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-[2rem] shadow-2xl">
+                                            <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-6">
                                                 <div className="text-left">
-                                                    <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-2">{t('booking_step_1')}</span>
-                                                    <h3 className="font-serif text-3xl text-white uppercase tracking-widest leading-tight">
+                                                    <span className="text-carapita-gold text-[9px] uppercase tracking-mega font-bold block mb-1">{t('booking_step_1')}</span>
+                                                    <h3 className="font-serif text-2xl text-white uppercase tracking-widest leading-tight">
                                                         {t('booking_selecione_datas')}
                                                     </h3>
                                                 </div>
@@ -1117,9 +1139,9 @@ export default function Home() {
                                 )}
                                 {bookingStep === 'extras' && (
                                     <div className="animate-fade-in max-w-4xl mx-auto">
-                                        <div className="text-center mb-16">
+                                        <div className="text-center mb-10">
                                             <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-4">{t('booking_step_personalize')}</span>
-                                            <h2 className="font-serif text-4xl text-white uppercase tracking-widest leading-tight">{t('booking_title_extras')}</h2>
+                                            <h2 className="font-serif text-3xl text-white uppercase tracking-widest leading-tight">{t('booking_title_extras')}</h2>
                                             <p className="text-white/40 mt-4 text-[10px] uppercase tracking-widest font-medium">{lang === 'PT' ? 'Selecione os mimos e serviços exclusivos para o seu refúgio' : 'Select the exclusive treats and services for your retreat'}</p>
                                         </div>
 
@@ -1179,7 +1201,7 @@ export default function Home() {
                                 {bookingStep === 'details' && (
                                     <div className="animate-fade-in font-sans">
                                         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                                            <h2 className="font-serif text-3xl text-white uppercase tracking-widest">{t('booking_title_details')}</h2>
+                                            <h2 className="font-serif text-2xl text-white uppercase tracking-widest">{t('booking_title_details')}</h2>
                                             {!isGuestLoggedIn && (
                                                 <button
                                                     onClick={() => setShowGuestLoginModal(true)}
@@ -1190,8 +1212,8 @@ export default function Home() {
                                             )}
                                         </div>
 
-                                        <div className="space-y-10">
-                                            <section className="bg-carapita-gold/10 p-8 border border-carapita-gold/30">
+                                        <div className="space-y-6">
+                                            <section className="bg-carapita-gold/10 p-6 border border-carapita-gold/30 rounded-2xl">
                                                 <div className="flex items-center gap-3 mb-4">
                                                     <input type="checkbox" id="estrangeiro" checked={bookingForm.estrangeiro} onChange={e => setBookingForm({ ...bookingForm, estrangeiro: e.target.checked })} className="w-5 h-5 accent-carapita-gold" />
                                                     <label htmlFor="estrangeiro" className="text-[11px] font-bold uppercase tracking-widest text-carapita-gold cursor-pointer">{t('form_estrangeiro')}</label>
@@ -1232,7 +1254,7 @@ export default function Home() {
                                             </section>
 
                                             <section>
-                                                <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">{t('form_info_contacto')}</h4>
+                                                <h4 className="text-[9px] uppercase tracking-mega text-carapita-gold font-bold mb-4 border-b border-white/10 pb-2">{t('form_info_contacto')}</h4>
                                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                                     <div className="col-span-1">
                                                         <label className="text-[10px] uppercase text-white/40 block mb-2">Prefixo</label>
@@ -1322,7 +1344,7 @@ export default function Home() {
                                             )}
 
                                             <section>
-                                                <h4 className="text-[10px] uppercase tracking-mega text-carapita-gold font-bold mb-6 border-b border-white/10 pb-2">{t('form_faturacao')}</h4>
+                                                <h4 className="text-[9px] uppercase tracking-mega text-carapita-gold font-bold mb-4 border-b border-white/10 pb-2">{t('form_faturacao')}</h4>
                                                 <div className="grid grid-cols-2 gap-6 text-sm">
                                                     <div className="col-span-2 lg:col-span-1">
                                                         <label className="text-[10px] uppercase text-white/40 block mb-2">{t('form_pais')}</label>
@@ -1352,7 +1374,7 @@ export default function Home() {
                                                 </div>
                                             </section>
 
-                                            <section className="bg-white/5 p-8 border border-white/10">
+                                            <section className="bg-white/5 p-6 border border-white/10">
                                                 <div className="flex items-center gap-3 mb-6">
                                                     <input type="checkbox" id="create" checked={bookingForm.criarConta} onChange={e => setBookingForm({ ...bookingForm, criarConta: e.target.checked })} className="w-4 h-4 accent-carapita-gold" />
                                                     <label htmlFor="create" className="text-xs font-bold uppercase tracking-widest text-white cursor-pointer">{t('form_criar_conta')}</label>
@@ -1403,11 +1425,11 @@ export default function Home() {
                                 )}
 
                                 {bookingStep === 'success' && (
-                                    <div className="animate-fade-in font-sans flex flex-col items-center justify-center text-center p-12 bg-white/5 border border-carapita-gold/30 mt-12 rounded-sm shadow-[0_20px_40px_rgba(212,175,55,0.05)]">
+                                    <div className="animate-fade-in font-sans flex flex-col items-center justify-center text-center p-8 bg-white/5 border border-carapita-gold/30 mt-8 rounded-sm shadow-[0_20px_40px_rgba(212,175,55,0.05)]">
                                         <div className="w-20 h-20 rounded-full bg-carapita-gold/20 flex items-center justify-center mb-6">
                                             <Check size={40} className="text-carapita-gold" />
                                         </div>
-                                        <h2 className="font-serif text-3xl md:text-4xl text-white mb-6 leading-tight">
+                                        <h2 className="font-serif text-2xl md:text-3xl text-white mb-6 leading-tight">
                                             Obrigado pela sua Reserva
                                         </h2>
                                         <div className="space-y-4 text-[13px] text-white/70 max-w-xl mx-auto font-light leading-relaxed">
@@ -1452,19 +1474,19 @@ export default function Home() {
 
                             {/* Sumário lateral / Carrinho */}
                             <div className="w-full xl:w-80 xl:flex-shrink-0 mt-8 xl:mt-0">
-                                <div className="sticky top-10 space-y-8">
-                                    <div className="bg-carapita-dark text-white p-10">
-                                        <h3 className="font-serif text-xl border-b border-white/10 pb-4 mb-6 uppercase tracking-widest italic">{t('summary_title')}</h3>
+                                <div className="sticky top-24 space-y-6">
+                                    <div className="bg-carapita-dark text-white p-6 rounded-2xl border border-white/5">
+                                        <h3 className="font-serif text-lg border-b border-white/10 pb-3 mb-4 uppercase tracking-widest italic">{t('summary_title')}</h3>
                                         <div className="mb-10 pb-6 border-b border-white/10">
                                             <div className="flex justify-between items-baseline mb-2">
-                                                <span className="text-xs tracking-widest uppercase text-white/40">{t('summary_total')}</span>
+                                                <span className="text-[10px] tracking-widest uppercase text-white/40">{t('summary_total')}</span>
                                                 <div className="text-right">
                                                     {cupomAplicado && (
-                                                        <span className="block text-[11px] text-white/40 line-through mb-1 tracking-widest uppercase">
+                                                        <span className="block text-[10px] text-white/40 line-through mb-0.5 tracking-widest uppercase">
                                                             {(totalEstadia() + valorDesconto()).toFixed(2).replace('.', ',')}
                                                         </span>
                                                     )}
-                                                    <span className="text-4xl font-serif text-carapita-gold">€{totalEstadia().toFixed(2).replace('.', ',')}</span>
+                                                    <span className="text-3xl font-serif text-carapita-gold">€{totalEstadia().toFixed(2).replace('.', ',')}</span>
                                                 </div>
                                             </div>
                                             {cupomAplicado && (
