@@ -59,6 +59,19 @@ h6 {
   animation: fadeIn 1s ease-out forwards;
 }
 
+@keyframes slideLeft {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-left {
+  animation: slideLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 /* Splash Screen Animations */
 @keyframes drawPath {
   to {
