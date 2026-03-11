@@ -93,7 +93,7 @@ export const dictionaries = {
         summary_hospedes: 'Hóspedes',
         summary_total: 'Total Estimado',
         summary_taxas: 'Taxas incluídas. O valor final será confirmado após aprovação.',
-        summary_pq_nos: 'Porquê reservar connosco?',
+        summary_pq_nos: 'Porquê reservar conosco?',
         summary_melhores_precos: 'Melhores preços garantidos',
         summary_checkin_flex: 'Check-in flexível',
         summary_apoio: 'Apoio local 24/7',

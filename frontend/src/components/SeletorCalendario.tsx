@@ -51,15 +51,7 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
         // Se for dia de check-out, só pode ser usado como check-out de uma reserva anterior, 
         // mas o backend já marcou disponivel=false para impedir check-in.
         if (info && !info.disponivel) {
-            // Se já temos um check-in, o check-out PODE ser em um dia ocupado (se for o dia exato que alguém entra, mas aqui a regra é BLOQUEAR o dia que alguém sai)
-            // Na verdade, a regra do usuário é: BLOQUEAR o dia de check-out sempre (ninguém entra no dia que alguém sai).
-            // Então se disponivel=false, não pode clicar.
-            if (!selection.start) return;
-            // Se for check-out, permitimos clicar se for o dia FINAL de uma seleção, mas o backend disse que esse dia está indisponível para ENTRAR.
-            // No entanto, para SAIR, o dia de check-out de uma reserva costuma ser o dia de check-in da próxima.
-            // A Regra 1 diz: Bloquear o dia de check-out sempre. Isso significa que se alguém sai dia 10, ninguém entra dia 10.
-            // Então dia 10 está indisponível para check-in.
-            if (!selection.start) return;
+            return;
         }
 
         if (!selection.start || (selection.start && selection.end)) {
@@ -88,8 +80,8 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
             let hasBlock = false;
             let current = new Date(startDate);
 
-            // Verificamos todos os dias do check-in até o dia ANTERIOR ao check-out
-            while (current < endDate) {
+            // Verificamos todos os dias do check-in até o dia do check-out (INCLUSIVE)
+            while (current <= endDate) {
                 const currentStr = current.toISOString().split('T')[0];
                 if (precos[currentStr] && !precos[currentStr].disponivel) {
                     hasBlock = true;

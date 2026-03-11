@@ -34,14 +34,14 @@ class ReservasController {
                 .from('Reserva')
                 .select('quarto_id')
                 .in('status', ['CONFIRMADA', 'CHECK_IN', 'PENDENTE'])
-                .lt('data_check_in', dataFim)
-                .gt('data_check_out', dataInicio);
+                .lte('data_check_in', dataFim)
+                .gte('data_check_out', dataInicio);
 
             const { data: bloqueiosConflito } = await supabase.supabaseAdmin
                 .from('Bloqueio')
                 .select('quarto_id')
-                .lt('data_inicio', dataFim)
-                .gt('data_fim', dataInicio);
+                .lte('data_inicio', dataFim)
+                .gte('data_fim', dataInicio);
 
             const idsOcupados = new Set([
                 ...(reservasConflito?.map(r => r.quarto_id) || []),
@@ -135,7 +135,7 @@ class ReservasController {
                 const tarifasAplicaveis = tarifas?.filter(tf => {
                     const tInStr = tf.data_inicio.split('T')[0];
                     const tOutStr = tf.data_fim.split('T')[0];
-                    return currentYmd >= tInStr && currentYmd < tOutStr;
+                    return currentYmd >= tInStr && currentYmd <= tOutStr;
                 }) || [];
 
                 let tarifaSazonal = null;

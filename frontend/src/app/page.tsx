@@ -1015,7 +1015,6 @@ export default function Home() {
                                         <div className="w-full bg-[#1C2621]/80 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-[2rem] shadow-2xl">
                                             <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-6">
                                                 <div className="text-left">
-                                                    <span className="text-carapita-gold text-[9px] uppercase tracking-mega font-bold block mb-1">{t('booking_step_1')}</span>
                                                     <h3 className="font-serif text-2xl text-white uppercase tracking-widest leading-tight">
                                                         {t('booking_selecione_datas')}
                                                     </h3>
@@ -1046,7 +1045,7 @@ export default function Home() {
 
                                         <div className="flex flex-col xl:flex-row gap-8 items-start">
                                             {/* Coluna da Esquerda: Filtros e Extras rápidos */}
-                                            <div className="w-full xl:w-72 shrink-0 space-y-6 xl:-mt-1">
+                                            <div className="w-full xl:w-72 shrink-0 space-y-6 mt-0">
                                                 <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm">
                                                     <h4 className="font-serif text-[10px] mb-6 text-white uppercase tracking-widest text-center border-b border-white/10 pb-4">{t('booking_num_hospedes')}</h4>
                                                     <div className="space-y-4">
@@ -1055,20 +1054,20 @@ export default function Home() {
                                                             <div className="flex items-center gap-4">
                                                                 <button onClick={() => setAdultos(Math.max(1, adultos - 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold disabled:opacity-20" disabled={adultos <= 1}>−</button>
                                                                 <span className="text-white font-serif text-base w-4 text-center">{adultos}</span>
-                                                                <button onClick={() => setAdultos(Math.min(10, adultos + 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold">+</button>
+                                                                <button onClick={() => setAdultos(adultos + criancas < 4 ? adultos + 1 : adultos)} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white transition-colors disabled:opacity-20 disabled:cursor-not-allowed hover:border-carapita-gold" disabled={adultos + criancas >= 4}>+</button>
                                                             </div>
                                                         </div>
-                                                        <div className="flex flex-col gap-1">
+                                                        <div className="flex flex-col">
                                                             <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl">
                                                                 <div className="text-white text-[10px] font-semibold uppercase tracking-widest">Crianças</div>
                                                                 <div className="flex items-center gap-4">
                                                                     <button onClick={() => setCriancas(Math.max(0, criancas - 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold disabled:opacity-20" disabled={criancas <= 0}>−</button>
                                                                     <span className="text-white font-serif text-base w-4 text-center">{criancas}</span>
-                                                                    <button onClick={() => setCriancas(Math.min(10, criancas + 1))} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white hover:border-carapita-gold">+</button>
+                                                                    <button onClick={() => setCriancas(criancas < 3 && adultos + criancas < 4 ? criancas + 1 : criancas)} className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-white transition-colors disabled:opacity-20 disabled:cursor-not-allowed hover:border-carapita-gold" disabled={criancas >= 3 || adultos + criancas >= 4}>+</button>
                                                                 </div>
                                                             </div>
-                                                            <div className="text-[11px] text-carapita-gold/80 italic text-left mt-1 ml-1 flex items-center gap-1">
-                                                                <AlertCircle size={10} /> Crianças devem ter pelo menos 5 anos
+                                                            <div className="text-[11px] text-white/50 italic text-left mt-2 pl-1 select-none">
+                                                                ⚠️ Crianças devem ter pelo menos 5 anos
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1079,7 +1078,6 @@ export default function Home() {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
                                                     <h2 className="font-serif text-lg text-white uppercase tracking-[0.3em]">{t('booking_alojamentos_disp')}</h2>
-                                                    <span className="text-[9px] text-white/40 uppercase tracking-widest">{quartosEncontrados?.length || 0} {t('booking_unidades_encontradas')}</span>
                                                 </div>
                                                 
                                                 <div className="space-y-4">
@@ -1088,7 +1086,7 @@ export default function Home() {
                                                             const fotos = parseFotos(q.fotos);
                                                             let comodidades: string[] = [];
                                                             try { comodidades = JSON.parse(q.comodidades || '[]'); } catch { }
-                                                            const topBullets = comodidades.filter(c => c.toLowerCase().includes('cama') || c.toLowerCase().includes('m²') || c.toLowerCase().includes('vista')).slice(0, 4);
+                                                            const topBullets = comodidades;
 
                                                             return (
                                                                 <div key={q.id} className="bg-white rounded-2xl overflow-hidden border border-[#E8E0DC] flex flex-col transition-all duration-300 shadow-[0_2px_16px_rgba(107,39,55,0.08)] mb-6">

@@ -224,7 +224,7 @@ class EmailService {
                         </div>
                         ${this._ctaButton('Fazer Nova Reserva', 'https://refugiocarapita.com')}
                         <p style="font-size:13px; color:#666; line-height:1.8; margin-top:16px;">
-                            Se pensa que isto foi um erro ou necessita de apoio, entre em contacto connosco.
+                            Se pensa que isto foi um erro ou necessita de apoio, entre em contacto conosco.
                         </p>
                     </div>
                     ${this._footer()}

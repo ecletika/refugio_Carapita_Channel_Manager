@@ -176,7 +176,7 @@ class TarifasController {
                 const tarifasAplicáveis = tarifasSazonais?.filter(t => {
                     const tInStr = t.data_inicio.split('T')[0];
                     const tOutStr = t.data_fim.split('T')[0];
-                    return isoData >= tInStr && isoData < tOutStr;
+                    return isoData >= tInStr && isoData <= tOutStr;
                 }) || [];
 
                 // Se houver mais de uma, escolhemos a que tiver o menor período (mais específica)
@@ -197,15 +197,13 @@ class TarifasController {
                 const estaReservada = reservasExistentes?.some(r => {
                     const rInStr = r.data_check_in.split('T')[0];
                     const rOutStr = r.data_check_out.split('T')[0];
-                    return isoData >= rInStr && isoData < rOutStr;
+                    return isoData >= rInStr && isoData <= rOutStr;
                 });
 
                 const estaBloqueado = bloqueiosManuais?.some(b => {
                     const bInStr = b.data_inicio.split('T')[0];
                     const bOutStr = b.data_fim.split('T')[0];
-                    // Se início == fim, bloqueia o dia. Se início < fim, libera o dia de check-out.
-                    if (bInStr === bOutStr) return isoData === bInStr;
-                    return isoData >= bInStr && isoData < bOutStr;
+                    return isoData >= bInStr && isoData <= bOutStr;
                 });
 
                 const noPassado = dataAtual < hoje;
