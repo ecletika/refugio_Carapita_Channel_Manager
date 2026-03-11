@@ -120,12 +120,11 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
                 <div
                     key={dStr}
                     onClick={() => isDisponivel && handleDateClick(dStr)}
-                    className={`p-2 border border-[#C9A84C]/20 flex flex-col items-center justify-center relative aspect-square transition-all duration-300 min-h-[50px] md:min-h-[80px]
-                        ${isSelected ? 'bg-[#C9A84C] text-[#1A2E26] shadow-lg transform scale-[1.05] z-20 border-[#C9A84C]' : ''}
-                        ${isInRange ? 'bg-[#C9A84C]/20 text-white' : ''}
-                        ${!isSelected && !isInRange && isDisponivel ? 'hover:bg-[#C9A84C]/10 cursor-pointer' : ''}
-                        ${!isDisponivel ? 'opacity-30 cursor-not-allowed bg-black/20' : ''}
-                        ${-1 === days.length % 7 ? 'border-r-0' : ''}
+                    className={`p-2 flex flex-col items-center justify-center relative aspect-square transition-all duration-300 min-h-[50px] md:min-h-[80px]
+                        ${isSelected ? 'bg-[#C9A84C] text-[#1A2E26] shadow-xl transform scale-105 z-20 rounded-xl' : ''}
+                        ${isInRange ? 'bg-[#C9A84C]/10 text-white rounded-md mx-1' : ''}
+                        ${!isSelected && !isInRange && isDisponivel ? 'hover:bg-[#C9A84C]/10 hover:rounded-xl cursor-pointer' : ''}
+                        ${!isDisponivel ? 'opacity-30 cursor-not-allowed bg-black/20 rounded-xl' : ''}
                     `}
                 >
                     {!isDisponivel && (
@@ -173,10 +172,10 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
             </div>
 
             <div className="flex flex-col md:flex-row gap-8 w-full">
-                <div className="flex-1">
+                <div className="w-full md:flex-1 md:w-1/2">
                     {renderMonth(new Date(currentDate))}
                 </div>
-                <div className="flex-1 hidden md:block">
+                <div className="hidden md:block md:flex-1 md:w-1/2">
                     {renderMonth(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
                 </div>
             </div>
