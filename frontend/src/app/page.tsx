@@ -1020,6 +1020,7 @@ export default function Home() {
                                             <div className="w-full">
                                                 <SeletorCalendario
                                                     quartoId={quartosEncontrados?.[0]?.id || ''}
+                                                    initialSelection={checkIn ? { start: checkIn, end: checkOut || null } : undefined}
                                                     onSelect={(start, end) => {
                                                         setCheckIn(start);
                                                         setCheckOut(end);
@@ -1091,9 +1092,10 @@ export default function Home() {
                                     <div className="flex flex-col xl:flex-row gap-8 w-full max-w-[1400px] mx-auto animate-fade-in items-start h-full pb-20">
                                         {/* ESQUERDA: Calendário Compacto (30%) */}
                                         <div className="w-full xl:w-[35%] shrink-0">
-                                            <div className="bg-[#1E3529] border border-[#C9A84C]/20 p-6 md:p-8 rounded-[24px] shadow-2xl mb-6 hidden md:block">
+                                            <div className="bg-[#1E3529] border border-[#C9A84C]/20 p-6 md:p-8 rounded-[24px] shadow-2xl mb-6 hidden md:block overflow-hidden [&_.md\\:flex-row]:flex-col [&_.md\\:flex-1:nth-child(2)]:hidden [&_.md\\:w-1\\/2]:w-full">
                                                 <SeletorCalendario
                                                     quartoId={quartosEncontrados?.[0]?.id || ''}
+                                                    initialSelection={checkIn && checkOut ? { start: checkIn, end: checkOut } : undefined}
                                                     onSelect={(start, end) => {
                                                         setCheckIn(start);
                                                         setCheckOut(end);
@@ -1113,9 +1115,15 @@ export default function Home() {
 
                                         {/* DIREITA: Quartos (70%) */}
                                         <div className="w-full xl:w-[65%] space-y-8">
-                                            <div className="flex items-center gap-4 pb-2 border-b border-[#C9A84C]/20">
-                                                <button onClick={() => setBookingStep('selection')} className="text-[#8A9E96] hover:text-[#C9A84C] transition-colors"><ChevronLeft size={24} /></button>
-                                                <h2 className="font-serif text-[26px] text-white uppercase tracking-[0.2em]">{t('booking_alojamentos_disp')}</h2>
+                                            <div className="flex items-center gap-4 pb-4 border-b border-[#C9A84C]/20 mb-8 mt-2">
+                                                <button 
+                                                    onClick={() => setBookingStep('selection')} 
+                                                    className="text-[#C9A84C] hover:text-[#E8C96A] bg-transparent border-none transition-colors flex items-center gap-2 font-sans text-[12px] uppercase tracking-[0.2em] font-medium shrink-0"
+                                                >
+                                                    <ChevronLeft size={20} /> Voltar
+                                                </button>
+                                                <div className="w-[1px] h-6 bg-[#C9A84C]/20 mx-2"></div>
+                                                <h2 className="font-serif text-[24px] text-white uppercase tracking-[0.2em]">{t('booking_alojamentos_disp')}</h2>
                                             </div>
 
                                             {(quartosEncontrados || []).length > 0 ? (

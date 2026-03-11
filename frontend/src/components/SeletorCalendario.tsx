@@ -10,29 +10,37 @@ interface PrecoDia {
     eCheckOut?: boolean;
 }
 
-export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (start: string, end: string) => void, quartoId: string }) {
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [selection, setSelection] = useState<{ start: string | null, end: string | null }>({ start: null, end: null });
+export default function SeletorCalendario({ onSelect, quartoId, initialSelection }: { onSelect: (start: string, end: string) => void, quartoId: string, initialSelection?: { start: string | null, end: string | null } }) {
+    const [currentDate, setCurrentDate] = useState(initialSelection?.start ? new Date(initialSelection.start) : new Date());
+    const [selection, setSelection] = useState<{ start: string | null, end: string | null }>({ start: initialSelection?.start || null, end: initialSelection?.end || null });
     const [precos, setPrecos] = useState<Record<string, { preco: number, disponivel: boolean, minimaEstadia: number, eCheckOut?: boolean }>>({});
+
+    // Sincronizar estado interno com as datas que venham da tela pai
+    useEffect(() => {
+        if (initialSelection?.start) {
+            setSelection({ start: initialSelection.start, end: initialSelection.end || null });
+            // Se tiver check-in definido e estiver a vir de outra etapa, viaja para esse mês:
+            setCurrentDate(new Date(initialSelection.start));
+        }
+    }, [initialSelection?.start, initialSelection?.end]);
 
     useEffect(() => {
         if (!quartoId) return;
         const fetchPrecos = async () => {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth() + 1;
-            const start = `${year}-${String(month).padStart(2, '0')}-01`;
-            // Calcular o fim (2 meses depois)
-            const endDate = new Date(year, month + 1, 0); // Último dia do próximo mês
-            const end = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
+            const startStr = `${year}-${String(month).padStart(2, '0')}-01`;
+            const endDate = new Date(year, month + 2, 0); 
+            const endStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
             try {
-                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${start}&fim=${end}&t=${Date.now()}`, {
+                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${startStr}&fim=${endStr}&t=${Date.now()}`, {
                     cache: 'no-store'
                 });
                 const dados = await resp.json();
                 if (dados.status === 'success') {
                     const map: Record<string, { preco: number, disponivel: boolean, minimaEstadia: number, eCheckOut?: boolean }> = {};
                     dados.data.forEach((p: PrecoDia) => map[p.data] = { preco: p.preco, disponivel: p.disponivel, minimaEstadia: p.minimaEstadia, eCheckOut: p.eCheckOut });
-                    setPrecos(map);
+                    setPrecos(prev => ({...prev, ...map}));
                 }
             } catch (e) {
                 console.error("Erro ao buscar preços", e);
@@ -45,14 +53,10 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const selectedDate = new Date(dateStr);
-        if (selectedDate < today) return; // Não permitir datas passadas
+        if (selectedDate < today) return; 
 
         const info = precos[dateStr];
-        // Se for dia de check-out, só pode ser usado como check-out de uma reserva anterior, 
-        // mas o backend já marcou disponivel=false para impedir check-in.
-        if (info && !info.disponivel) {
-            return;
-        }
+        if (info && !info.disponivel) return;
 
         if (!selection.start || (selection.start && selection.end)) {
             setSelection({ start: dateStr, end: null });
@@ -65,10 +69,8 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
                 return;
             }
 
-            // Validar Mínimo de Noites
             const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
             const minStayRequired = precos[selection.start]?.minimaEstadia || 2;
 
             if (diffDays < minStayRequired) {
@@ -76,11 +78,8 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
                 return;
             }
 
-            // Validar se existe algum bloqueio no meio do intervalo
             let hasBlock = false;
             let current = new Date(startDate);
-
-            // Verificamos todos os dias do check-in até o dia do check-out (INCLUSIVE)
             while (current <= endDate) {
                 const currentStr = current.toISOString().split('T')[0];
                 if (precos[currentStr] && !precos[currentStr].disponivel) {
@@ -100,98 +99,122 @@ export default function SeletorCalendario({ onSelect, quartoId }: { onSelect: (s
         }
     };
 
-    const renderMonth = (date: Date) => {
-        const month = date.getMonth();
-        const year = date.getFullYear();
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const monthName = date.toLocaleString('pt-PT', { month: 'long' });
+    const month = currentDate.getMonth();
+    const year = currentDate.getFullYear();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const monthName = currentDate.toLocaleString('pt-PT', { month: 'long' });
 
-        const days = [];
-        for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} className="p-1"></div>);
-        for (let d = 1; d <= daysInMonth; d++) {
-            const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-            const info = precos[dStr];
-            const isDisponivel = info ? info.disponivel : true;
-            const isSelected = selection.start === dStr || selection.end === dStr;
-            const isInRange = selection.start && selection.end && dStr > selection.start && dStr < selection.end;
+    const days = [];
+    // Espaços vazios no início
+    for (let i = 0; i < firstDay; i++) {
+        days.push(<div key={`empty-${i}`} className="w-[52px] h-[52px]"></div>);
+    }
 
-            days.push(
-                <div
-                    key={dStr}
-                    onClick={() => isDisponivel && handleDateClick(dStr)}
-                    className={`p-2 flex flex-col items-center justify-center relative aspect-square transition-all duration-300 min-h-[50px] md:min-h-[80px]
-                        ${isSelected ? 'bg-[#C9A84C] text-[#1A2E26] shadow-xl transform scale-105 z-20 rounded-xl' : ''}
-                        ${isInRange ? 'bg-[#C9A84C]/10 text-white rounded-md mx-1' : ''}
-                        ${!isSelected && !isInRange && isDisponivel ? 'hover:bg-[#C9A84C]/10 hover:rounded-xl cursor-pointer' : ''}
-                        ${!isDisponivel ? 'opacity-30 cursor-not-allowed bg-black/20 rounded-xl' : ''}
-                    `}
-                >
-                    {!isDisponivel && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span className="text-[#8A9E96] text-xl md:text-2xl font-light opacity-30 select-none">
-                                {info?.eCheckOut ? 'OUT' : 'X'}
-                            </span>
-                        </div>
-                    )}
-                    <span className={`font-serif text-[16px] md:text-[22px] leading-none z-10 ${isSelected ? 'text-[#1A2E26] font-bold' : isDisponivel ? 'text-[#F5F0E8]' : 'text-[#8A9E96]'}`}>{d}</span>
-                    {info && isDisponivel && (
-                        <span className={`text-[9px] md:text-[10px] mt-1 z-10 font-sans tracking-widest ${isSelected ? 'text-[#1A2E26] font-bold' : 'text-[#C9A84C]'}`}>
-                            €{(info.preco || 0).toFixed(0)}
-                        </span>
-                    )}
-                </div>
-            );
+    // Dias do mês
+    for (let d = 1; d <= daysInMonth; d++) {
+        const currentTargetDate = new Date(year, month, d);
+        const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const info = precos[dStr];
+        const isDisponivel = info ? info.disponivel : true;
+        
+        const isCheckIn = selection.start === dStr;
+        const isCheckOut = selection.end === dStr;
+        const isInRange = selection.start && selection.end && dStr > selection.start && dStr < selection.end;
+        const dayOfWeek = currentTargetDate.getDay();
+
+        let baseClass = "w-[52px] h-[52px] flex flex-col items-center justify-center relative ";
+        let stateClass = "";
+        let textClass = "text-[#F5F0E8]";
+        let priceClass = "text-[#C9A84C]";
+
+        if (!isDisponivel) {
+            stateClass = "opacity-30 cursor-not-allowed bg-transparent rounded-[10px]";
+        } else {
+            baseClass += "cursor-pointer transition-all duration-200 ";
+            if (isCheckIn || isCheckOut) {
+                stateClass = "bg-[#C9A84C] rounded-[12px] font-bold";
+                textClass = "text-[#1A2E26]";
+                priceClass = "text-[#1A2E26]";
+            } else if (isInRange) {
+                stateClass = "bg-[rgba(201,168,76,0.25)] rounded-none";
+                if (dayOfWeek === 0) stateClass += " rounded-l-[10px]";
+                if (dayOfWeek === 6) stateClass += " rounded-r-[10px]";
+            } else {
+                stateClass = "bg-transparent rounded-[10px] hover:bg-[rgba(201,168,76,0.15)]";
+            }
         }
 
-        return (
-            <div className="flex-1 min-w-0 font-sans">
-                <div className="flex justify-between items-center mb-6">
-                    <h4 className="text-center font-serif text-[#C9A84C] text-[18px] md:text-[24px] uppercase tracking-[0.15em] mx-auto">
-                        {monthName} <span className="font-light text-[#8A9E96] text-[14px] md:text-[18px] ml-1">{year}</span>
-                    </h4>
-                </div>
-                <div className="grid grid-cols-7 text-[9px] md:text-[10px] text-center text-[#8A9E96] mb-3 uppercase tracking-[0.2em] font-medium border-b border-[#C9A84C]/10 pb-3">
-                    <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
-                </div>
-                <div className="grid grid-cols-7 -mt-[1px] -ml-[1px]">
-                    {days}
-                </div>
-            </div>
-        );
-    };
-
-    return (
-        <div className="bg-transparent animate-fade-in w-full">
-            <div className="flex justify-between items-center mb-8 relative">
-                <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))} className="absolute left-0 z-10 p-3 bg-[#1A2E26] hover:bg-[#C9A84C] text-[#C9A84C] hover:text-[#1A2E26] rounded-full transition-all border border-[#C9A84C]/30 shadow-lg"><ChevronLeft size={20} /></button>
-                <div className="text-center w-full">
-                    <span className="font-sans text-[10px] uppercase tracking-[0.3em] text-[#8A9E96]">Selecione suas datas</span>
-                </div>
-                <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} className="absolute right-0 z-10 p-3 bg-[#1A2E26] hover:bg-[#C9A84C] text-[#C9A84C] hover:text-[#1A2E26] rounded-full transition-all border border-[#C9A84C]/30 shadow-lg"><ChevronRight size={20} /></button>
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-8 w-full">
-                <div className="w-full md:flex-1 md:w-1/2">
-                    {renderMonth(new Date(currentDate))}
-                </div>
-                <div className="hidden md:block md:flex-1 md:w-1/2">
-                    {renderMonth(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
-                </div>
-            </div>
-
-            <div className="mt-8 pt-8 border-t border-white/10 flex justify-between items-center">
-                <div className="flex gap-4 text-[10px] uppercase tracking-widest text-white/40">
-                    <div className="flex items-center gap-2"><div className="w-3 h-3 bg-carapita-gold"></div> Check-in/out</div>
-                    <div className="flex items-center gap-2"><div className="w-3 h-3 bg-carapita-gold/20"></div> Estadia</div>
-                    <div className="flex items-center gap-2"><div className="w-3 h-3 flex items-center justify-center border border-white/20 text-[8px] font-bold">X</div> Ocupado</div>
-                </div>
-                {selection.start && selection.end && (
-                    <div className="text-right">
-                        <p className="text-[10px] uppercase text-white/40 mb-1">Período selecionado</p>
-                        <p className="text-sm font-serif text-white">{new Date(selection.start).toLocaleDateString()} — {new Date(selection.end).toLocaleDateString()}</p>
+        days.push(
+            <div
+                key={dStr}
+                onClick={() => isDisponivel && handleDateClick(dStr)}
+                className={`${baseClass} ${stateClass}`}
+            >
+                {!isDisponivel && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="text-[#8A9E96] text-[22px] font-light opacity-30 select-none">
+                            {info?.eCheckOut ? 'OUT' : 'X'}
+                        </span>
                     </div>
                 )}
+                <span className={`font-serif text-[22px] leading-[1] z-10 ${textClass}`}>
+                    {d}
+                </span>
+                {info && isDisponivel && (
+                    <span className={`font-sans text-[10px] font-medium tracking-[0.5px] mt-[2px] z-10 ${priceClass}`}>
+                        €{(info.preco || 0).toFixed(0)}
+                    </span>
+                )}
+            </div>
+        );
+    }
+
+    const prevMonth = () => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)));
+    const nextMonth = () => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)));
+
+    return (
+        <div className="w-full flex justify-center animate-fade-in py-4">
+            <div className="calendario-container bg-transparent flex flex-col items-center">
+                
+                <div className="calendario-header flex justify-between items-center w-full max-w-[392px] mb-6 px-2">
+                    <button onClick={prevMonth} className="text-[#C9A84C] hover:text-[#E8C96A] transition-colors p-2 bg-transparent rounded-full hover:bg-white/5">
+                        <ChevronLeft size={24} strokeWidth={1.5} />
+                    </button>
+                    <span className="font-serif text-[#C9A84C] text-[24px] uppercase tracking-[0.1em]">
+                        {monthName} <span className="font-light text-[#8A9E96] text-[18px] ml-1">{year}</span>
+                    </span>
+                    <button onClick={nextMonth} className="text-[#C9A84C] hover:text-[#E8C96A] transition-colors p-2 bg-transparent rounded-full hover:bg-white/5">
+                        <ChevronRight size={24} strokeWidth={1.5} />
+                    </button>
+                </div>
+
+                <div className="calendario-grid-header grid grid-cols-7 gap-[4px] w-[392px] mb-2 px-0 mx-auto">
+                    {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
+                        <div key={d} className="w-[52px] text-center font-sans text-[10px] uppercase tracking-[0.2em] text-[#8A9E96] font-medium">
+                            {d}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="calendario-grid flex flex-col items-center w-[392px] mx-auto p-0">
+                    <div className="grid grid-cols-7 gap-[4px]">
+                        {days}
+                    </div>
+                </div>
+
+                <div className="mt-8 flex flex-wrap gap-4 text-[10px] uppercase tracking-widest text-[#8A9E96] justify-center w-full max-w-[392px] border-t border-[#C9A84C]/10 pt-6">
+                    <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-[#C9A84C] rounded-[3px]"></div> Check-in/out
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-[rgba(201,168,76,0.25)] rounded-[3px]"></div> Estadia
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 flex items-center justify-center text-[#8A9E96] font-sans opacity-40">X</div> Indisponível
+                    </div>
+                </div>
+
             </div>
         </div>
     );
