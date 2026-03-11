@@ -115,7 +115,7 @@ export default function ContactosPage() {
                             <div>
                                 <h4 className="text-white font-medium mb-1 uppercase tracking-widest text-xs">Endereço</h4>
                                 <p className="text-white/60 font-light leading-relaxed">
-                                    {siteConfigs.endereco || 'Rua D. Afonso IV, 450, 2490-378 Ourém'}
+                                    {siteConfigs.endereco || 'R. Dom Afonso Quarto Conde de Ourém IV 450, 2490-480 Ourém'}
                                 </p>
                             </div>
                         </div>
@@ -265,7 +265,7 @@ export default function ContactosPage() {
             <section className="px-6 md:px-12 py-24 bg-carapita-dark/10">
                 <div className="max-w-7xl mx-auto h-[500px] rounded-[3rem] overflow-hidden border border-white/10 relative shadow-2xl">
                     <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3106.321855653456!2d-8.583333!3d39.65!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd18900000000000%3A0x0!2zMznCsDM5JzAwLjAiTiA4wrAzNScwMC4wIlc!5e0!3m2!1spt!2spt!4v1700000000000!5m2!1spt!2spt"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3072.1530442925973!2d-8.586519699999998!3d39.64627009999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd1883a0fd387c21%3A0xdb482ac876e7244b!2sRef%C3%BAgio%20Carapita!5e0!3m2!1spt-PT!2spt!4v1773225814137!5m2!1spt-PT!2spt"
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}

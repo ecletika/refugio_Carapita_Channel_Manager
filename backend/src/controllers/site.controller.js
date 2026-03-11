@@ -56,32 +56,53 @@ class SiteController {
     static async obterConfiguracoes(req, res) {
         try {
             const { data, error } = await supabase.supabaseAdmin.from('Configuracao').select('*');
-            if (error) throw error;
+            if (error) {
+                console.error('Erro Supabase obterConfiguracoes:', error);
+                throw error;
+            }
 
             // Format to a simple object { chave: valor }
             const configMap = {};
             (data || []).forEach(c => configMap[c.chave] = c.valor);
 
             return res.json({ status: 'success', data: configMap });
-        } catch (error) { return res.status(500).json({ error: 'Erro ao obter configs' }); }
+        } catch (error) { 
+            console.error('Erro ao obter configs:', error);
+            return res.status(500).json({ error: 'Erro ao obter configurações do site' }); 
+        }
     }
 
     static async salvarConfiguracoes(req, res) {
         try {
             const updates = req.body; // Expects object { chave: valor, chave2: valor2 }
-            const promises = Object.keys(updates).map(async (chave) => {
-                const valor = updates[chave];
-                const { data: existente } = await supabase.supabaseAdmin.from('Configuracao').select('id').eq('chave', chave).single();
-                if (existente) {
-                    return supabase.supabaseAdmin.from('Configuracao').update({ valor }).eq('id', existente.id);
-                } else {
-                    const newId = crypto.randomUUID();
-                    return supabase.supabaseAdmin.from('Configuracao').insert([{ id: newId, chave, valor }]);
-                }
-            });
-            await Promise.all(promises);
+            if (!updates || Object.keys(updates).length === 0) {
+                return res.json({ status: 'success', message: 'Nada para atualizar' });
+            }
+
+            const upsertData = Object.keys(updates).map(chave => ({
+                id: crypto.randomUUID(), // Provide a new ID for inserts
+                chave,
+                valor: updates[chave] !== undefined && updates[chave] !== null ? String(updates[chave]) : ''
+            }));
+
+            // Using upsert on 'chave' column. Assumes 'chave' is unique or used as conflict target.
+            const { error } = await supabase.supabaseAdmin
+                .from('Configuracao')
+                .upsert(upsertData, { 
+                    onConflict: 'chave',
+                    ignoreDuplicates: false // We want to update, not ignore
+                });
+
+            if (error) {
+                console.error('Erro Supabase salvarConfiguracoes:', error);
+                throw error;
+            }
+
             return res.json({ status: 'success' });
-        } catch (error) { return res.status(500).json({ error: 'Erro ao salvar configs' }); }
+        } catch (error) { 
+            console.error('Erro ao salvar configs:', error);
+            return res.status(500).json({ error: 'Erro ao salvar as configurações' }); 
+        }
     }
 
     // ---- Mensagens de Contato ----

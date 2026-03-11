@@ -23,7 +23,9 @@ export default function AdminConfiguracoes() {
 
     const fetchConfigs = async () => {
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes`);
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes?t=${Date.now()}`, {
+                cache: 'no-store'
+            });
             const json = await resp.json();
             if (json.status === 'success' && json.data) {
                 setConfigs(prev => ({ ...prev, ...json.data }));
@@ -53,7 +55,7 @@ export default function AdminConfiguracoes() {
             if (json.status === 'success') {
                 alert('Configurações salvas com sucesso!');
             } else {
-                alert('Erro ao salvar as configurações.');
+                alert('Erro ao salvar as configurações: ' + (json.error || 'Erro desconhecido'));
             }
         } catch (e) {
             alert('Erro de comunicação.');

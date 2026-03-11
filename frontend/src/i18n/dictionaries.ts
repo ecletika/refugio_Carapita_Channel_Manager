@@ -9,7 +9,7 @@ export const dictionaries = {
         btn_reservar_now: 'Reservar Agora',
         btn_reservar: 'Reservar',
 
-        hero_subtitle: 'Acomodações Encantadora em Ourem',
+        hero_subtitle: 'Acomodação Encantadora em Ourem',
         hero_title: 'Um Retiro de',
         hero_title_exclusividade: 'Exclusividade',
         hero_ver_dispo: 'Ver Disponibilidade',
@@ -130,7 +130,7 @@ export const dictionaries = {
         btn_reservar_now: 'Book Now',
         btn_reservar: 'Book',
 
-        hero_subtitle: 'Charming Accommodations in Ourem',
+        hero_subtitle: 'Charming Accommodation in Ourem',
         hero_title: 'A Retreat of',
         hero_title_exclusividade: 'Exclusivity',
         hero_ver_dispo: 'Check Availability',

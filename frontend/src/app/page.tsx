@@ -363,28 +363,29 @@ export default function Home() {
 
     // Os Passeios são carregados dinamicamente no useEffect
 
-    const totalEstadia = () => {
-        if (!checkIn || !checkOut || !idQuartoParaReserva) return 0;
-
+    const calculateRoomTotal = (q: any) => {
+        if (!checkIn || !checkOut || !q) return Number(q?.preco_base || 0);
+        
         let subtotal = 0;
         const start = new Date(`${checkIn}T00:00:00.000Z`);
         const end = new Date(`${checkOut}T00:00:00.000Z`);
-
-        const q = quartosEncontrados?.find(r => r.id === idQuartoParaReserva);
-        if (!q) return 0;
-
         let current = new Date(start);
+        
         while (current < end) {
             const dateStr = current.toISOString().split('T')[0];
             const diaPrice = calendarioPrecos.find(p => p.data === dateStr);
-
-            if (diaPrice) {
-                subtotal += Number(diaPrice.preco);
-            } else {
-                subtotal += Number(q.preco_base);
-            }
+            subtotal += diaPrice ? Number(diaPrice.preco) : Number(q.preco_base);
             current.setUTCDate(current.getUTCDate() + 1);
         }
+        return subtotal || Number(q.preco_base);
+    };
+
+    const totalEstadia = () => {
+        if (!checkIn || !checkOut || !idQuartoParaReserva) return 0;
+        const q = quartosEncontrados?.find(r => r.id === idQuartoParaReserva);
+        if (!q) return 0;
+
+        const subtotal = calculateRoomTotal(q);
 
         const extras = selectedExtras.reduce((acc, id) => {
             const extra = disponiveisExtras.find(e => e.id === id);
@@ -543,6 +544,24 @@ export default function Home() {
         }
     };
 
+    const fetchCalendario = async (quartoId: string, startDate?: string, endDate?: string) => {
+        if (!quartoId) return;
+        try {
+            const start = startDate || checkIn || new Date().toISOString().split('T')[0];
+            const dateFim = new Date(start);
+            dateFim.setMonth(dateFim.getMonth() + 4);
+            const end = endDate || dateFim.toISOString().split('T')[0];
+
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${start}&fim=${end}&t=${Date.now()}`, {
+                cache: 'no-store'
+            });
+            const data = await resp.json();
+            if (data.status === 'success') setCalendarioPrecos(data.data);
+        } catch (e) {
+            console.error("Erro ao buscar calendário", e);
+        }
+    };
+
     const buscarDisponibilidade = async () => {
         setLoading(true);
         try {
@@ -562,20 +581,7 @@ export default function Home() {
         }
     };
 
-    const fetchCalendario = async (quartoId: string) => {
-        try {
-            const hoje = new Date();
-            const fim = new Date();
-            fim.setMonth(hoje.getMonth() + 2);
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${hoje.toISOString()}&fim=${fim.toISOString()}&t=${Date.now()}`, {
-                cache: 'no-store'
-            });
-            const data = await resp.json();
-            if (data.status === 'success') setCalendarioPrecos(data.data);
-        } catch (e) {
-            console.error("Erro ao buscar calendário");
-        }
-    };
+
 
     useEffect(() => {
         if (showBookingScreen) {
@@ -1024,6 +1030,9 @@ export default function Home() {
                                                     onSelect={(start, end) => {
                                                         setCheckIn(start);
                                                         setCheckOut(end);
+                                                        if (quartosEncontrados?.[0]?.id) {
+                                                            fetchCalendario(quartosEncontrados[0].id, start, end);
+                                                        }
                                                     }}
                                                 />
                                             </div>
@@ -1099,6 +1108,9 @@ export default function Home() {
                                                     onSelect={(start, end) => {
                                                         setCheckIn(start);
                                                         setCheckOut(end);
+                                                        if (quartosEncontrados?.[0]?.id) {
+                                                            fetchCalendario(quartosEncontrados[0].id, start, end);
+                                                        }
                                                     }}
                                                 />
                                             </div>
@@ -1135,7 +1147,7 @@ export default function Home() {
 
                                                     // Use length matching backend logic without precos context exact matching here. Assuming average base/promos.
                                                     const nights = Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 3600 * 24));
-                                                    const displayedPrice = Number(q.preco_base) * (Math.max(1, nights));
+                                                    const displayedPrice = calculateRoomTotal(q);
 
                                                     return (
                                                         <div key={q.id} className="bg-[#1E3529] rounded-[24px] overflow-hidden border border-[#C9A84C]/20 flex flex-col transition-all duration-300 shadow-2xl mb-8 group">
