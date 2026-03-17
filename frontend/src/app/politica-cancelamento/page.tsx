@@ -42,106 +42,153 @@ export default function PoliticaCancelamento() {
 
                 <div className="bg-white/5 border border-white/10 p-8 md:p-12 text-sm leading-relaxed text-white/80 space-y-8 font-light shadow-xl">
 
-                    <p className="italic">Garantir a sua estadia com tranquilidade é o nosso compromisso. Aqui encontram-se descritas as condições relativas ao cancelamento das reservas no Refúgio Carapita, acompanhando as políticas das principais plataformas.</p>
-
-                    <div>
-                        <h2 className="text-carapita-gold font-serif text-2xl mb-4">Período de Carência (24 Horas)</h2>
-                        <p>A partir de outubro de 2025, a maioria das reservas (menos de 28 noites) permite <strong>cancelamento gratuito com reembolso total até 24 horas após a reserva</strong>, desde que faltem mais de 7 dias para a data prevista do check-in.</p>
+                    <div className="space-y-4">
+                        <p className="italic">No Refúgio Carapita, valorizamos a transparência e a confiança. Ao reservar diretamente connosco, garantimos as melhores condições e um contacto personalizado. Abaixo, detalhamos a nossa política para garantir a melhor experiência para ambas as partes.</p>
                     </div>
 
-                    <div className="border-t border-white/10 pt-8 mt-8">
-                        <h2 className="text-carapita-gold font-serif text-2xl mb-6">Categorias Principais</h2>
-
-                        <div className="space-y-6">
-                            <div className="bg-white/5 p-6 rounded border-l-4 border-green-500">
-                                <h3 className="font-bold uppercase tracking-widest text-xs text-white mb-2">Flexível</h3>
-                                <p className="text-white/70">Reembolso total até 24 horas (1 dia) antes do check-in.</p>
-                            </div>
-
-                            <div className="bg-white/5 p-6 rounded border-l-4 border-yellow-500">
-                                <h3 className="font-bold uppercase tracking-widest text-xs text-white mb-2">Moderada</h3>
-                                <p className="text-white/70">Reembolso total até 5 dias antes do check-in.</p>
-                            </div>
-
-                            <div className="bg-white/5 p-6 rounded border-l-4 border-red-500">
-                                <h3 className="font-bold uppercase tracking-widest text-xs text-white mb-2">Limitada / Firme</h3>
-                                <p className="text-white/70">Reembolso total até 14 dias antes do check-in.</p>
-                            </div>
-
-                            <div className="bg-white/5 p-6 rounded border-l-4 border-purple-500">
-                                <h3 className="font-bold uppercase tracking-widest text-xs text-white mb-2">Rigorosa</h3>
-                                <p className="text-white/70">O cancelamento deve ocorrer com até 30 dias de antecedência para evitar penalizações significativas. Aplicável especialmente a eventos ou períodos de alta procura.</p>
-                            </div>
+                    <div>
+                        <h2 className="text-carapita-gold font-serif text-2xl mb-4">1. Confirmação de Reserva</h2>
+                        <div className="space-y-4">
+                            <p>Para garantir a sua reserva, solicitamos o pagamento de um sinal correspondente a 50% do valor total da estadia (via Transferência Bancária, MB WAY ou Cartão de Crédito/Stripe).</p>
+                            <p>Os restantes 50% deverão ser liquidados até ao momento do check-in.</p>
                         </div>
                     </div>
 
-                    <div className="border-t border-white/10 pt-8">
-                        <h2 className="text-carapita-gold font-serif text-2xl mb-4">Reservas de Longa Duração (28+ noites)</h2>
-                        <p>Estadias prolongadas geralmente têm políticas mais rigorosas. É frequentemente exigido um cancelamento com 30 dias de antecedência para evitar a cobrança integral dos próximos 30 dias reservados.</p>
+                    <div>
+                        <h2 className="text-carapita-gold font-serif text-2xl mb-4">2. Cancelamento e Reembolso</h2>
+                        <div className="space-y-4">
+                            <p>Entendemos que imprevistos acontecem. No entanto, como somos um alojamento local de gestão familiar, os cancelamentos de última hora impactam-nos significativamente. Assim, aplicamos as seguintes condições:</p>
+                            <ul className="list-disc pl-6 space-y-4">
+                                <li><strong className="text-white font-medium">Cancelamento Gratuito (Até 14 dias antes):</strong> Se cancelar a sua reserva com uma antecedência igual ou superior a 14 dias em relação à data de check-in, o sinal pago será totalmente reembolsado (deduzindo eventuais taxas de transação bancária).</li>
+                                <li><strong className="text-white font-medium">Cancelamento Fora de Prazo (Menos de 14 dias):</strong> Em caso de cancelamento com menos de 14 dias de antecedência ou em caso de "não comparência" (No-Show), o sinal de 50% não será reembolsado.</li>
+                                <li><strong className="text-white font-medium">Saída Antecipada:</strong> A saída antes da data prevista de check-out não confere direito a reembolso dos dias não usufruídos.</li>
+                            </ul>
+                        </div>
                     </div>
 
-                    <div className="border-t border-white/10 pt-8">
-                        <h2 className="text-carapita-gold font-serif text-2xl mb-4">Eventos Extraordinários</h2>
-                        <p>A Política de Cancelamento por Eventos Extraordinários pode aplicar-se a desastres naturais ou emergências de saúde severas. Nessas raras exceções autorizadas pelas plataformas e leis vigorantes, são permitidos cancelamentos sem penalizações mesmo que a nossa política base se aplique de forma rígida.</p>
+                    <div>
+                        <h2 className="text-carapita-gold font-serif text-2xl mb-4">3. Alternativa Flexível: Voucher de Crédito</h2>
+                        <p>Em situações de força maior (justificadas), e caso não seja possível o reembolso direto, o Refúgio Carapita poderá, por mútuo acordo, converter o valor do sinal num Voucher de Crédito, válido por 12 meses, para ser utilizado numa estadia futura (sujeito a disponibilidade e ajuste de tarifas conforme a época).</p>
                     </div>
 
-                    <div className="border-t border-white/10 pt-8 mt-12">
-                        <h2 className="text-carapita-gold font-serif text-2xl mb-4">Quando receberá o seu reembolso</h2>
-                        <p className="mb-4">
-                            Se tiver direito a reembolso por uma estadia ou experiência, iniciamos imediatamente o processo após o cancelamento. Contudo, o prazo para o valor ser creditado na sua conta ou cartão pode variar consoante o banco ou instituição financeira, da forma como pagou, do momento em que pagou e de onde reside.
-                        </p>
-
-                        <h3 className="font-bold text-white mb-2 mt-6">Se não for possível enviar um reembolso para o método de pagamento original</h3>
-                        <p className="mb-4">
-                            Se a conta associada ao método de pagamento original tiver sido encerrada, o reembolso enviado pela Refúgio Carapita não é processado. Se isto acontecer, pode contactar o seu banco ou instituição financeira para o localizar. Se ainda tiver uma conta no banco ou instituição financeira, pode ser possível transferir o reembolso para um novo cartão ou uma nova conta. Em alguns casos, o banco ou a instituição financeira pode enviar-lhe um cheque com o montante do reembolso.
-                        </p>
-                        <p className="mb-4">
-                            Se precisar de lhes transmitir informações sobre o reembolso, contacte a Refúgio Carapita. Podemos fornecer-lhe as informações necessárias, incluindo um número de referência que pode ser utilizado pelo seu banco ou instituição financeira.
-                        </p>
-                        <p className="text-xs opacity-70 italic">
-                            Observação: por vezes, devido a conversões de moeda, pode parecer que há um reembolso muito pequeno pendente. Quando o montante é inferior a 0,01 USD (ou equivalente), não é possível efetuar o reembolso.
-                        </p>
+                    <div>
+                        <h2 className="text-carapita-gold font-serif text-2xl mb-4">4. Notas Importantes</h2>
+                        <div className="space-y-4">
+                            <p>Esta política aplica-se exclusivamente a reservas efetuadas diretamente através do site refugiocarapita.pt, e-mail ou contacto telefónico.</p>
+                            <p className="italic text-xs opacity-80">Reservas efetuadas via Booking.com ou Airbnb regem-se pelas políticas específicas selecionadas nessas plataformas, que podem diferir das aqui apresentadas.</p>
+                        </div>
                     </div>
 
-                    <div className="border-t border-white/10 pt-8 mt-12">
-                        <h2 className="text-carapita-gold font-serif text-2xl mb-4">Política de Cancelamento para Anfitriões</h2>
-                        <p className="mb-4">
-                            Embora os cancelamentos por parte dos anfitriões sejam raros e alguns ocorram por motivos de força maior, estas situações podem perturbar os planos dos hóspedes e comprometer a confiança na nossa comunidade. Por estes motivos, em caso de cancelamento de uma reserva confirmada, ou quando existe responsabilidade pelo cancelamento ao abrigo desta Política, a Airbnb (e a nossa plataforma) aplica taxas e outras consequências. As taxas e outras consequências estabelecidas nesta Política refletem os custos e outros impactos destes cancelamentos nos hóspedes, na comunidade alargada de anfitriões e na Airbnb. As taxas e, em alguns casos, outras consequências podem ser dispensadas se o cancelamento ocorrer devido a Eventos Extraordinários Relevantes ou motivos válidos fora do controlo dos anfitriões.
-                        </p>
+                    <div className="border-t border-white/10 pt-12 mt-12 space-y-8">
+                        <div>
+                            <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-2">Longa Duração</span>
+                            <h2 className="text-3xl font-serif text-white mb-6">Política de Cancelamento para Estadias de Longa Duração (28 dias)</h2>
+                            <p className="italic mb-6">No Refúgio Carapita, oferecemos condições especiais para estadias prolongadas. Devido ao bloqueio exclusivo do nosso espaço por um período alargado, aplicamos a seguinte política de cancelamento e reserva:</p>
+                        </div>
 
-                        <h3 className="font-bold text-white mb-2 mt-6">Taxas de cancelamento</h3>
-                        <p className="mb-4">
-                            Em caso de cancelamento de uma reserva confirmada, ou quando existe responsabilidade pelo cancelamento ao abrigo desta Política, podem ser aplicadas taxas sujeitas a uma taxa de cancelamento mínima de 50 USD (ou equivalente). A taxa é calculada com base no valor da reserva e no momento do cancelamento:
-                        </p>
-                        <ul className="list-disc pl-6 space-y-2 mb-4">
-                            <li>Se o cancelamento ocorrer nas 48 horas anteriores ao check-in, ou após o check-in, a taxa corresponde a 50% do valor da reserva para as noites não usufruídas.</li>
-                            <li>Se o cancelamento ocorrer entre 48 horas e 30 dias antes do check-in, a taxa corresponde a 25% do valor da reserva.</li>
-                            <li>Se o cancelamento ocorrer mais de 30 dias antes do check-in, a taxa corresponde a 10% do valor da reserva.</li>
-                            <li>Para reservas de 28 dias ou mais, as taxas de cancelamento acima são calculadas como uma percentagem da parte não reembolsável da reserva à data do cancelamento.</li>
-                        </ul>
-                        <p className="mb-4 text-xs opacity-70">
-                            No cálculo das taxas de cancelamento, o valor da reserva inclui a tarifa base, a taxa de limpeza e eventuais taxas para animais de estimação, mas exclui impostos e taxas de serviço para hóspedes.
-                        </p>
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">1. Confirmação e Pagamento</h3>
+                            <ul className="list-disc pl-6 space-y-4">
+                                <li><strong className="text-white font-medium">Sinal de Reserva:</strong> Para confirmar estadias de 28 dias, solicitamos o pagamento de 50% do valor total no ato da reserva.</li>
+                                <li><strong className="text-white font-medium">Pagamento Final:</strong> Os restantes 50% devem ser liquidados até 15 dias antes da data de check-in.</li>
+                            </ul>
+                            <p className="mt-4 text-xs font-medium text-red-300">Caso o pagamento final não seja efetuado no prazo estipulado, a reserva será cancelada e o sinal não será reembolsado.</p>
+                        </div>
 
-                        <h3 className="font-bold text-white mb-2 mt-6">Situações em que as taxas podem ser dispensadas</h3>
-                        <p className="mb-4">
-                            Renunciamos às taxas em situações pertinentes, nomeadamente em caso de cancelamentos iniciados devido a Eventos Extraordinários Relevantes ou a determinados motivos válidos fora do controlo dos anfitriões. A decisão sobre a dispensa de taxas é tomada após avaliação dos elementos e provas disponíveis.
-                        </p>
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">2. Cancelamento e Reembolso</h3>
+                            <ul className="list-disc pl-6 space-y-4">
+                                <li><strong className="text-white font-medium">Cancelamento com Antecedência (Mais de 28 dias):</strong> Se o cancelamento for comunicado com mais de 28 dias de antecedência em relação ao check-in, o hóspede terá direito ao reembolso de 50% do sinal pago (25% do valor total da reserva).</li>
+                                <li><strong className="text-white font-medium">Cancelamento Próximo (Menos de 28 dias):</strong> Se o cancelamento ocorrer com menos de 28 dias de antecedência, ou após o início da estadia, não haverá lugar a qualquer reembolso.</li>
+                                <li><strong className="text-white font-medium">Não Comparência (No-Show):</strong> Em caso de não comparência, o valor total da reserva será retido.</li>
+                            </ul>
+                        </div>
 
-                        <h3 className="font-bold text-white mb-2 mt-6">Outras consequências e responsabilidades</h3>
-                        <p className="mb-4">
-                            Para além de uma taxa de cancelamento, podem aplicar-se outras consequências, tais como impedir a aceitação de outra reserva para o espaço nas datas afetadas (bloqueando o calendário do anúncio).
-                        </p>
-                        <p className="mb-4">
-                            Pode existir responsabilidade pelo cancelamento quando o espaço apresenta condições substancialmente diferentes das anunciadas no momento da reserva (ex: reserva duplicada, publicitar funcionalidades inexistentes que perturbam a estadia).
-                        </p>
-                        <p className="mb-4 text-xs italic">
-                            Esta Política aplica-se a cancelamentos que ocorram na data ou após a data de entrada em vigor. Quaisquer alterações a esta Política serão efetuadas em conformidade com os Termos de Serviço Globais.
-                        </p>
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">3. Alterações de Datas</h3>
+                            <p>Pedidos de alteração de datas para estadias de longa duração devem ser feitos com pelo menos 30 dias de antecedência e estão sujeitos a disponibilidade e ajuste de tarifa (consoante a época). Reservamo-nos o direito de não aceitar alterações que reduzam o período total da estadia.</p>
+                        </div>
+
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">4. Saída Antecipada</h3>
+                            <p>Se o hóspede decidir terminar a estadia antes da data de check-out prevista, o valor correspondente aos dias não usufruídos não será reembolsado, uma vez que o calendário foi bloqueado especificamente para este período.</p>
+                        </div>
                     </div>
 
-                    <div className="bg-carapita-gold/10 p-6 !mt-12 text-center text-xs">
-                        <p><strong>⚠️ Onde Verificar:</strong> A política exata de cada anúncio/reserva individual pode e deve ser consultada na secção "Detalhes da reserva" ou enviada junto à confirmação da estadia. As taxas de serviço de plataformas de terceiros (como Airbnb/Booking.com) podem não ser geridas ou reembolsadas por nós em todos os casos. Recomenda-se sempre verificar a política específica selecionada no momento efetivo da reserva online.</p>
+                    <div className="border-t border-white/10 pt-12 mt-12 space-y-8">
+                        <div>
+                            <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-2">Exceções</span>
+                            <h2 className="text-3xl font-serif text-white mb-6">Política de Causas de Força Maior e Eventos Extraordinários</h2>
+                            <p className="italic mb-6">No Refúgio Carapita, a segurança dos nossos hóspedes e a integridade da nossa propriedade são prioridades absolutas. Em situações excecionais que escapem ao controlo de ambas as partes, aplicamos as seguintes condições:</p>
+                        </div>
+
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">1. Definição de Eventos Extraordinários</h3>
+                            <p className="mb-4">Consideram-se eventos extraordinários ou de força maior as situações que tornem impossível ou comprovadamente perigosa a realização da estadia, tais como:</p>
+                            <ul className="list-disc pl-6 space-y-4">
+                                <li><strong className="text-white font-medium">Desastres Naturais:</strong> Incêndios florestais graves na zona envolvente, inundações, terramotos ou outros fenómenos climatéricos extremos que impeçam o acesso à propriedade.</li>
+                                <li><strong className="text-white font-medium">Restrições Governamentais:</strong> Estados de emergência, restrições de circulação impostas por autoridades de saúde ou fecho de fronteiras.</li>
+                                <li><strong className="text-white font-medium">Falhas de Infraestrutura Crítica:</strong> Cortes prolongados de energia ou água na região que impossibilitem as condições mínimas de habitabilidade e conforto do refúgio.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">2. Procedimentos e Reembolsos</h3>
+                            <p className="mb-4">Caso ocorra um evento de força maior que impeça o usufruto da reserva:</p>
+                            <ul className="list-disc pl-6 space-y-4">
+                                <li><strong className="text-white font-medium">Cancelamento por parte do Refúgio Carapita:</strong> Se, por razões de segurança ou danos na propriedade, não pudermos receber o hóspede, este terá direito ao reembolso integral (100%) dos valores já pagos ou, se preferir, à emissão de um Voucher de Crédito com validade de 12 meses.</li>
+                                <li><strong className="text-white font-medium">Cancelamento por parte do Hóspede:</strong> Se o hóspede não puder viajar devido a restrições legais oficiais ou desastres naturais comprovados na sua zona de residência ou no trajeto, deverá apresentar prova documental. Nestes casos, priorizamos a remarcação de datas sem custos adicionais (sujeito a ajuste tarifário de época) ou a emissão de um Voucher de Crédito.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">3. Exclusões</h3>
+                            <p className="mb-4">Esta política não se aplica a:</p>
+                            <ul className="list-disc pl-6 space-y-4">
+                                <li>Doenças ou imprevistos pessoais do hóspede (nestes casos, aplica-se a Política de Cancelamento Normal).</li>
+                                <li>Condições meteorológicas comuns (ex: chuva, frio ou vento moderado) que não representem perigo imediato ou restrições oficiais.</li>
+                                <li>Cancelamentos de voos por greves ou problemas das companhias aéreas (nestes casos, o hóspede deve reclamar junto da transportadora ou do seu seguro de viagem).</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">4. Recomendação de Seguro de Viagem</h3>
+                            <p>Aconselhamos todos os nossos hóspedes a subscreverem um Seguro de Viagem que cubra cancelamentos por motivos de saúde ou transporte, garantindo proteção total além das responsabilidades diretas do alojamento.</p>
+                        </div>
+                    </div>
+
+                    <div className="border-t border-white/10 pt-12 mt-12 space-y-8">
+                        <div>
+                            <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-2">Anfitrião</span>
+                            <h2 className="text-3xl font-serif text-white mb-6">Cancelamento por Iniciativa do Refúgio Carapita</h2>
+                            <p className="italic mb-6">Embora façamos todos os esforços para garantir a sua estadia, existem situações excecionais em que o Refúgio Carapita se reserva o direito de cancelar uma reserva confirmada. Nestes casos, procedemos da seguinte forma:</p>
+                        </div>
+
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">1. Motivos de Cancelamento pelo Anfitrião</h3>
+                            <p className="mb-4">O cancelamento por nossa iniciativa poderá ocorrer nas seguintes situações:</p>
+                            <ul className="list-disc pl-6 space-y-4">
+                                <li><strong className="text-white font-medium">Avarias Críticas:</strong> Problemas técnicos súbitos e graves (ex: rutura de canalização, falha elétrica total, danos estruturais) que impeçam a habitabilidade ou ponham em causa a segurança e o conforto dos hóspedes.</li>
+                                <li><strong className="text-white font-medium">Erros de Sistema:</strong> No caso raro de uma falha informática (overbooking técnico) que gere uma reserva duplicada ou erro óbvio de tarifa no site.</li>
+                                <li><strong className="text-white font-medium">Incumprimento do Hóspede:</strong> Falta de pagamento do sinal (50%) ou do valor remanescente nos prazos estipulados nas condições de reserva.</li>
+                                <li><strong className="text-white font-medium">Violação de Regras Prévias:</strong> Caso existam provas de que a reserva se destina a fins não autorizados (ex: festas, eventos não declarados ou ocupação superior à capacidade máxima).</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">2. Compensação e Resolução</h3>
+                            <p className="mb-4">Caso o cancelamento seja da inteira responsabilidade do Refúgio Carapita (ex: avarias ou erro de sistema):</p>
+                            <ul className="list-disc pl-6 space-y-4">
+                                <li><strong className="text-white font-medium">Reembolso Integral:</strong> O hóspede será notificado de imediato e receberá o reembolso de 100% de todos os valores já pagos, no prazo máximo de 5 dias úteis.</li>
+                                <li><strong className="text-white font-medium">Apoio na Recolocação:</strong> Faremos o possível para sugerir alojamentos alternativos na região de qualidade equivalente, embora não possamos garantir a disponibilidade de terceiros.</li>
+                                <li><strong className="text-white font-medium">Voucher de Cortesia:</strong> Como pedido de desculpas pelo transtorno, poderemos oferecer um desconto especial para uma futura reserva direta.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-carapita-gold font-serif text-xl mb-4">3. Limitação de Responsabilidade</h3>
+                            <p>O Refúgio Carapita não se responsabiliza por custos externos ao alojamento (ex: passagens aéreas, aluguer de carros ou bilhetes para eventos) decorrentes do cancelamento da reserva. Recomendamos vivamente a subscrição de um seguro de viagem que cubra estas eventualidades.</p>
+                        </div>
                     </div>
 
                 </div>

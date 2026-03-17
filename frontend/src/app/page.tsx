@@ -1022,13 +1022,13 @@ export default function Home() {
                     </div>
 
                     <div className="max-w-[1400px] mx-auto py-6 px-4 md:px-8">
-                        <div className="flex flex-col xl:flex-row gap-8 items-start">
+                        <div className="flex flex-col lg:flex-row gap-8 items-start">
                             {/* Conteúdo Principal */}
                             <div className="flex-1 w-full min-w-0">
                                 {bookingStep === 'selection' && (
-                                    <div className="flex flex-col xl:flex-row gap-8 w-full max-w-[1400px] mx-auto animate-fade-in items-start h-full pb-20">
-                                        {/* Esquerda: Calendário Maior (~65%) */}
-                                        <div className="w-full xl:w-[65%] bg-[#1E3529] border border-[#C9A84C]/20 p-6 md:p-8 rounded-[24px] shadow-2xl">
+                                    <div className="flex flex-col lg:flex-row gap-8 w-full max-w-[1400px] mx-auto animate-fade-in items-start h-full pb-20">
+                                        {/* Esquerda: Calendário Maior (~60%) */}
+                                        <div className="w-full lg:w-[60%] bg-[#1E3529] border border-[#C9A84C]/20 p-6 md:p-8 rounded-[24px] shadow-2xl">
                                             <div className="w-full">
                                                 <SeletorCalendario
                                                     quartoId={quartosEncontrados?.[0]?.id || ''}
@@ -1044,8 +1044,8 @@ export default function Home() {
                                             </div>
                                         </div>
 
-                                        {/* Direita: Painel Interativo (~35%) */}
-                                        <div className="w-full xl:w-[35%] flex flex-col gap-6">
+                                        {/* Direita: Painel Interativo (~40%) */}
+                                        <div className="w-full lg:w-[40%] flex flex-col gap-6">
                                             {/* Cards Data */}
                                             <div className="flex gap-4 w-full">
                                                 <div className="flex-1 bg-[#1A2E26] border border-[#C9A84C]/40 rounded-[20px] p-6 text-center shadow-lg transition-transform duration-500 hover:scale-[1.02]">
@@ -1616,7 +1616,7 @@ export default function Home() {
                     {/* DRAWER HÓSPEDES */}
                     {isGuestsDrawerOpen && (
                         <>
-                            <div className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-sm transition-all" onClick={() => setIsGuestsDrawerOpen(false)} />
+                            <div className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-sm animate-fade-overlay" onClick={() => setIsGuestsDrawerOpen(false)} />
                             <div className="fixed inset-y-0 right-0 z-[260] w-full md:w-[380px] bg-[#1E3529] shadow-[-10px_0_30px_rgba(0,0,0,0.5)] transform translate-x-0 animate-slide-left flex flex-col p-8 border-l border-[#C9A84C]/20">
                                 <div className="flex justify-between items-center mb-10">
                                     <h2 className="font-serif text-[28px] text-[#C9A84C] uppercase tracking-[0.05em] m-0 leading-none">Hóspedes</h2>
@@ -1673,7 +1673,7 @@ export default function Home() {
                     {/* DRAWER CÓDIGO PROMOCIONAL */}
                     {isPromoDrawerOpen && (
                         <>
-                            <div className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-sm transition-all" onClick={() => setIsPromoDrawerOpen(false)} />
+                            <div className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-sm animate-fade-overlay" onClick={() => setIsPromoDrawerOpen(false)} />
                             <div className="fixed inset-y-0 right-0 z-[260] w-full md:w-[380px] bg-[#1E3529] shadow-[-10px_0_30px_rgba(0,0,0,0.5)] transform translate-x-0 animate-slide-left flex flex-col p-8 border-l border-[#C9A84C]/20">
                                 <div className="flex justify-between items-center mb-10">
                                     <h2 className="font-serif text-[28px] text-[#C9A84C] uppercase tracking-[0.05em] m-0 leading-none">Código Promocional</h2>
