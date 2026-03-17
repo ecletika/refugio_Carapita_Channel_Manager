@@ -117,8 +117,6 @@ export default function Home() {
     const hospedes = adultos + criancas;
     
     // Wrapper functions to avoid breaking existing code where possible
-    const setCheckIn = (date: string) => setDates(date, checkOut);
-    const setCheckOut = (date: string) => setDates(checkIn, date);
     const setAdultos = (num: number) => setGuests(num, criancas);
     const setCriancas = (num: number) => setGuests(adultos, num);
     const cupomCodigo = codigoPromocional || '';
@@ -1034,8 +1032,7 @@ export default function Home() {
                                                     quartoId={quartosEncontrados?.[0]?.id || ''}
                                                     initialSelection={checkIn ? { start: checkIn, end: checkOut || null } : undefined}
                                                     onSelect={(start, end) => {
-                                                        setCheckIn(start);
-                                                        setCheckOut(end);
+                                                        setDates(start, end);
                                                         if (quartosEncontrados?.[0]?.id) {
                                                             fetchCalendario(quartosEncontrados[0].id, start, end);
                                                         }
