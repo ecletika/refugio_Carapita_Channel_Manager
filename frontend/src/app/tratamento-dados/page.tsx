@@ -29,7 +29,7 @@ export default function TratamentoDados() {
                             <li><strong>Entidade:</strong> <span>Leonardo Guede Azevedo</span></li>
                             <li><strong>NIF:</strong> <span>260876640</span></li>
                             <li><strong>Morada:</strong> <span>Rua D. Afonso IV, 450, 2490-378 Ourém</span></li>
-                            <li><strong>Telemóvel:</strong> <span>+351 967 244 938</span></li>
+                            <li><strong>Telemóvel:</strong> <span>+351 920 003 608</span></li>
                             <li><strong>E-mail:</strong> <span>contacto@refugiocarapita.pt</span></li>
                         </ul>
                     </section>

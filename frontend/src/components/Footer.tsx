@@ -8,11 +8,11 @@ import { dictionaries as dict } from "@/i18n/dictionaries";
 interface FooterProps {
     lang: "PT" | "EN";
     siteConfigs: any;
+    t: (key: string) => string;
 }
 
-export default function Footer({ lang, siteConfigs }: FooterProps) {
+export default function Footer({ lang, siteConfigs, t }: FooterProps) {
     const router = useRouter();
-    const t = (key: string) => dict[lang][key as keyof typeof dict["PT"]] || key;
 
     const scrollToOrNavigate = (id: string) => {
         if (window.location.pathname === "/") {

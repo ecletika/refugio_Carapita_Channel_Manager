@@ -127,7 +127,7 @@ export default function ContactosPage() {
                             <div>
                                 <h4 className="text-white font-medium mb-1 uppercase tracking-widest text-xs">Telefone</h4>
                                 <p className="text-white/60 font-light leading-relaxed">
-                                    {siteConfigs.telefoneReservas || '+351 967 244 938'}
+                                    {siteConfigs.telefoneReservas || '+351 920 003 608'}
                                 </p>
                             </div>
                         </div>
@@ -276,7 +276,7 @@ export default function ContactosPage() {
                 </div>
             </section>
 
-            <Footer lang={lang} siteConfigs={siteConfigs} />
+            <Footer t={t} lang={lang} siteConfigs={siteConfigs} />
 
             <style jsx global>{`
                 .animate-fade-in {

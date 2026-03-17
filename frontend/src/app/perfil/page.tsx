@@ -342,7 +342,7 @@ export default function PerfilHospede() {
                                     <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
                                         <Phone className="text-carapita-gold" size={20} />
                                         <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Apoio Hóspede</span>
-                                        <p className="text-xs text-white line-clamp-2">{configs?.telefone || '+351 969 581 657'}</p>
+                                        <p className="text-xs text-white line-clamp-2">{configs?.telefone || '+351 920 003 608'}</p>
                                     </div>
                                     <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
                                         <Instagram className="text-carapita-gold" size={20} />
@@ -488,15 +488,18 @@ export default function PerfilHospede() {
                                 <p className="text-[10px] text-white/50 tracking-widest uppercase mt-1">Conheça as nossas condições para alterações ou cancelamentos</p>
                             </div>
                             <div className="bg-black/20 p-8 border border-white/10 text-white/70 max-w-3xl leading-relaxed text-sm flex flex-col gap-6">
-                                <p><strong>Cancelamento Gratuito:</strong> É possível cancelar a reserva sem qualquer custo até 14 dias antes da data programada para o check-in.</p>
-                                <p><strong>Cancelamento Parcial:</strong> Caso o cancelamento ocorra entre 14 e 7 dias antes do check-in, será cobrada uma taxa equivalente a 50% do valor total da reserva.</p>
-                                <p><strong>Sem Reembolso:</strong> O cancelamento feito a menos de 7 dias do check-in ou no-show (não comparência) não dará direito a reembolso do valor pago.</p>
-                                <p>Recomendamos a leitura atenta das condições de tarifas promocionais ou acordadas no ato da reserva caso sejam de natureza inflexível (Non-Refundable).</p>
-                                <div className="mt-4 p-6 border border-carapita-gold/20 bg-carapita-dark text-center flex flex-col items-center">
-                                    <FileText className="text-carapita-gold mb-3" size={24} />
-                                    <p className="font-serif text-white text-lg mb-2">Ainda com Dúvidas?</p>
-                                    <p className="text-xs uppercase tracking-widest text-white/50">Entre em contacto com o Anfitrião na aba "Reservas e Anfitrião".</p>
-                                </div>
+                                <p><strong>1. Confirmação de Reserva:</strong> Para garantir a sua reserva, solicitamos o pagamento de um sinal correspondente a 50% do valor total da estadia (via Transferência Bancária, MB WAY ou Cartão de Crédito/Stripe). Os restantes 50% deverão ser liquidados até ao momento do check-in.</p>
+                                <p><strong>2. Cancelamento e Reembolso:</strong> Entendemos que imprevistos acontecem. No entanto, como somos um alojamento local de gestão familiar, os cancelamentos de última hora impactam-nos significativamente. Assim, aplicamos as seguintes condições:</p>
+                                <ul className="list-disc pl-5 space-y-4">
+                                    <li><strong>Cancelamento Gratuito (Até 14 dias antes):</strong> Se cancelar a sua reserva com uma antecedência igual ou superior a 14 dias em relação à data de check-in, o valor total do sinal será reembolsado integralmente.</li>
+                                    <li><strong>Cancelamento Fora do Prazo (Menos de 14 dias):</strong> No caso de cancelamentos com menos de 14 dias de antecedência, o valor do sinal (50%) não será reembolsado.</li>
+                                    <li><strong>Não Comparência (No-Show):</strong> Em caso de não comparência sem aviso prévio, será cobrado o valor total da reserva.</li>
+                                </ul>
+                            </div>
+                            <div className="mt-4 p-6 border border-carapita-gold/20 bg-carapita-dark text-center flex flex-col items-center">
+                                <FileText className="text-carapita-gold mb-3" size={24} />
+                                <p className="font-serif text-white text-lg mb-2">Ainda com Dúvidas?</p>
+                                <p className="text-xs uppercase tracking-widest text-white/50">Entre em contacto com o Anfitrião na aba "Reservas e Anfitrião".</p>
                             </div>
                         </div>
                     )}

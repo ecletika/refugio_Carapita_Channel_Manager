@@ -187,7 +187,7 @@ export default function PasseiosPage() {
                 </div>
             </section>
 
-            <Footer lang={lang} siteConfigs={siteConfigs} />
+            <Footer t={t} lang={lang} siteConfigs={siteConfigs} />
 
             {/* Modal de Detalhes (Reusing from Home) */}
             {passeioSelecionado && (
