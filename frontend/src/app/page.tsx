@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { useRouter } from 'next/navigation';
 import SeletorCalendario from '../components/SeletorCalendario';
 import { useEffect } from 'react';
+import { useBookingStore } from '../store/bookingStore';
 
 // Helper: parse fotos field (can be JSON array or plain URL)
 import { dictionaries as dict } from '../i18n/dictionaries';
@@ -112,13 +113,18 @@ const RoomImageGallery = ({ fotos, quartoNome, onClick }: { fotos: FotoObj[], qu
 };
 
 export default function Home() {
-    const [checkIn, setCheckIn] = useState('');
-    const [checkOut, setCheckOut] = useState('');
-    const [adultos, setAdultos] = useState(2);
-    const [criancas, setCriancas] = useState(0);
+    const { checkIn, checkOut, adultos, criancas, codigoPromocional, setDates, setGuests, setPromoCode } = useBookingStore();
     const hospedes = adultos + criancas;
+    
+    // Wrapper functions to avoid breaking existing code where possible
+    const setCheckIn = (date: string) => setDates(date, checkOut);
+    const setCheckOut = (date: string) => setDates(checkIn, date);
+    const setAdultos = (num: number) => setGuests(num, criancas);
+    const setCriancas = (num: number) => setGuests(adultos, num);
+    const cupomCodigo = codigoPromocional || '';
+    const setCupomCodigo = (code: string) => setPromoCode(code);
+    
     const [showGuestSelector, setShowGuestSelector] = useState(false);
-    const [cupomCodigo, setCupomCodigo] = useState('');
     const [cupomAplicado, setCupomAplicado] = useState<any>(null);
     const [cupomMensagem, setCupomMensagem] = useState({ text: '', type: '' });
     const [quartosEncontrados, setQuartosEncontrados] = useState<any[] | null>(null);
@@ -1089,7 +1095,7 @@ export default function Home() {
                                             <button 
                                                 disabled={!checkIn || !checkOut || adultos < 1}
                                                 onClick={() => setBookingStep('rates')} 
-                                                className="w-full mt-4 p-[22px] bg-[#C9A84C] text-[#1A2E26] font-sans text-[13px] font-bold tracking-[0.25em] uppercase border-none rounded-[16px] cursor-pointer transition-all hover:-translate-y-1 disabled:translate-y-0 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_8px_30px_rgba(201,168,76,0.3)] hover:bg-[#E8C96A] hover:shadow-[0_12px_40px_rgba(201,168,76,0.4)]"
+                                                className="btn-ver-tarifas"
                                             >
                                                 Ver Tarifas
                                             </button>
@@ -1100,10 +1106,11 @@ export default function Home() {
                                 {bookingStep === 'rates' && (
                                     <div className="flex flex-col xl:flex-row gap-8 w-full max-w-[1400px] mx-auto animate-fade-in items-start h-full pb-20">
                                         {/* ESQUERDA: Calendário Compacto (30%) */}
-                                        <div className="w-full xl:w-[35%] shrink-0">
-                                            <div className="bg-[#1E3529] border border-[#C9A84C]/20 p-6 md:p-8 rounded-[24px] shadow-2xl mb-6 hidden md:block overflow-hidden [&_.md\\:flex-row]:flex-col [&_.md\\:flex-1:nth-child(2)]:hidden [&_.md\\:w-1\\/2]:w-full">
+                                        <div className="w-full xl:w-[30%] shrink-0">
+                                            <div className="bg-[#1E3529] border border-[#C9A84C]/20 p-6 md:p-8 rounded-[24px] shadow-2xl mb-6 hidden md:block overflow-hidden">
                                                 <SeletorCalendario
                                                     quartoId={quartosEncontrados?.[0]?.id || ''}
+                                                    monthsToShow={1}
                                                     initialSelection={checkIn && checkOut ? { start: checkIn, end: checkOut } : undefined}
                                                     onSelect={(start, end) => {
                                                         setCheckIn(start);
@@ -1126,7 +1133,7 @@ export default function Home() {
                                         </div>
 
                                         {/* DIREITA: Quartos (70%) */}
-                                        <div className="w-full xl:w-[65%] space-y-8">
+                                        <div className="w-full xl:w-[70%] space-y-8">
                                             <div className="flex items-center gap-4 pb-4 border-b border-[#C9A84C]/20 mb-8 mt-2">
                                                 <button 
                                                     onClick={() => setBookingStep('selection')} 
@@ -1178,10 +1185,18 @@ export default function Home() {
                                                                     <div className="mt-auto pt-6 border-t border-[#C9A84C]/10 flex flex-col md:flex-row items-end justify-between gap-6 relative">
                                                                         {/* Total */}
                                                                         <div className="flex flex-col w-full md:w-auto">
-                                                                            <span className="font-sans text-[10px] tracking-[0.2em] text-[#8A9E96] uppercase mb-2 block">Total da estadia</span>
+                                                                            <span className="preco-label mb-2 block">Total da estadia</span>
                                                                             <div className="flex items-end gap-3">
-                                                                                <div className="font-serif text-5xl md:text-[56px] text-[#C9A84C] font-semibold leading-none">
-                                                                                    € {displayedPrice.toFixed(0)}
+                                                                                <div className="preco-total leading-none">
+                                                                                    {cupomAplicado ? (
+                                                                                        <>
+                                                                                            <span className="line-through text-white/30 text-[24px] mr-3">€ {displayedPrice.toFixed(0)}</span>
+                                                                                            € {(displayedPrice - (cupomAplicado.tipo_desconto === 'PERCENTUAL' ? displayedPrice * (cupomAplicado.valor_desconto/100) : cupomAplicado.valor_desconto)).toFixed(0)}
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        `€ ${displayedPrice.toFixed(0)}`
+                                                                                    )}
+                                                                                    <span className="text-[16px] font-sans font-normal text-[#8A9E96]"> / estadia total</span>
                                                                                 </div>
                                                                             </div>
                                                                             <span className="text-[#8A9E96] text-[9px] uppercase font-sans tracking-[0.1em] mt-3 block bg-[#1A2E26] px-3 py-1.5 rounded w-fit">
@@ -1601,53 +1616,53 @@ export default function Home() {
                     {/* DRAWER HÓSPEDES */}
                     {isGuestsDrawerOpen && (
                         <>
-                            <div className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-sm animate-fade-in transition-all" onClick={() => setIsGuestsDrawerOpen(false)} />
+                            <div className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-sm transition-all" onClick={() => setIsGuestsDrawerOpen(false)} />
                             <div className="fixed inset-y-0 right-0 z-[260] w-full md:w-[380px] bg-[#1E3529] shadow-[-10px_0_30px_rgba(0,0,0,0.5)] transform translate-x-0 animate-slide-left flex flex-col p-8 border-l border-[#C9A84C]/20">
                                 <div className="flex justify-between items-center mb-10">
-                                    <h2 className="font-serif text-[28px] text-[#C9A84C] uppercase tracking-[0.2em] m-0 leading-none">Hóspedes</h2>
-                                    <button onClick={() => setIsGuestsDrawerOpen(false)} className="text-[#C9A84C] hover:text-white transition-colors bg-white/5 p-2 rounded-full border border-white/10">
-                                        <X size={20} />
+                                    <h2 className="font-serif text-[28px] text-[#C9A84C] uppercase tracking-[0.05em] m-0 leading-none">Hóspedes</h2>
+                                    <button onClick={() => setIsGuestsDrawerOpen(false)} className="text-[#C9A84C] hover:text-white transition-colors bg-transparent p-2 rounded-full border border-transparent">
+                                        <X size={24} strokeWidth={1.5} />
                                     </button>
                                 </div>
 
                                 <div className="flex flex-col flex-1">
-                                    <div className="border-b border-white/10 pb-8 mb-8">
-                                        <div className="flex justify-between items-start outline-none transition-all">
+                                    <div className="border-b border-[#C9A84C]/10 pb-8 mb-8">
+                                        <div className="flex justify-between items-center outline-none transition-all">
                                             <div className="flex flex-col">
                                                 <span className="font-sans text-[14px] text-white uppercase tracking-[0.1em] mb-1">Adultos</span>
                                             </div>
-                                            <div className="flex flex-row items-center gap-4">
-                                                <button onClick={() => setAdultos(Math.max(1, adultos - 1))} disabled={adultos <= 1} className="w-[40px] h-[40px] rounded-full border-[1.5px] border-[#C9A84C] bg-transparent text-[#C9A84C] flex items-center justify-center text-[20px] transition-all hover:bg-[#C9A84C] hover:text-[#1A2E26] disabled:opacity-30 disabled:cursor-not-allowed">−</button>
-                                                <span className="font-serif text-[32px] text-[#F5F0E8] min-w-[32px] text-center">{adultos}</span>
-                                                <button onClick={() => setAdultos(adultos + criancas < 4 ? adultos + 1 : adultos)} disabled={adultos + criancas >= 4} className="w-[40px] h-[40px] rounded-full border-[1.5px] border-[#C9A84C] bg-transparent text-[#C9A84C] flex items-center justify-center text-[20px] transition-all hover:bg-[#C9A84C] hover:text-[#1A2E26] disabled:opacity-30 disabled:cursor-not-allowed">+</button>
+                                            <div className="seletor-container">
+                                                <button onClick={() => setAdultos(Math.max(1, adultos - 1))} disabled={adultos <= 1} className="btn-seletor">−</button>
+                                                <span className="numero-hospedes">{adultos}</span>
+                                                <button onClick={() => setAdultos(adultos + criancas < 4 ? adultos + 1 : adultos)} disabled={adultos + criancas >= 4} className="btn-seletor">+</button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="border-b border-white/10 pb-8 mb-8">
-                                        <div className="flex justify-between items-start outline-none transition-all">
+                                    <div className="border-b border-[#C9A84C]/10 pb-8 mb-8">
+                                        <div className="flex justify-between items-center outline-none transition-all">
                                             <div className="flex flex-col">
                                                 <span className="font-sans text-[14px] text-white uppercase tracking-[0.1em] mb-1">Crianças</span>
                                                 <span className="font-sans text-[10px] text-[#8A9E96] uppercase tracking-widest">Maiores de 5 anos</span>
                                             </div>
-                                            <div className="flex flex-row items-center gap-4">
-                                                <button onClick={() => setCriancas(Math.max(0, criancas - 1))} disabled={criancas <= 0} className="w-[40px] h-[40px] rounded-full border-[1.5px] border-[#C9A84C] bg-transparent text-[#C9A84C] flex items-center justify-center text-[20px] transition-all hover:bg-[#C9A84C] hover:text-[#1A2E26] disabled:opacity-30 disabled:cursor-not-allowed">−</button>
-                                                <span className="font-serif text-[32px] text-[#F5F0E8] min-w-[32px] text-center">{criancas}</span>
-                                                <button onClick={() => setCriancas(adultos + criancas < 4 && criancas < 3 ? criancas + 1 : criancas)} disabled={adultos + criancas >= 4 || criancas >= 3} className="w-[40px] h-[40px] rounded-full border-[1.5px] border-[#C9A84C] bg-transparent text-[#C9A84C] flex items-center justify-center text-[20px] transition-all hover:bg-[#C9A84C] hover:text-[#1A2E26] disabled:opacity-30 disabled:cursor-not-allowed">+</button>
+                                            <div className="seletor-container">
+                                                <button onClick={() => setCriancas(Math.max(0, criancas - 1))} disabled={criancas <= 0} className="btn-seletor">−</button>
+                                                <span className="numero-hospedes">{criancas}</span>
+                                                <button onClick={() => setCriancas(adultos + criancas < 4 && criancas < 3 ? criancas + 1 : criancas)} disabled={adultos + criancas >= 4 || criancas >= 3} className="btn-seletor">+</button>
                                             </div>
                                         </div>
                                     </div>
 
                                     {adultos + criancas >= 4 && (
-                                        <div className="bg-[#C9A84C]/10 border border-[#C9A84C]/30 p-4 rounded-xl flex gap-3 mt-auto mb-6">
-                                            <AlertCircle size={18} className="text-[#C9A84C] shrink-0" />
-                                            <span className="text-[11px] text-[#C9A84C] font-sans uppercase tracking-[0.1em] leading-relaxed">
+                                        <div className="bg-transparent flex gap-3 mt-auto mb-6 opacity-70 justify-center">
+                                            <AlertCircle size={16} className="text-[#C9A84C] shrink-0 inline-block" />
+                                            <span className="text-[11px] text-[#C9A84C] font-sans uppercase tracking-[0.1em] leading-relaxed text-center block">
                                                 O total de hóspedes não pode exceder 4
                                             </span>
                                         </div>
                                     )}
 
-                                    <button onClick={() => setIsGuestsDrawerOpen(false)} className={`w-full ${adultos + criancas >= 4 ? '' : 'mt-auto'} p-[18px] bg-[#C9A84C] text-[#1A2E26] font-sans text-[13px] font-bold tracking-[0.2em] uppercase border-none rounded-[14px] cursor-pointer transition-all hover:-translate-y-1 shadow-[0_8px_30px_rgba(201,168,76,0.3)] hover:bg-[#E8C96A]`}>
+                                    <button onClick={() => setIsGuestsDrawerOpen(false)} className={`w-full ${adultos + criancas >= 4 ? '' : 'mt-auto'} p-[18px] bg-[#C9A84C] text-[#1A2E26] font-sans text-[13px] font-bold tracking-[0.2em] uppercase border-none cursor-pointer transition-all hover:bg-[#E8C96A]`}>
                                         Confirmar
                                     </button>
                                 </div>
@@ -1658,12 +1673,12 @@ export default function Home() {
                     {/* DRAWER CÓDIGO PROMOCIONAL */}
                     {isPromoDrawerOpen && (
                         <>
-                            <div className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-sm animate-fade-in transition-all" onClick={() => setIsPromoDrawerOpen(false)} />
+                            <div className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-sm transition-all" onClick={() => setIsPromoDrawerOpen(false)} />
                             <div className="fixed inset-y-0 right-0 z-[260] w-full md:w-[380px] bg-[#1E3529] shadow-[-10px_0_30px_rgba(0,0,0,0.5)] transform translate-x-0 animate-slide-left flex flex-col p-8 border-l border-[#C9A84C]/20">
                                 <div className="flex justify-between items-center mb-10">
-                                    <h2 className="font-serif text-[28px] text-[#C9A84C] uppercase tracking-[0.2em] m-0 leading-none">Código Promocional</h2>
-                                    <button onClick={() => setIsPromoDrawerOpen(false)} className="text-[#C9A84C] hover:text-white transition-colors bg-white/5 p-2 rounded-full border border-white/10">
-                                        <X size={20} />
+                                    <h2 className="font-serif text-[28px] text-[#C9A84C] uppercase tracking-[0.05em] m-0 leading-none">Código Promocional</h2>
+                                    <button onClick={() => setIsPromoDrawerOpen(false)} className="text-[#C9A84C] hover:text-white transition-colors bg-transparent p-2 rounded-full border border-transparent">
+                                        <X size={24} strokeWidth={1.5} />
                                     </button>
                                 </div>
 
@@ -1673,7 +1688,7 @@ export default function Home() {
                                         placeholder="Insira o seu código" 
                                         value={promoCodeInput}
                                         onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
-                                        className="w-full border border-[#C9A84C] bg-transparent text-white rounded-[12px] p-[14px] px-[20px] font-sans text-[14px] focus:outline-none focus:ring-2 focus:ring-[#C9A84C]/50 uppercase tracking-widest placeholder:text-white/20 mb-6"
+                                        className="w-full border border-[#C9A84C] bg-transparent text-white rounded-[12px] p-[14px] px-[20px] font-sans text-[14px] focus:outline-none focus:ring-[#C9A84C] uppercase tracking-widest placeholder:text-white/40 mb-auto mt-4"
                                     />
 
                                     <button 
@@ -1684,17 +1699,18 @@ export default function Home() {
                                             setTimeout(() => {
                                                 if(promoCodeInput.length > 3) { 
                                                     setPromoStatus("success"); 
-                                                    setCupomAplicado({codigo: promoCodeInput}); 
+                                                    setCupomAplicado({codigo: promoCodeInput, tipo_desconto: 'FIXO', valor_desconto: 50});
+                                                    setCupomCodigo(promoCodeInput);
                                                     setTimeout(() => setIsPromoDrawerOpen(false), 800) 
                                                 }
                                                 else { setPromoStatus("error"); setTimeout(() => setPromoStatus("normal"), 2000); }
                                             }, 600);
                                         }} 
-                                        className={`w-full p-[18px] font-sans text-[13px] font-bold tracking-[0.2em] uppercase border-none rounded-[14px] cursor-pointer transition-all hover:-translate-y-1 shadow-[0_8px_30px_rgba(201,168,76,0.3)]
-                                            ${promoStatus === 'success' ? 'bg-[#3D5C4F] text-[#D4C9B0] shadow-none' : promoStatus === 'error' ? 'bg-red-900 text-white' : 'bg-[#C9A84C] text-[#1A2E26] hover:bg-[#E8C96A]'}
+                                        className={`w-full p-[18px] font-sans text-[13px] font-bold tracking-[0.2em] uppercase border-none rounded-[14px] cursor-pointer transition-all mt-auto
+                                            ${promoStatus === 'success' ? 'bg-[#3D5C4F] text-white shadow-none' : promoStatus === 'error' ? 'border border-red-500 bg-transparent text-white' : 'bg-[#C9A84C] text-[#1A2E26] hover:bg-[#E8C96A]'}
                                         `}
                                     >
-                                        {promoStatus === 'loading' ? 'A verificar...' : promoStatus === 'success' ? '✓ Código Aplicado' : promoStatus === 'error' ? 'Código Inválido' : 'Confirmar'}
+                                        {promoStatus === 'loading' ? <div className="w-5 h-5 border-2 border-[#1A2E26] border-t-transparent rounded-full animate-spin mx-auto"></div> : promoStatus === 'success' ? '✓ Código Aplicado!' : promoStatus === 'error' ? 'Código Inválido' : 'Confirmar'}
                                     </button>
                                 </div>
                             </div>

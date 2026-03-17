@@ -10,7 +10,7 @@ interface PrecoDia {
     eCheckOut?: boolean;
 }
 
-export default function SeletorCalendario({ onSelect, quartoId, initialSelection }: { onSelect: (start: string, end: string) => void, quartoId: string, initialSelection?: { start: string | null, end: string | null } }) {
+export default function SeletorCalendario({ onSelect, quartoId, initialSelection, monthsToShow = 2 }: { onSelect: (start: string, end: string) => void, quartoId: string, initialSelection?: { start: string | null, end: string | null }, monthsToShow?: number }) {
     const [currentDate, setCurrentDate] = useState(initialSelection?.start ? new Date(initialSelection.start) : new Date());
     const [selection, setSelection] = useState<{ start: string | null, end: string | null }>({ start: initialSelection?.start || null, end: initialSelection?.end || null });
     const [precos, setPrecos] = useState<Record<string, { preco: number, disponivel: boolean, minimaEstadia: number, eCheckOut?: boolean }>>({});
@@ -214,7 +214,7 @@ export default function SeletorCalendario({ onSelect, quartoId, initialSelection
 
             <div className="w-full flex flex-col md:flex-row gap-8 justify-center">
                 {renderMonth(currentDate)}
-                {renderMonth(secondDate)}
+                {monthsToShow > 1 && renderMonth(secondDate)}
             </div>
 
             <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4 text-[9px] md:text-[10px] uppercase tracking-widest text-[#8A9E96] justify-center w-full max-w-[800px] border-t border-[#C9A84C]/10 pt-8">
@@ -230,5 +230,4 @@ export default function SeletorCalendario({ onSelect, quartoId, initialSelection
             </div>
         </div>
     );
-}
 }

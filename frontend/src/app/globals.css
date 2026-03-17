@@ -173,3 +173,70 @@ h6 {
   #fatura-print { position: absolute; left: 0; top: 0; width: 100%; }
   .no-print { display: none !important; }
 }
+
+/* Custom Drawer Guests Rules */
+.seletor-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.btn-seletor {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid #C9A84C;
+  background: transparent;
+  color: #C9A84C;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-seletor:hover {
+  background: #C9A84C;
+  color: #1A2E26;
+}
+.btn-seletor:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: transparent;
+  color: #C9A84C;
+}
+.numero-hospedes {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  min-width: 40px;
+  text-align: center;
+  color: #FFFFFF;
+}
+
+/* Ver Tarifas Btn */
+.btn-ver-tarifas {
+  width: 100%;
+  padding: 18px;
+  background: #C9A84C;
+  color: #1A2E26;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  margin-top: 24px;
+}
+.btn-ver-tarifas:hover {
+  background: #E8C96A;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(201,168,76,0.4);
+}
+.btn-ver-tarifas:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
