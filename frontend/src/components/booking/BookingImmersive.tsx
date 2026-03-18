@@ -53,6 +53,7 @@ export default function BookingImmersive({
     const [idQuartoParaReserva, setIdQuartoParaReserva] = useState<string | null>(null);
     const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isFetchingProfile, setIsFetchingProfile] = useState(false);
     const [cupomAplicado, setCupomAplicado] = useState<any>(null);
     const [visibleAdditionalGuests, setVisibleAdditionalGuests] = useState(0);
     const [isGuestsDrawerOpen, setIsGuestsDrawerOpen] = useState(false);
@@ -158,6 +159,57 @@ export default function BookingImmersive({
         else setBookingStep('details');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+
+    // Auto-preenchimento ao estar logado
+    useEffect(() => {
+        const fetchHospedeData = async () => {
+            if (isGuestLoggedIn && bookingStep === 'details' && !bookingForm.email) {
+                setIsFetchingProfile(true);
+                try {
+                    const token = localStorage.getItem('guestToken');
+                    if (!token) return;
+                    
+                    const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hospede/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const resJson = await resp.json();
+                    
+                    if (resJson.status === 'success' && resJson.data) {
+                        const h = resJson.data;
+                        setBookingForm(prev => ({
+                            ...prev,
+                            nome: h.nome || '',
+                            sobrenome: h.sobrenome || '',
+                            email: h.email || '',
+                            telefone: h.telefone || '',
+                            pais: h.pais || 'Portugal',
+                            cidade: h.cidade || '',
+                            endereco1: h.endereco1 || '',
+                            endereco2: h.endereco2 || '',
+                            cep: h.cep || '',
+                            data_nascimento: h.data_nascimento ? h.data_nascimento.split('T')[0] : '',
+                            local_nascimento: h.local_nascimento || '',
+                            nacionalidade: h.nacionalidade || '',
+                            tipo_documento: h.tipo_documento || 'Passaporte',
+                            numero_documento: h.numero_documento || '',
+                            pais_emissor_documento: h.pais_emissor_documento || '',
+                            estrangeiro: !!h.estrangeiro,
+                            requerimentosEspeciais: prev.requerimentosEspeciais,
+                            aceitouTermos: prev.aceitouTermos,
+                            dependentes: h.dependentes && h.dependentes.length > 0 ? h.dependentes : prev.dependentes
+                        }));
+                    }
+                } catch (e) {
+                    console.error("Erro ao carregar perfil para auto-fill:", e);
+                } finally {
+                    setIsFetchingProfile(false);
+                }
+            }
+        };
+
+        fetchHospedeData();
+    }, [isGuestLoggedIn, bookingStep]);
+
 
     const handleConfirmarReserva = async () => {
         if (!bookingForm.aceitouTermos) {

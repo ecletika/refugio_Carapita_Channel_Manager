@@ -23,6 +23,9 @@ router.get('/minhas-reservas', authMiddleware, ReservasController.listarMinhasRe
 // 2. Criar reserva (Site ou Painel Manualmente)
 router.post('/', ReservasController.criarReserva);
 
+// 2.1 Limpar reservas expiradas (Auto-cancellation)
+router.post('/limpar-expiradas', ReservasController.limparReservasExpiradas);
+
 // 3. Deletar reserva permanentemente do sistema
 router.delete('/:id', authMiddleware, ReservasController.deletarReserva);
 

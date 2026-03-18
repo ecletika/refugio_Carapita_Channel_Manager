@@ -8,6 +8,10 @@ class ReservasController {
     // 1. Listar Disponibilidade Real
     static async listarDisponibilidade(req, res) {
         try {
+            // Gatilho automático de limpeza ao consultar disponibilidade
+            // Silencioso para não atrasar a resposta do usuário significativamente
+            ReservasController.limparReservasExpiradasInternal().catch(e => console.error("Erro cleanup auto:", e));
+
             const { checkIn, checkOut, capacidade } = req.query;
             if (!checkIn || !checkOut) return res.status(400).json({ error: 'Check-in e Check-out são obrigatórios' });
 
@@ -59,6 +63,9 @@ class ReservasController {
     // 2. Criar Reserva
     static async criarReserva(req, res) {
         try {
+            // Limpar antes de tentar criar para garantir que datas expiradas estão livres
+            await ReservasController.limparReservasExpiradasInternal().catch(e => console.error("Erro cleanup auto:", e));
+
             console.log('1. INICIANDO CRIAR RESERVA', req.body);
             const { quartoId, hospede, checkIn, checkOut, canalNome, metodoPagamento, requerimentosEspeciais, extrasIds, cupomCodigo } = req.body;
             if (!quartoId || !hospede || !checkIn || !checkOut) return res.status(400).json({ error: 'Dados incompletos' });
@@ -292,6 +299,52 @@ class ReservasController {
     static async confirmarReserva(req, res) { return ReservasController.updateStatus(req.params.id, 'CONFIRMADA', res); }
     static async checkIn(req, res) { return ReservasController.updateStatus(req.params.id, 'CHECK_IN', res); }
     static async checkOut(req, res) { return ReservasController.updateStatus(req.params.id, 'CHECK_OUT', res); }
+
+    // 4. Limpeza de Reservas Expiradas (PENDENTES > 48h)
+    static async limparReservasExpiradas(req, res) {
+        const result = await ReservasController.limparReservasExpiradasInternal();
+        if (result.error) {
+            return res.status(500).json({ error: result.error });
+        }
+        return res.json({ status: 'success', ...result });
+    }
+
+    static async limparReservasExpiradasInternal() {
+        try {
+            const limite = new Date();
+            limite.setHours(limite.getHours() - 48);
+            const limiteIso = limite.toISOString();
+
+            // Buscar reservas pendentes expiradas
+            const { data: expiradas, error: selectErr } = await supabase.supabaseAdmin
+                .from('Reserva')
+                .select('id')
+                .eq('status', 'PENDENTE')
+                .lt('criado_em', limiteIso);
+
+            if (selectErr) return { error: selectErr.message };
+
+            if (!expiradas || expiradas.length === 0) {
+                return { count: 0 };
+            }
+
+            const ids = expiradas.map(r => r.id);
+            // Cancelar em massa
+            const { error: updateErr } = await supabase.supabaseAdmin
+                .from('Reserva')
+                .update({ 
+                    status: 'CANCELADA', 
+                    atualizado_em: new Date().toISOString() 
+                })
+                .in('id', ids);
+
+            if (updateErr) return { error: updateErr.message };
+
+            return { count: ids.length, ids };
+        } catch (error) {
+            return { error: error.message };
+        }
+    }
 
     static async enviarAima(req, res) {
         try {
