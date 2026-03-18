@@ -80,7 +80,7 @@ export default function Step1Selection({
                 <button onClick={() => setIsGuestsDrawerOpen(true)} className="w-full bg-[#1A2E26] border border-[#C9A84C]/20 rounded-[20px] p-6 py-7 flex items-center justify-between hover:border-[#C9A84C]/60 transition-all font-sans text-left group shadow-lg mt-2">
                     <div className="flex flex-col">
                         <span className="text-[10px] text-[#8A9E96] uppercase tracking-[0.2em] mb-2 group-hover:text-[#C9A84C] transition-colors">Hóspedes</span>
-                        <span className="text-[#F5F0E8] text-[15px] font-medium tracking-wide">{adultos} Adulto{adultos !== 1 && 's'}{criancas > 0 && `, ${criancas} Criança${criancas !== 1 && 's'}`}</span>
+                        <span className="text-[#F5F0E8] text-[15px] font-medium tracking-wide">{adultos} Adulto{adultos !== 1 && 's'}{criancas > 0 ? ` • ${criancas} Criança${criancas !== 1 && 's'}` : ''}</span>
                     </div>
                     <ChevronRight size={20} className="text-[#8A9E96] group-hover:text-[#C9A84C] transition-colors" />
                 </button>

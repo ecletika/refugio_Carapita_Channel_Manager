@@ -8,10 +8,10 @@ interface HeroBannerProps {
 export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
     const [currentHeroIndex, setCurrentHeroIndex] = React.useState(0);
     const heroImages = [
+        "/images/hero_home.jpg",
         "https://templarportugal.com/media/images/TZC03808-min.original.jpg",
         "https://templarportugal.com/media/images/TZC03798-min.original.jpg",
-        "https://templarportugal.com/media/images/Castelo_e_Paao_dos_Condes_de_OurCm_iluminado.original.jpg",
-        "https://templarportugal.com/media/images/TZC03591-min.original.jpg"
+        "https://templarportugal.com/media/images/Castelo_e_Paao_dos_Condes_de_OurCm_iluminado.original.jpg"
     ];
 
     React.useEffect(() => {
