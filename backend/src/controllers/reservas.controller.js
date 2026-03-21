@@ -64,7 +64,8 @@ class ReservasController {
     static async criarReserva(req, res) {
         try {
             // Limpar antes de tentar criar para garantir que datas expiradas estão livres
-            await ReservasController.limparReservasExpiradasInternal().catch(e => console.error("Erro cleanup auto:", e));
+            // Removido await para não bloquear o início da criação
+            ReservasController.limparReservasExpiradasInternal().catch(e => console.error("Erro cleanup auto:", e));
 
             console.log('1. INICIANDO CRIAR RESERVA', req.body);
             const { quartoId, hospede, checkIn, checkOut, canalNome, metodoPagamento, requerimentosEspeciais, extrasIds, cupomCodigo } = req.body;
@@ -73,7 +74,7 @@ class ReservasController {
             const dataInicio = new Date(`${checkIn}T00:00:00.000Z`).toISOString();
             const dataFim = new Date(`${checkOut}T00:00:00.000Z`).toISOString();
 
-            // Buscar/Criar Hóspede
+            // Buscar/Criar Hóspede - Mantido sequencial pois é dependência crítica
             let { data: hospedeDB } = await supabase.from('Hospede').select('*').eq('email', hospede.email).single();
             const now = new Date().toISOString();
 
@@ -115,31 +116,54 @@ class ReservasController {
                 hospedeDB = updateH;
             }
 
-            // Buscar/Criar Canal
-            let { data: canalDB } = await supabase.from('Canal').select('*').eq('nome_canal', canalNome || 'SITE').single();
-            if (!canalDB) {
+            // --- BUSCAS PARALELAS (OTIMIZAÇÃO) ---
+            console.log('4. BUSCANDO DADOS EM PARALELO');
+            const [
+                { data: canalDB },
+                { data: quarto },
+                { data: tarifasSazonais },
+                { data: extrasPriceData },
+                { data: cupomDB }
+            ] = await Promise.all([
+                // 1. Canal
+                supabase.from('Canal').select('*').eq('nome_canal', canalNome || 'SITE').single(),
+                // 2. Quarto
+                supabase.from('Quarto').select('*').eq('id', quartoId).single(),
+                // 3. Tarifas
+                supabase.from('TarifaSazonal').select('*').eq('quarto_id', quartoId),
+                // 4. Extras
+                (extrasIds && extrasIds.length > 0) 
+                    ? supabase.from('Extra').select('preco').in('id', extrasIds)
+                    : Promise.resolve({ data: [] }),
+                // 5. Cupom
+                cupomCodigo
+                    ? supabase.from('Cupom').select('*').eq('codigo', cupomCodigo.toUpperCase()).single()
+                    : Promise.resolve({ data: null })
+            ]);
+
+            // Se canal não existir, criamos (raro para SITE)
+            let finalCanal = canalDB;
+            if (!finalCanal) {
                 const nowCanal = new Date().toISOString();
                 const { data: novoC, error: errC } = await supabase
                     .from('Canal')
                     .insert([{ id: crypto.randomUUID(), nome_canal: canalNome || 'SITE', comissao_percentual: 0, criado_em: nowCanal, atualizado_em: nowCanal }])
                     .select().single();
                 if (errC) { console.error('Canal Insert Error:', errC); throw errC; }
-                canalDB = novoC;
+                finalCanal = novoC;
             }
 
             // Calcular Preço
-            console.log('4. CALCULANDO PRECO');
-            const { data: quarto } = await supabase.from('Quarto').select('*').eq('id', quartoId).single();
-            const { data: tarifas } = await supabase.from('TarifaSazonal').select('*').eq('quarto_id', quartoId);
-
+            console.log('5. CALCULANDO PRECO');
             let valorTotal = 0;
             let d = new Date(`${checkIn}T00:00:00.000Z`);
             const dFim = new Date(`${checkOut}T00:00:00.000Z`);
             let limit = 0;
+            
             while (d < dFim && limit < 1000) {
                 limit++;
                 const currentYmd = d.toISOString().split('T')[0];
-                const tarifasAplicaveis = tarifas?.filter(tf => {
+                const tarifasAplicaveis = tarifasSazonais?.filter(tf => {
                     const tInStr = tf.data_inicio.split('T')[0];
                     const tOutStr = tf.data_fim.split('T')[0];
                     return currentYmd >= tInStr && currentYmd <= tOutStr;
@@ -150,11 +174,7 @@ class ReservasController {
                     tarifaSazonal = tarifasAplicaveis.reduce((prev, curr) => {
                         const duracaoPrev = new Date(prev.data_fim).getTime() - new Date(prev.data_inicio).getTime();
                         const duracaoCurr = new Date(curr.data_fim).getTime() - new Date(curr.data_inicio).getTime();
-                        
-                        if (duracaoCurr === duracaoPrev) {
-                            return Number(curr.preco_noite) > Number(prev.preco_noite) ? curr : prev;
-                        }
-                        
+                        if (duracaoCurr === duracaoPrev) return Number(curr.preco_noite) > Number(prev.preco_noite) ? curr : prev;
                         return duracaoCurr < duracaoPrev ? curr : prev;
                     });
                 }
@@ -163,34 +183,28 @@ class ReservasController {
                 d.setUTCDate(d.getUTCDate() + 1);
             }
 
-            // Calcular preço dos Extras
-            console.log('5. CALCULANDO EXTRAS');
-            if (extrasIds && extrasIds.length > 0) {
-                const { data: extrasPriceData } = await supabase.from('Extra').select('preco').in('id', extrasIds);
-                if (extrasPriceData) {
-                    valorTotal += extrasPriceData.reduce((sum, e) => sum + Number(e.preco || 0), 0);
-                }
+            // Somar Extras
+            if (extrasPriceData && extrasPriceData.length > 0) {
+                valorTotal += extrasPriceData.reduce((sum, e) => sum + Number(e.preco || 0), 0);
             }
 
-
-            let cupomDB = null;
-            if (cupomCodigo) {
-                const { data: cData } = await supabase.from('Cupom').select('*').eq('codigo', cupomCodigo.toUpperCase()).single();
-                if (cData && cData.ativo) {
-                    const validadeOk = !cData.data_validade || new Date(cData.data_validade) >= new Date();
-                    const usosOk = !cData.limite_usos || cData.usos_atuais < cData.limite_usos;
-                    if (validadeOk && usosOk) {
-                        cupomDB = cData;
-                        if (cupomDB.tipo_desconto === 'PERCENTUAL') {
-                            valorTotal = valorTotal - (valorTotal * (Number(cupomDB.valor_desconto) / 100));
-                        } else {
-                            valorTotal = valorTotal - Number(cupomDB.valor_desconto);
-                        }
-                        if (valorTotal < 0) valorTotal = 0;
+            // Aplicar Cupom
+            let cupomValido = null;
+            if (cupomDB && cupomDB.ativo) {
+                const validadeOk = !cupomDB.data_validade || new Date(cupomDB.data_validade) >= new Date();
+                const usosOk = !cupomDB.limite_usos || cupomDB.usos_atuais < cupomDB.limite_usos;
+                if (validadeOk && usosOk) {
+                    cupomValido = cupomDB;
+                    if (cupomValido.tipo_desconto === 'PERCENTUAL') {
+                        valorTotal = valorTotal - (valorTotal * (Number(cupomValido.valor_desconto) / 100));
+                    } else {
+                        valorTotal = valorTotal - Number(cupomValido.valor_desconto);
                     }
+                    if (valorTotal < 0) valorTotal = 0;
                 }
             }
-            // Salvar
+
+            // Salvar Reserva
             const nowReserva = new Date().toISOString();
             const { data: novaReserva, error } = await supabase
                 .from('Reserva')
@@ -198,7 +212,7 @@ class ReservasController {
                     id: crypto.randomUUID(),
                     quarto_id: quartoId,
                     hospede_id: hospedeDB.id,
-                    canal_id: canalDB.id,
+                    canal_id: finalCanal.id,
                     data_check_in: dataInicio,
                     data_check_out: dataFim,
                     status: (canalNome === 'SITE' || !canalNome) ? 'PENDENTE' : 'CONFIRMADA',
@@ -206,20 +220,18 @@ class ReservasController {
                     metodo_pagamento: metodoPagamento,
                     requerimentos_especiais: requerimentosEspeciais,
                     extras_ids: extrasIds && extrasIds.length > 0 ? extrasIds : null,
-                    cupom_id: cupomDB ? cupomDB.id : null,
+                    cupom_id: cupomValido ? cupomValido.id : null,
                     criado_em: nowReserva,
                     atualizado_em: nowReserva
                 }])
                 .select('*, Quarto(*), Hospede(*)')
                 .single();
 
-            if (error) {
-                console.error('Reserva Insert Error:', error);
-                throw error;
-            }
+            if (error) { console.error('Reserva Insert Error:', error); throw error; }
 
-            if (cupomDB) {
-                await supabase.from('Cupom').update({ usos_atuais: cupomDB.usos_atuais + 1 }).eq('id', cupomDB.id);
+            // Atualizar usos do cupom em background
+            if (cupomValido) {
+                supabase.from('Cupom').update({ usos_atuais: cupomValido.usos_atuais + 1 }).eq('id', cupomValido.id).then();
             }
 
             const normalizedReserva = {
@@ -228,11 +240,13 @@ class ReservasController {
                 hospede: novaReserva.Hospede
             };
 
-            console.log('7. EMAIL E RETORNO');
+            // Enviar e-mail em background (Não bloqueia a resposta ao usuário)
+            console.log('7. DISPARANDO EMAIL (ASYNC)');
             if (canalNome === 'SITE' || !canalNome) {
-                try { await EmailService.enviarEmailConfirmacaoReserva(hospedeDB, normalizedReserva); } catch (e) { console.error("Erro email:", e); }
+                EmailService.enviarEmailConfirmacaoReserva(hospedeDB, normalizedReserva).catch(e => console.error("Erro email async:", e));
             }
 
+            // Retorna imediatamente
             return res.status(201).json({ status: 'success', data: normalizedReserva });
         } catch (error) {
             console.error("Erro criarReserva:", error.message || error);
