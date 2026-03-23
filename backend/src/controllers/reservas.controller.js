@@ -75,7 +75,7 @@ class ReservasController {
             const dataFim = new Date(`${checkOut}T00:00:00.000Z`).toISOString();
 
             // Buscar/Criar Hóspede - Mantido sequencial pois é dependência crítica
-            let { data: hospedeDB } = await supabase.from('Hospede').select('*').eq('email', hospede.email).single();
+            let { data: hospedeDB } = await supabase.supabaseAdmin.from('Hospede').select('*').eq('email', hospede.email).single();
             const now = new Date().toISOString();
 
             const hospedeData = {
@@ -100,14 +100,14 @@ class ReservasController {
             };
 
             if (!hospedeDB) {
-                const { data: novoH, error: errH } = await supabase
+                const { data: novoH, error: errH } = await supabase.supabaseAdmin
                     .from('Hospede')
                     .insert([{ id: crypto.randomUUID(), email: hospede.email, criado_em: now, ...hospedeData }])
                     .select().single();
                 if (errH) { console.error('Hospede Insert Error:', errH); throw errH; }
                 hospedeDB = novoH;
             } else {
-                const { data: updateH, error: errHUpd } = await supabase
+                const { data: updateH, error: errHUpd } = await supabase.supabaseAdmin
                     .from('Hospede')
                     .update(hospedeData)
                     .eq('id', hospedeDB.id)
@@ -206,7 +206,7 @@ class ReservasController {
 
             // Salvar Reserva
             const nowReserva = new Date().toISOString();
-            const { data: novaReserva, error } = await supabase
+            const { data: novaReserva, error } = await supabase.supabaseAdmin
                 .from('Reserva')
                 .insert([{
                     id: crypto.randomUUID(),

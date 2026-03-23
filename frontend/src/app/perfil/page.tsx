@@ -242,7 +242,7 @@ export default function PerfilHospede() {
                         <button onClick={() => setActiveTab('roteiros')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'roteiros' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
                             <Navigation size={14} /> Roteiros Exclusivos
                         </button>
-                        <button onClick={() => setActiveTab('cancelamento')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'cancelamento' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
+                        <button onClick={() => router.push('/politica-cancelamento')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 text-white/50 border-transparent hover:text-carapita-gold`}>
                             <FileText size={14} /> Política Cancelamento
                         </button>
                         <button onClick={() => router.push('/perfil/pagamentos')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 text-white/50 border-transparent hover:text-carapita-gold`}>
@@ -480,29 +480,6 @@ export default function PerfilHospede() {
                         </div>
                     )}
 
-                    {/* TAB CANCELAMENTO */}
-                    {activeTab === 'cancelamento' && (
-                        <div className="animate-fade-in">
-                            <div className="mb-8 border-b border-white/10 pb-4">
-                                <h2 className="text-2xl font-serif text-white">Política de Cancelamento</h2>
-                                <p className="text-[10px] text-white/50 tracking-widest uppercase mt-1">Conheça as nossas condições para alterações ou cancelamentos</p>
-                            </div>
-                            <div className="bg-black/20 p-8 border border-white/10 text-white/70 max-w-3xl leading-relaxed text-sm flex flex-col gap-6">
-                                <p><strong>Política de Cancelamento e Modificação:</strong></p>
-                                <p>O Refúgio Carapita oferece flexibilidade para os seus hóspedes. Para que possamos gerir a sua estadia com a maior eficiência, solicitamos o cumprimento das seguintes condições:</p>
-                                <div className="space-y-4">
-                                    <p className="bg-white/5 p-6 border-l-4 border-carapita-gold italic">
-                                        "Cancelamento/modificação gratuito até 2 dias antes da chegada. Uma penalidade de toda a estadia incluindo impostos será cobrada por cancelamento/modificação tardio, não comparência ou partida antecipada."
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="mt-4 p-6 border border-carapita-gold/20 bg-carapita-dark text-center flex flex-col items-center">
-                                <FileText className="text-carapita-gold mb-3" size={24} />
-                                <p className="font-serif text-white text-lg mb-2">Ainda com Dúvidas?</p>
-                                <p className="text-xs uppercase tracking-widest text-white/50">Entre em contacto com o Anfitrião na aba "Reservas e Anfitrião".</p>
-                            </div>
-                        </div>
-                    )}
 
                 </div>
             </section>

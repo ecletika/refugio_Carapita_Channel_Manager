@@ -226,6 +226,8 @@ export default function BookingImmersive({
         }
 
         setIsSubmitting(true);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
         try {
             const body = {
                 quartoId: idQuartoParaReserva,
@@ -243,14 +245,20 @@ export default function BookingImmersive({
             const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
+                body: JSON.stringify(body),
+                signal: controller.signal
             });
             const data = await resp.json();
             if (data.status === 'success') setBookingStep('success');
             else alert(data.error || "Erro ao criar reserva");
-        } catch (e) {
-            alert("Erro de conexão ao criar reserva");
+        } catch (e: any) {
+            if (e?.name === 'AbortError') {
+                alert("O servidor demorou demasiado a responder. Por favor tente novamente.");
+            } else {
+                alert("Erro de conexão ao criar reserva");
+            }
         } finally {
+            clearTimeout(timeoutId);
             setIsSubmitting(false);
         }
     };
