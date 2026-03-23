@@ -205,7 +205,7 @@ export default function PerfilHospede() {
 
             {/* Banner Topo */}
             <div className="relative w-full h-64 md:h-80 bg-carapita-dark overflow-hidden flex items-center justify-center">
-                <img src="/casa-exterior.jpg" alt="Refúgio Carapita" className="absolute w-full h-full object-cover opacity-40 mix-blend-overlay" />
+                <img src="/essencia_carapita.jpg" alt="Refúgio Carapita" className="absolute w-full h-full object-cover opacity-40 mix-blend-overlay" />
                 <div className="relative text-center z-10 px-4 flex flex-col items-center">
                     <div className="relative mb-4 group cursor-pointer w-24 h-24 rounded-full border-2 border-carapita-gold overflow-hidden bg-white/10 flex items-center justify-center backdrop-blur-md">
                         {hospede?.foto_perfil ? (
