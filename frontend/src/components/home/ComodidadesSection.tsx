@@ -25,19 +25,9 @@ export default function ComodidadesSection({ t }: ComodidadesSectionProps) {
             desc: "Ar condicionado topo de gama para o seu conforto térmico absoluto."
         },
         {
-            icon: <Coffee size={28} />,
-            title: "Pequeno-Almoço",
-            desc: "Produtos locais frescos e seleção de cafés e chás premium."
-        },
-        {
             icon: <Car size={28} />,
             title: "Estacionamento",
-            desc: "Parqueamento privado e seguro dentro da propriedade."
-        },
-        {
-            icon: <Eye size={28} />,
-            title: "Vistas Únicas",
-            desc: "Panorâmicas deslumbrantes sobre o vale e o Castelo de Ourém."
+            desc: "Estacionamento Gratuito na rua"
         },
         {
             icon: <ShieldCheck size={28} />,

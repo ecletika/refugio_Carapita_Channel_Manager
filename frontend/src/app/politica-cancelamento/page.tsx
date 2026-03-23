@@ -28,7 +28,7 @@ export default function PoliticaCancelamento() {
                 </div>
 
                 <div className="flex-1 flex justify-end">
-                    <button onClick={() => router.push('/')} className="text-[10px] uppercase tracking-mega font-medium text-white hover:text-carapita-gold transition-colors">Voltar ←</button>
+                    <button onClick={() => router.back()} className="text-[10px] uppercase tracking-mega font-medium text-white hover:text-carapita-gold transition-colors">Voltar ←</button>
                 </div>
             </header>
 

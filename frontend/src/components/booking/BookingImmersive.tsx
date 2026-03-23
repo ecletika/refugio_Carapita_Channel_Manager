@@ -227,7 +227,7 @@ export default function BookingImmersive({
 
         setIsSubmitting(true);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
         try {
             const body = {
                 quartoId: idQuartoParaReserva,

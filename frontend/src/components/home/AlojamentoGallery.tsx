@@ -23,6 +23,13 @@ export default function AlojamentoGallery({
     const [activeGalleryRoom, setActiveGalleryRoom] = useState<string>(galleryRooms[0]?.id || '');
     const [activeTab, setActiveTab] = useState('Todos');
 
+    // Sincronizar activeGalleryRoom quando os dados chegam via API
+    React.useEffect(() => {
+        if (!activeGalleryRoom && galleryRooms.length > 0) {
+            setActiveGalleryRoom(galleryRooms[0].id);
+        }
+    }, [galleryRooms, activeGalleryRoom]);
+
     const selectedRoom = galleryRooms.find(r => r.id === activeGalleryRoom);
     const roomPhotos = selectedRoom ? parseFotos(selectedRoom.fotos) : [];
     

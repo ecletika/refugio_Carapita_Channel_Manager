@@ -24,9 +24,9 @@ app.use(cors({
 }));
 app.use(express.json()); // Permite receber JSON
 
-// Timeout global de 30 segundos por pedido
+// Timeout global de 55 segundos por pedido
 app.use((req, res, next) => {
-    res.setTimeout(30000, () => {
+    res.setTimeout(55000, () => {
         console.error(`⏱ Timeout: ${req.method} ${req.originalUrl}`);
         if (!res.headersSent) {
             res.status(503).json({ error: 'O servidor demorou demasiado a responder. Tente novamente.' });

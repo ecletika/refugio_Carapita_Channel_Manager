@@ -204,7 +204,7 @@ export default function PerfilHospede() {
             </header>
 
             {/* Banner Topo */}
-            <div className="relative w-full h-64 md:h-80 bg-carapita-dark overflow-hidden flex items-center justify-center">
+            <div className="relative w-full h-48 md:h-56 bg-carapita-dark overflow-hidden flex items-center justify-center">
                 <img src="/essencia_carapita.jpg" alt="Refúgio Carapita" className="absolute w-full h-full object-cover opacity-40 mix-blend-overlay" />
                 <div className="relative text-center z-10 px-4 flex flex-col items-center">
                     <div className="relative mb-4 group cursor-pointer w-24 h-24 rounded-full border-2 border-carapita-gold overflow-hidden bg-white/10 flex items-center justify-center backdrop-blur-md">
@@ -218,7 +218,7 @@ export default function PerfilHospede() {
                             <input type="file" className="hidden" accept="image/*" onChange={handleUploadPhoto} />
                         </label>
                     </div>
-                    <h2 className="text-3xl md:text-5xl font-serif text-white mb-2 shadow-sm text-balance">
+                    <h2 className="text-2xl md:text-4xl font-serif text-white mb-2 shadow-sm text-balance">
                         Bem-vindo(a) <span className="text-carapita-gold">{hospede?.nome}</span> ao Refúgio Carapita
                     </h2>
                     <p className="text-white/80 tracking-mega uppercase text-[10px] md:text-xs">Gerencie a sua estadia, perfil e descubra roteiros exclusivos</p>
@@ -230,29 +230,29 @@ export default function PerfilHospede() {
                 {/* Abas Topo */}
                 <div className="w-full bg-carapita-dark/40 backdrop-blur-md shadow-xl flex border-b border-white/5 overflow-x-auto no-scrollbar scroll-smooth">
                     <nav className="flex items-center gap-8 min-w-max px-8">
-                        <button onClick={() => setActiveTab('perfil')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'perfil' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
+                        <button onClick={() => setActiveTab('perfil')} className={`flex items-center gap-2 py-4 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'perfil' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
                             <User size={14} /> Meu Perfil
                         </button>
-                        <button onClick={() => setActiveTab('reservas')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'reservas' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
+                        <button onClick={() => setActiveTab('reservas')} className={`flex items-center gap-2 py-4 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'reservas' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
                             <Calendar size={14} /> Reservas & Anfitrião
                         </button>
-                        <button onClick={() => setActiveTab('dependentes')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'dependentes' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
+                        <button onClick={() => setActiveTab('dependentes')} className={`flex items-center gap-2 py-4 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'dependentes' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
                             <Plus size={14} /> Acompanhantes
                         </button>
-                        <button onClick={() => setActiveTab('roteiros')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'roteiros' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
+                        <button onClick={() => setActiveTab('roteiros')} className={`flex items-center gap-2 py-4 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'roteiros' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
                             <Navigation size={14} /> Roteiros Exclusivos
                         </button>
-                        <button onClick={() => router.push('/politica-cancelamento')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 text-white/50 border-transparent hover:text-carapita-gold`}>
+                        <button onClick={() => router.push('/politica-cancelamento')} className={`flex items-center gap-2 py-4 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 text-white/50 border-transparent hover:text-carapita-gold`}>
                             <FileText size={14} /> Política Cancelamento
                         </button>
-                        <button onClick={() => router.push('/perfil/pagamentos')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 text-white/50 border-transparent hover:text-carapita-gold`}>
+                        <button onClick={() => router.push('/perfil/pagamentos')} className={`flex items-center gap-2 py-4 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 text-white/50 border-transparent hover:text-carapita-gold`}>
                             <CreditCard size={14} /> Pagamentos
                         </button>
                     </nav>
                 </div>
 
                 {/* Área de Conteúdo */}
-                <div className="flex-1 p-6 md:p-10 text-white">
+                <div className="flex-1 p-4 md:p-8 text-white">
 
                     {/* TAB PERFIL */}
                     {activeTab === 'perfil' && (
