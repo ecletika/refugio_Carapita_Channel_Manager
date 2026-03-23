@@ -228,8 +228,8 @@ export default function PerfilHospede() {
             <section className="flex-1 w-full max-w-7xl mx-auto -mt-10 relative z-20 px-4 md:px-6 mb-20 flex flex-col gap-8">
 
                 {/* Abas Topo */}
-                <div className="w-full bg-carapita-dark/40 backdrop-blur-md shadow-xl flex px-4 border-b border-white/5 overflow-x-auto no-scrollbar">
-                    <nav className="flex items-center gap-8 min-w-max mx-auto md:mx-0">
+                <div className="w-full bg-carapita-dark/40 backdrop-blur-md shadow-xl flex border-b border-white/5 overflow-x-auto no-scrollbar scroll-smooth">
+                    <nav className="flex items-center gap-8 min-w-max px-8">
                         <button onClick={() => setActiveTab('perfil')} className={`flex items-center gap-2 py-6 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'perfil' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
                             <User size={14} /> Meu Perfil
                         </button>
