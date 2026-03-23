@@ -1,5 +1,6 @@
 const axios = require('axios');
 const ical = require('node-ical');
+const crypto = require('crypto');
 const supabase = require('../config/supabase');
 
 class IcalService {
@@ -71,7 +72,7 @@ class IcalService {
                         if (!hospedeDB) {
                             const { data: novoHospede, error: errInsH } = await supabase.supabaseAdmin
                                 .from('Hospede')
-                                .insert([{ nome: summary, email: emailPlaceholder }])
+                                .insert([{ id: crypto.randomUUID(), nome: summary, email: emailPlaceholder }])
                                 .select()
                                 .single();
                             if (errInsH) { console.error(`❌ iCal: Erro ao criar hóspede placeholder:`, errInsH.message); continue; }
@@ -82,6 +83,7 @@ class IcalService {
 
                         // Criar Reserva
                         const { error: errRes } = await supabase.supabaseAdmin.from('Reserva').insert([{
+                            id: crypto.randomUUID(),
                             quarto_id: quartoId,
                             hospede_id: hospedeDB.id,
                             canal_id: canalDB.id,

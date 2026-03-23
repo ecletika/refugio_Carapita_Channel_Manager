@@ -1,5 +1,6 @@
 const ical = require('node-ical');
 const axios = require('axios');
+const crypto = require('crypto');
 const supabase = require('../config/supabase');
 
 class SyncICalService {
@@ -76,7 +77,7 @@ class SyncICalService {
                     if (!hospedeDB) {
                         const { data: novoHospede, error: errInsH } = await supabase.supabaseAdmin
                             .from('Hospede')
-                            .insert([{ nome: nomeHospede, email: emailPlaceholder }])
+                            .insert([{ id: crypto.randomUUID(), nome: nomeHospede, email: emailPlaceholder }])
                             .select()
                             .single();
                         if (errInsH) { console.error(`❌ sync iCal: Erro ao criar hóspede:`, errInsH.message); continue; }
@@ -87,6 +88,7 @@ class SyncICalService {
 
                     // Criar Reserva
                     const { error: errRes } = await supabase.supabaseAdmin.from('Reserva').insert([{
+                        id: crypto.randomUUID(),
                         quarto_id: quartoId,
                         hospede_id: hospedeDB.id,
                         canal_id: canalDB.id,
