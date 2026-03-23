@@ -89,6 +89,17 @@ app.listen(PORT, () => {
         }
     }, 30 * 60 * 1000);
 
+    // Executar sync iCal imediatamente no arranque (após 10s)
+    setTimeout(async () => {
+        try {
+            console.log('🔄 Sync iCal inicial...');
+            const resultados = await IcalService.syncAllQuartos();
+            console.log('✅ Sync iCal inicial concluído:', JSON.stringify(resultados));
+        } catch (error) {
+            console.error('❌ Erro sync iCal inicial:', error.message);
+        }
+    }, 10000);
+
     // ── Automação: Scheduler de Pagamentos e Emails (A cada 15 minutos) ────
     const SchedulerService = require('./services/scheduler.service');
     console.log('⏰ Scheduler de pagamentos iniciado (intervalo: 15 min)');

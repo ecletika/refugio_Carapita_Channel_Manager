@@ -67,7 +67,7 @@ export default function LocalizacaoSection({ t, siteConfigs }: LocalizacaoSectio
 
                     <div className="pt-8">
                         <a 
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(endereco)}`} 
+                            href={siteConfigs.linkGoogleMaps || "https://maps.app.goo.gl/vfbginGV6Fjjp7YH9"} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-4 px-10 py-5 bg-carapita-dark text-white border border-carapita-gold/20 text-[10px] uppercase tracking-mega font-bold rounded-2xl hover:bg-carapita-gold transition-all duration-500 shadow-xl"

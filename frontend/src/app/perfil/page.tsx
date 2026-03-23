@@ -221,7 +221,7 @@ export default function PerfilHospede() {
                     <h2 className="text-2xl md:text-4xl font-serif text-white mb-2 shadow-sm text-balance">
                         Bem-vindo(a) <span className="text-carapita-gold">{hospede?.nome}</span> ao Refúgio Carapita
                     </h2>
-                    <p className="text-white/80 tracking-mega uppercase text-[10px] md:text-xs">Gerencie a sua estadia, perfil e descubra roteiros exclusivos</p>
+                    <p className="text-white/80 tracking-mega uppercase text-[10px] md:text-xs">Gerencie a sua estadia, perfil e descubra roteiros</p>
                 </div>
             </div>
 
@@ -234,13 +234,13 @@ export default function PerfilHospede() {
                             <User size={14} /> Meu Perfil
                         </button>
                         <button onClick={() => setActiveTab('reservas')} className={`flex items-center gap-2 py-4 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'reservas' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
-                            <Calendar size={14} /> Reservas & Anfitrião
+                            <Calendar size={14} /> Reservas
                         </button>
                         <button onClick={() => setActiveTab('dependentes')} className={`flex items-center gap-2 py-4 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'dependentes' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
                             <Plus size={14} /> Acompanhantes
                         </button>
                         <button onClick={() => setActiveTab('roteiros')} className={`flex items-center gap-2 py-4 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 ${activeTab === 'roteiros' ? 'text-carapita-gold border-carapita-gold' : 'text-white/50 border-transparent hover:text-white'}`}>
-                            <Navigation size={14} /> Roteiros Exclusivos
+                            <Navigation size={14} /> Roteiros
                         </button>
                         <button onClick={() => router.push('/politica-cancelamento')} className={`flex items-center gap-2 py-4 whitespace-nowrap text-[10px] uppercase font-bold tracking-widest transition-colors border-b-2 text-white/50 border-transparent hover:text-carapita-gold`}>
                             <FileText size={14} /> Política Cancelamento

@@ -62,23 +62,26 @@ class IcalService {
                         const emailPlaceholder = `guest-${uid.slice(0, 8)}@${canalFinal.toLowerCase()}.com`;
 
                         // Buscar/Criar Hóspede
-                        let { data: hospedeDB } = await supabase.supabaseAdmin
+                        let { data: hospedeDB, error: errH } = await supabase.supabaseAdmin
                             .from('Hospede')
                             .select('*')
                             .eq('email', emailPlaceholder)
                             .single();
 
                         if (!hospedeDB) {
-                            const { data: novoHospede } = await supabase.supabaseAdmin
+                            const { data: novoHospede, error: errInsH } = await supabase.supabaseAdmin
                                 .from('Hospede')
                                 .insert([{ nome: summary, email: emailPlaceholder }])
                                 .select()
                                 .single();
+                            if (errInsH) { console.error(`❌ iCal: Erro ao criar hóspede placeholder:`, errInsH.message); continue; }
                             hospedeDB = novoHospede;
                         }
 
+                        if (!hospedeDB) { console.error(`❌ iCal: hospedeDB nulo para UID ${uid}`); continue; }
+
                         // Criar Reserva
-                        await supabase.supabaseAdmin.from('Reserva').insert([{
+                        const { error: errRes } = await supabase.supabaseAdmin.from('Reserva').insert([{
                             quarto_id: quartoId,
                             hospede_id: hospedeDB.id,
                             canal_id: canalDB.id,
@@ -90,6 +93,7 @@ class IcalService {
                             requerimentos_especiais: `Importado via iCal (${canalFinal}). UID: ${uid}`
                         }]);
 
+                        if (errRes) { console.error(`❌ iCal: Erro ao inserir reserva (UID: ${uid}):`, errRes.message); continue; }
                         countNovos++;
                     }
                 }
@@ -122,8 +126,12 @@ class IcalService {
                 { url: q.ical_booking, label: 'BOOKING' }
             ].filter(u => u.url);
 
+            console.log(`📋 ${q.nome}: ${urls.length} link(s) iCal encontrado(s) — ${urls.map(u => u.label).join(', ')}`);
+
             for (const { url, label } of urls) {
+                console.log(`🔄 Sincronizando ${label} para ${q.nome}...`);
                 const res = await this.syncCalendar(q.id, url, label);
+                console.log(`   → ${label}: ${res.success ? `✅ ${res.count} nova(s)` : `❌ ${res.error}`}`);
                 resultados.push({ quarto: q.nome, canal: label, ...res });
             }
         }

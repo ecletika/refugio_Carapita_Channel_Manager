@@ -72,7 +72,7 @@ class QuartosController {
             const { id } = req.params;
             const { nome, tipo, descricao, capacidade, precoBase, fotos, icalUrl, icalAirbnb, icalBooking, ativo, comodidades, videoUrl, minimaEstadiaPadrao } = req.body;
 
-            const { data: quartoAtualizado, error } = await supabase
+            const { data: quartoAtualizado, error } = await supabase.supabaseAdmin
                 .from('Quarto')
                 .update({
                     nome,

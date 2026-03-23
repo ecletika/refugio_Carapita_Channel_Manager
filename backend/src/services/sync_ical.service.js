@@ -4,7 +4,7 @@ const supabase = require('../config/supabase');
 
 class SyncICalService {
     static async syncQuarto(quartoId) {
-        const { data: quarto, error: errQuarto } = await supabase
+        const { data: quarto, error: errQuarto } = await supabase.supabaseAdmin
             .from('Quarto')
             .select('*')
             .eq('id', quartoId)
@@ -26,14 +26,14 @@ class SyncICalService {
             if (quarto.ical_url.toLowerCase().includes('expedia')) canalNome = 'EXPEDIA';
 
             // Buscar/Criar Canal
-            let { data: canalDB } = await supabase
+            let { data: canalDB } = await supabase.supabaseAdmin
                 .from('Canal')
                 .select('*')
                 .eq('nome_canal', canalNome)
                 .single();
 
             if (!canalDB) {
-                const { data: novoCanal } = await supabase
+                const { data: novoCanal } = await supabase.supabaseAdmin
                     .from('Canal')
                     .insert([{ nome_canal: canalNome, comissao_percentual: 0 }])
                     .select()
@@ -55,7 +55,7 @@ class SyncICalService {
                 }
 
                 // Verificar se a reserva já existe
-                const { data: reservaExistente } = await supabase
+                const { data: reservaExistente } = await supabase.supabaseAdmin
                     .from('Reserva')
                     .select('id')
                     .eq('quarto_id', quartoId)
@@ -67,23 +67,26 @@ class SyncICalService {
                     const emailPlaceholder = `guest-${uid.slice(0, 8)}@${canalNome.toLowerCase()}.com`;
 
                     // Buscar/Criar Hóspede
-                    let { data: hospedeDB } = await supabase
+                    let { data: hospedeDB } = await supabase.supabaseAdmin
                         .from('Hospede')
                         .select('*')
                         .eq('email', emailPlaceholder)
                         .single();
 
                     if (!hospedeDB) {
-                        const { data: novoHospede } = await supabase
+                        const { data: novoHospede, error: errInsH } = await supabase.supabaseAdmin
                             .from('Hospede')
                             .insert([{ nome: nomeHospede, email: emailPlaceholder }])
                             .select()
                             .single();
+                        if (errInsH) { console.error(`❌ sync iCal: Erro ao criar hóspede:`, errInsH.message); continue; }
                         hospedeDB = novoHospede;
                     }
 
+                    if (!hospedeDB) { console.error(`❌ sync iCal: hospedeDB nulo para UID ${uid}`); continue; }
+
                     // Criar Reserva
-                    await supabase.from('Reserva').insert([{
+                    const { error: errRes } = await supabase.supabaseAdmin.from('Reserva').insert([{
                         quarto_id: quartoId,
                         hospede_id: hospedeDB.id,
                         canal_id: canalDB.id,
@@ -94,6 +97,7 @@ class SyncICalService {
                         codigo_reserva_externo: uid
                     }]);
 
+                    if (errRes) { console.error(`❌ sync iCal: Erro ao inserir reserva (UID: ${uid}):`, errRes.message); continue; }
                     count++;
                 }
             }
