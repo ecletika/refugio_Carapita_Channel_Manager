@@ -14,6 +14,7 @@ interface Step1SelectionProps {
     cupomAplicado: any;
     setIsPromoDrawerOpen: (v: boolean) => void;
     setBookingStep: (step: string) => void;
+    idQuartoParaReserva: string | null;
 }
 
 export default function Step1Selection({
@@ -27,7 +28,8 @@ export default function Step1Selection({
     setIsGuestsDrawerOpen,
     cupomAplicado,
     setIsPromoDrawerOpen,
-    setBookingStep
+    setBookingStep,
+    idQuartoParaReserva
 }: Step1SelectionProps) {
     return (
         <div className="flex flex-col lg:flex-row gap-8 w-full max-w-[1400px] mx-auto animate-fade-in items-start h-full pb-20">
@@ -35,7 +37,7 @@ export default function Step1Selection({
             <div className="w-full lg:w-[60%] bg-[#1E3529] border border-[#C9A84C]/20 p-6 md:p-8 rounded-[24px] shadow-2xl">
                 <div className="w-full">
                     <SeletorCalendario
-                        quartoId={quartosEncontrados?.[0]?.id || ''}
+                        quartoId={idQuartoParaReserva || quartosEncontrados?.[0]?.id || ''}
                         initialSelection={checkIn ? { start: checkIn, end: checkOut || null } : undefined}
                         onSelect={(start, end) => {
                             setDates(start, end);

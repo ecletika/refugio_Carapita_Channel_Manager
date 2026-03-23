@@ -21,14 +21,14 @@ class IcalService {
             else if (icalUrl.includes('booking')) canalFinal = 'BOOKING';
 
             // Buscar/Criar Canal
-            let { data: canalDB, error: errCanal } = await supabase
+            let { data: canalDB, error: errCanal } = await supabase.supabaseAdmin
                 .from('Canal')
                 .select('*')
                 .eq('nome_canal', canalFinal)
                 .single();
 
             if (!canalDB) {
-                const { data: novoCanal } = await supabase
+                const { data: novoCanal } = await supabase.supabaseAdmin
                     .from('Canal')
                     .insert([{ nome_canal: canalFinal, comissao_percentual: 0 }])
                     .select()
@@ -50,7 +50,7 @@ class IcalService {
                     if (checkOut < hoje) continue;
 
                     // Verificar se já existe
-                    const { data: reservaExistente } = await supabase
+                    const { data: reservaExistente } = await supabase.supabaseAdmin
                         .from('Reserva')
                         .select('id')
                         .eq('quarto_id', quartoId)
@@ -62,14 +62,14 @@ class IcalService {
                         const emailPlaceholder = `guest-${uid.slice(0, 8)}@${canalFinal.toLowerCase()}.com`;
 
                         // Buscar/Criar Hóspede
-                        let { data: hospedeDB } = await supabase
+                        let { data: hospedeDB } = await supabase.supabaseAdmin
                             .from('Hospede')
                             .select('*')
                             .eq('email', emailPlaceholder)
                             .single();
 
                         if (!hospedeDB) {
-                            const { data: novoHospede } = await supabase
+                            const { data: novoHospede } = await supabase.supabaseAdmin
                                 .from('Hospede')
                                 .insert([{ nome: summary, email: emailPlaceholder }])
                                 .select()
@@ -78,7 +78,7 @@ class IcalService {
                         }
 
                         // Criar Reserva
-                        await supabase.from('Reserva').insert([{
+                        await supabase.supabaseAdmin.from('Reserva').insert([{
                             quarto_id: quartoId,
                             hospede_id: hospedeDB.id,
                             canal_id: canalDB.id,
@@ -105,7 +105,7 @@ class IcalService {
     }
 
     static async syncAllQuartos() {
-        const { data: quartos, error } = await supabase
+        const { data: quartos, error } = await supabase.supabaseAdmin
             .from('Quarto')
             .select('*')
             .eq('ativo', true);

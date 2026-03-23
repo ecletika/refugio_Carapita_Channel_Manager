@@ -328,7 +328,7 @@ export default function PerfilHospede() {
                         <div className="flex flex-col gap-10 animate-fade-in">
                             <div className="flex flex-col items-center justify-center mb-8">
                                 <h2 className="text-2xl font-serif text-white mb-6 border-b border-white/10 pb-4 text-center w-full max-w-4xl">Detalhes da Hospedagem</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                                     <div className="bg-carapita-dark p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm border border-white/5">
                                         <MapPin className="text-carapita-gold" size={20} />
                                         <span className="text-[10px] uppercase text-gray-400 tracking-widest font-bold">Local</span>

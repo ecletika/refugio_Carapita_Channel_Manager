@@ -10,7 +10,7 @@ class ExportService {
     static async generateIcal(quartoId) {
         try {
             // Buscar Quarto
-            const { data: quarto, error: errQuarto } = await supabase
+            const { data: quarto, error: errQuarto } = await supabase.supabaseAdmin
                 .from('Quarto')
                 .select('*')
                 .eq('id', quartoId)
@@ -19,14 +19,14 @@ class ExportService {
             if (errQuarto || !quarto) throw new Error('Quarto não encontrado');
 
             // Buscar Reservas
-            const { data: reservas } = await supabase
+            const { data: reservas } = await supabase.supabaseAdmin
                 .from('Reserva')
                 .select('*')
                 .eq('quarto_id', quartoId)
                 .neq('status', 'CANCELADA');
 
             // Buscar Bloqueios
-            const { data: bloqueios } = await supabase
+            const { data: bloqueios } = await supabase.supabaseAdmin
                 .from('Bloqueio')
                 .select('*')
                 .eq('quarto_id', quartoId);

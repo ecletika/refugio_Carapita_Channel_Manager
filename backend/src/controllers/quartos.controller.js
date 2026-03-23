@@ -122,7 +122,7 @@ class QuartosController {
             const icsContent = await ExportService.generateIcal(id);
 
             res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-            res.setHeader('Content-Disposition', `attachment; filename="quarto-${id}.ics"`);
+            res.setHeader('Content-Disposition', `inline; filename="quarto-${id}.ics"`);
             return res.send(icsContent);
         } catch (error) {
             console.error('Erro iCal:', error.message);

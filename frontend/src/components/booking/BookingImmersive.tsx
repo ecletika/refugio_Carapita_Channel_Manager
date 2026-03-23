@@ -25,6 +25,7 @@ interface BookingImmersiveProps {
     setLightboxFotos: (fotos: string[]) => void;
     setLightboxIdx: (idx: number) => void;
     parseFotos: (fotos: string | undefined) => any[];
+    initialRoomId?: string | null;
 }
 
 export default function BookingImmersive({
@@ -41,7 +42,8 @@ export default function BookingImmersive({
     setShowGuestLoginModal,
     setLightboxFotos,
     setLightboxIdx,
-    parseFotos
+    parseFotos,
+    initialRoomId
 }: BookingImmersiveProps) {
     const { 
         checkIn, checkOut, setDates,
@@ -149,15 +151,18 @@ export default function BookingImmersive({
     };
 
     const iniciarReserva = (quartoId: string) => {
-        if (!checkIn || !checkOut) {
-            alert("Por favor, escolha as datas da sua estadia no calendário antes de prosseguir com a reserva.");
-            return;
-        }
         setIdQuartoParaReserva(quartoId);
         fetchCalendario(quartoId);
-        if (extrasTelaAtiva && disponiveisExtras.length > 0) setBookingStep('extras');
-        else setBookingStep('details');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Se já tem datas, pode avançar para o próximo passo (se houver extras ou pular para detalhes)
+        if (checkIn && checkOut) {
+            if (extrasTelaAtiva && disponiveisExtras.length > 0) setBookingStep('extras');
+            else setBookingStep('details');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            // Se não tem datas, fica no passo de seleção (calendário) mas com o quarto já focado
+            setBookingStep('selection');
+        }
     };
 
     // Auto-preenchimento ao estar logado
@@ -209,6 +214,13 @@ export default function BookingImmersive({
 
         fetchHospedeData();
     }, [isGuestLoggedIn, bookingStep]);
+    
+    // Sincronizar quarto inicial se vier da galeria
+    useEffect(() => {
+        if (initialRoomId && !idQuartoParaReserva) {
+            iniciarReserva(initialRoomId);
+        }
+    }, [initialRoomId]);
 
 
     const handleConfirmarReserva = async () => {
@@ -271,7 +283,7 @@ export default function BookingImmersive({
     ];
 
     return (
-        <div className="fixed inset-0 z-[100] bg-carapita-green overflow-y-auto scrollbar-hide py-10">
+        <div className="fixed inset-0 z-[100] bg-carapita-green overflow-y-auto scrollbar-hide py-4 md:py-10">
             <div className="max-w-[1400px] mx-auto px-4 md:px-8 mb-10">
                 <div className="flex items-center justify-between border-b border-white/10 pb-6">
                     <div className="flex items-center gap-6 overflow-x-auto no-scrollbar py-2">
@@ -308,6 +320,7 @@ export default function BookingImmersive({
                                 cupomAplicado={cupomAplicado}
                                 setIsPromoDrawerOpen={setIsPromoDrawerOpen}
                                 setBookingStep={setBookingStep}
+                                idQuartoParaReserva={idQuartoParaReserva}
                             />
                         )}
                         {bookingStep === 'rates' && (

@@ -48,6 +48,7 @@ export default function Home() {
     const [calendarioPrecos, setCalendarioPrecos] = useState<any[]>([]);
     const [siteConfigs, setSiteConfigs] = useState<any>({});
     const [extrasTelaAtiva, setExtrasTelaAtiva] = useState(false);
+    const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
     const router = useRouter();
 
@@ -174,7 +175,10 @@ export default function Home() {
 
             <AlojamentoGallery 
                 t={t} galleryRooms={galleryRooms} parseFotos={parseFotos}
-                onInicarReserva={(id) => { setShowBookingScreen(true); }}
+                onInicarReserva={(id) => { 
+                    setSelectedRoomId(id);
+                    setShowBookingScreen(true); 
+                }}
             />
 
             <PasseiosSection t={t} passeios={passeios} />
@@ -188,7 +192,11 @@ export default function Home() {
             {/* Immersive Booking Flow */}
             {showBookingScreen && (
                 <BookingImmersive 
-                    t={t} lang={lang} setShowBookingScreen={setShowBookingScreen}
+                    t={t} lang={lang} 
+                    setShowBookingScreen={(v) => {
+                        setShowBookingScreen(v);
+                        if (!v) setSelectedRoomId(null);
+                    }}
                     quartosEncontrados={quartosEncontrados || galleryRooms}
                     fetchCalendario={fetchCalendario} calendarioPrecos={calendarioPrecos}
                     extrasTelaAtiva={extrasTelaAtiva} disponiveisExtras={disponiveisExtras}
@@ -196,6 +204,7 @@ export default function Home() {
                     setShowGuestLoginModal={setShowGuestLoginModal}
                     setLightboxFotos={setLightboxFotos} setLightboxIdx={setLightboxIdx}
                     parseFotos={parseFotos}
+                    initialRoomId={selectedRoomId}
                 />
             )}
 
