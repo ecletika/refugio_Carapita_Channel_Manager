@@ -10,10 +10,21 @@ interface PrecoDia {
     eCheckOut?: boolean;
 }
 
-export default function SeletorCalendario({ onSelect, quartoId, initialSelection, monthsToShow = 2 }: { onSelect: (start: string, end: string) => void, quartoId: string, initialSelection?: { start: string | null, end: string | null }, monthsToShow?: number }) {
+export default function SeletorCalendario({ onSelect, quartoId, initialSelection, monthsToShow: propMonthsToShow }: { onSelect: (start: string, end: string) => void, quartoId: string, initialSelection?: { start: string | null, end: string | null }, monthsToShow?: number }) {
     const [currentDate, setCurrentDate] = useState(initialSelection?.start ? new Date(initialSelection.start) : new Date());
     const [selection, setSelection] = useState<{ start: string | null, end: string | null }>({ start: initialSelection?.start || null, end: initialSelection?.end || null });
     const [precos, setPrecos] = useState<Record<string, { preco: number, disponivel: boolean, minimaEstadia: number, eCheckOut?: boolean }>>({});
+    const [monthsToShow, setMonthsToShow] = useState(propMonthsToShow || 2);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 1024) setMonthsToShow(1);
+            else setMonthsToShow(propMonthsToShow || 2);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [propMonthsToShow]);
 
     // Sincronizar estado interno com as datas que venham da tela pai
     useEffect(() => {
@@ -172,10 +183,10 @@ export default function SeletorCalendario({ onSelect, quartoId, initialSelection
         }
 
         return (
-            <div className="flex-1 min-w-[300px] md:min-w-[392px] px-4">
-                <div className="calendario-header flex justify-center items-center w-full mb-6 relative">
-                    <span className="font-serif text-[#C9A84C] text-[20px] md:text-[24px] uppercase tracking-[0.1em]">
-                        {monthName} <span className="font-light text-[#8A9E96] text-[16px] md:text-[18px] ml-1">{year}</span>
+            <div className="flex-1 min-w-[280px] lg:min-w-[360px] px-2 md:px-4">
+                <div className="calendario-header flex justify-center items-center w-full mb-4 md:mb-6 relative">
+                    <span className="font-serif text-[#C9A84C] text-[18px] md:text-[22px] uppercase tracking-[0.1em]">
+                        {monthName} <span className="font-light text-[#8A9E96] text-[14px] md:text-[16px] ml-1">{year}</span>
                     </span>
                 </div>
 

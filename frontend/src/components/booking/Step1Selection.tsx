@@ -32,7 +32,7 @@ export default function Step1Selection({
     idQuartoParaReserva
 }: Step1SelectionProps) {
     return (
-        <div className="flex flex-col lg:flex-row gap-8 w-full max-w-[1400px] mx-auto animate-fade-in items-start h-full pb-20">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full max-w-[1400px] mx-auto animate-fade-in items-start h-full pb-10">
             {/* Esquerda: Calendário Maior (~60%) */}
             <div className="w-full lg:w-[60%] bg-[#1E3529] border border-[#C9A84C]/20 p-6 md:p-8 rounded-[24px] shadow-2xl">
                 <div className="w-full">
@@ -50,9 +50,9 @@ export default function Step1Selection({
             </div>
 
             {/* Direita: Painel Interativo (~40%) */}
-            <div className="w-full lg:w-[40%] flex flex-col gap-6">
+            <div className="w-full lg:w-[40%] flex flex-col gap-4 lg:gap-6">
                 {/* Cards Data */}
-                <div className="flex gap-4 w-full">
+                <div className="flex flex-col sm:flex-row gap-4 w-full">
                     <div className="flex-1 bg-[#1A2E26] border border-[#C9A84C]/40 rounded-[20px] p-6 text-center shadow-lg transition-transform duration-500 hover:scale-[1.02]">
                         <span className="block font-sans text-[10px] text-[#C9A84C] uppercase tracking-[0.2em] mb-4">Check-in</span>
                         {checkIn ? (

@@ -283,9 +283,9 @@ export default function BookingImmersive({
     ];
 
     return (
-        <div className="fixed inset-0 z-[100] bg-carapita-green overflow-y-auto scrollbar-hide py-4 md:py-10">
-            <div className="max-w-[1400px] mx-auto px-4 md:px-8 mb-10">
-                <div className="flex items-center justify-between border-b border-white/10 pb-6">
+        <div className="fixed inset-0 z-[100] bg-carapita-green overflow-y-auto scrollbar-hide py-2 md:py-10">
+            <div className="max-w-[1400px] mx-auto px-4 md:px-8 mb-4 md:mb-10">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3 md:pb-6">
                     <div className="flex items-center gap-6 overflow-x-auto no-scrollbar py-2">
                         {steps.map((s, idx) => (
                             <div key={s.step} className="flex items-center shrink-0">
@@ -308,8 +308,8 @@ export default function BookingImmersive({
                 </div>
             </div>
 
-            <div className="max-w-[1400px] mx-auto py-6 px-4 md:px-8">
-                <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <div className="max-w-[1400px] mx-auto py-2 md:py-6 px-4 md:px-8">
+                <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-start">
                     <div className="flex-1 w-full min-w-0">
                         {bookingStep === 'selection' && (
                             <Step1Selection 
