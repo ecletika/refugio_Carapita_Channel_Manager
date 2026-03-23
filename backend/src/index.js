@@ -75,6 +75,53 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'API do Refúgio Carapita Channel Manager online.' });
 });
 
+// Rota de diagnóstico iCal (temporária)
+app.get('/api/ical-diag', async (req, res) => {
+    try {
+        const axios = require('axios');
+        const ical = require('node-ical');
+        const BOOKING_URL = 'https://ical.booking.com/v1/export/t/32acda04-671c-456f-8d2d-8cb20d9b504f.ics';
+
+        // 1. Testar fetch
+        let icalData;
+        try {
+            const response = await axios.get(BOOKING_URL, { timeout: 15000 });
+            icalData = response.data;
+        } catch (e) {
+            return res.json({ step: 'fetch', error: e.message });
+        }
+
+        // 2. Testar parse
+        let eventos;
+        try {
+            eventos = ical.sync.parseICS(icalData);
+        } catch (e) {
+            return res.json({ step: 'parse', error: e.message });
+        }
+
+        const vevents = Object.values(eventos).filter(e => e.type === 'VEVENT');
+
+        // 3. Testar sync completo
+        const IcalService = require('./services/ical.service');
+        const resultados = await IcalService.syncAllQuartos();
+
+        return res.json({
+            fetch: 'ok',
+            parse: 'ok',
+            eventos_encontrados: vevents.length,
+            eventos: vevents.map(e => ({
+                uid: e.uid,
+                summary: e.summary,
+                start: e.start,
+                end: e.end
+            })),
+            sync_resultado: resultados
+        });
+    } catch (e) {
+        return res.json({ error: e.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`🏨 Servidor rodando na porta ${PORT}`);
     console.log(`Acesse http://localhost:${PORT}/api/health`);
