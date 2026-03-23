@@ -57,12 +57,11 @@ export default function PoliticaCancelamento() {
                     <div>
                         <h2 className="text-carapita-gold font-serif text-2xl mb-4">2. Cancelamento e Reembolso</h2>
                         <div className="space-y-4">
-                            <p>Entendemos que imprevistos acontecem. No entanto, como somos um alojamento local de gestão familiar, os cancelamentos de última hora impactam-nos significativamente. Assim, aplicamos as seguintes condições:</p>
-                            <ul className="list-disc pl-6 space-y-4">
-                                <li><strong className="text-white font-medium">Cancelamento Gratuito (Até 14 dias antes):</strong> Se cancelar a sua reserva com uma antecedência igual ou superior a 14 dias em relação à data de check-in, o sinal pago será totalmente reembolsado (deduzindo eventuais taxas de transação bancária).</li>
-                                <li><strong className="text-white font-medium">Cancelamento Fora de Prazo (Menos de 14 dias):</strong> Em caso de cancelamento com menos de 14 dias de antecedência ou em caso de "não comparência" (No-Show), o sinal de 50% não será reembolsado.</li>
-                                <li><strong className="text-white font-medium">Saída Antecipada:</strong> A saída antes da data prevista de check-out não confere direito a reembolso dos dias não usufruídos.</li>
-                            </ul>
+                            <p>Entendemos que imprevistos acontecem. No entanto, como somos um alojamento local de gestão familiar, os cancelamentos de última hora impactam-nos significativamente. Assim, aplicamos a seguinte política flexível:</p>
+                            <div className="bg-white/5 p-8 border-l-4 border-carapita-gold italic text-white/90">
+                                "Cancelamento/modificação gratuito até 2 dias antes da chegada. Uma penalidade de toda a estadia incluindo impostos será cobrada por cancelamento/modificação tardio, não comparência ou partida antecipada."
+                            </div>
+                            <p className="text-xs opacity-60">A saída antes da data prevista de check-out (partida antecipada) não confere direito a reembolso dos dias não usufruídos.</p>
                         </div>
                     </div>
 

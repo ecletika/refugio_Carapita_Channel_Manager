@@ -488,13 +488,13 @@ export default function PerfilHospede() {
                                 <p className="text-[10px] text-white/50 tracking-widest uppercase mt-1">Conheça as nossas condições para alterações ou cancelamentos</p>
                             </div>
                             <div className="bg-black/20 p-8 border border-white/10 text-white/70 max-w-3xl leading-relaxed text-sm flex flex-col gap-6">
-                                <p><strong>1. Confirmação de Reserva:</strong> Para garantir a sua reserva, solicitamos o pagamento de um sinal correspondente a 50% do valor total da estadia (via Transferência Bancária, MB WAY ou Cartão de Crédito/Stripe). Os restantes 50% deverão ser liquidados até ao momento do check-in.</p>
-                                <p><strong>2. Cancelamento e Reembolso:</strong> Entendemos que imprevistos acontecem. No entanto, como somos um alojamento local de gestão familiar, os cancelamentos de última hora impactam-nos significativamente. Assim, aplicamos as seguintes condições:</p>
-                                <ul className="list-disc pl-5 space-y-4">
-                                    <li><strong>Cancelamento Gratuito (Até 14 dias antes):</strong> Se cancelar a sua reserva com uma antecedência igual ou superior a 14 dias em relação à data de check-in, o valor total do sinal será reembolsado integralmente.</li>
-                                    <li><strong>Cancelamento Fora do Prazo (Menos de 14 dias):</strong> No caso de cancelamentos com menos de 14 dias de antecedência, o valor do sinal (50%) não será reembolsado.</li>
-                                    <li><strong>Não Comparência (No-Show):</strong> Em caso de não comparência sem aviso prévio, será cobrado o valor total da reserva.</li>
-                                </ul>
+                                <p><strong>Política de Cancelamento e Modificação:</strong></p>
+                                <p>O Refúgio Carapita oferece flexibilidade para os seus hóspedes. Para que possamos gerir a sua estadia com a maior eficiência, solicitamos o cumprimento das seguintes condições:</p>
+                                <div className="space-y-4">
+                                    <p className="bg-white/5 p-6 border-l-4 border-carapita-gold italic">
+                                        "Cancelamento/modificação gratuito até 2 dias antes da chegada. Uma penalidade de toda a estadia incluindo impostos será cobrada por cancelamento/modificação tardio, não comparência ou partida antecipada."
+                                    </p>
+                                </div>
                             </div>
                             <div className="mt-4 p-6 border border-carapita-gold/20 bg-carapita-dark text-center flex flex-col items-center">
                                 <FileText className="text-carapita-gold mb-3" size={24} />
