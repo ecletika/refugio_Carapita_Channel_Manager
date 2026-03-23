@@ -70,9 +70,19 @@ class IcalService {
                             .single();
 
                         if (!hospedeDB) {
+                            const now = new Date().toISOString();
                             const { data: novoHospede, error: errInsH } = await supabase.supabaseAdmin
                                 .from('Hospede')
-                                .insert([{ id: crypto.randomUUID(), nome: summary, email: emailPlaceholder }])
+                                .insert([{
+                                    id: crypto.randomUUID(),
+                                    nome: canalFinal,
+                                    sobrenome: 'Externo',
+                                    email: emailPlaceholder,
+                                    estrangeiro: false,
+                                    dependentes: [],
+                                    criado_em: now,
+                                    atualizado_em: now
+                                }])
                                 .select()
                                 .single();
                             if (errInsH) { console.error(`❌ iCal: Erro ao criar hóspede placeholder:`, errInsH.message); continue; }
@@ -82,6 +92,7 @@ class IcalService {
                         if (!hospedeDB) { console.error(`❌ iCal: hospedeDB nulo para UID ${uid}`); continue; }
 
                         // Criar Reserva
+                        const nowRes = new Date().toISOString();
                         const { error: errRes } = await supabase.supabaseAdmin.from('Reserva').insert([{
                             id: crypto.randomUUID(),
                             quarto_id: quartoId,
@@ -92,7 +103,9 @@ class IcalService {
                             data_check_out: checkOut.toISOString(),
                             valor_total: 0,
                             codigo_reserva_externo: uid,
-                            requerimentos_especiais: `Importado via iCal (${canalFinal}). UID: ${uid}`
+                            requerimentos_especiais: `Importado via iCal (${canalFinal}). UID: ${uid}`,
+                            criado_em: nowRes,
+                            atualizado_em: nowRes
                         }]);
 
                         if (errRes) { console.error(`❌ iCal: Erro ao inserir reserva (UID: ${uid}):`, errRes.message); continue; }
