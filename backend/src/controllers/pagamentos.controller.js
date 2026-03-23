@@ -382,9 +382,9 @@ class PagamentosController {
 
             if (hospede) {
                 if (tipo === 'inicial') {
-                    await EmailService.enviarEmailBoasVindasPagamentoInicial(hospede, reserva, roteiros || []);
+                    EmailService.enviarEmailBoasVindasPagamentoInicial(hospede, reserva, roteiros || []).catch(e => console.error('Erro email boas-vindas:', e.message));
                 } else {
-                    await EmailService.enviarEmailReservaTotalmentePaga(hospede, reserva, roteiros || []);
+                    EmailService.enviarEmailReservaTotalmentePaga(hospede, reserva, roteiros || []).catch(e => console.error('Erro email 100% pago:', e.message));
                 }
             }
 

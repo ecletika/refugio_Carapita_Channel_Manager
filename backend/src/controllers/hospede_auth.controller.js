@@ -13,7 +13,7 @@ class HospedeAuthController {
                 return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios' });
             }
 
-            const { data: hospedeExistente } = await supabase
+            const { data: hospedeExistente } = await supabase.supabaseAdmin
                 .from('Hospede')
                 .select('id')
                 .eq('email', email)
@@ -25,7 +25,7 @@ class HospedeAuthController {
 
             const senha_hash = await bcrypt.hash(senha, 10);
 
-            const { data: novoHospede, error } = await supabase
+            const { data: novoHospede, error } = await supabase.supabaseAdmin
                 .from('Hospede')
                 .insert([{
                     id: crypto.randomUUID(),
@@ -60,7 +60,7 @@ class HospedeAuthController {
         try {
             const { email, senha } = req.body;
 
-            const { data: hospede, error } = await supabase
+            const { data: hospede, error } = await supabase.supabaseAdmin
                 .from('Hospede')
                 .select('*')
                 .eq('email', email)
@@ -97,7 +97,7 @@ class HospedeAuthController {
     // 3. Obter Perfil
     static async getMe(req, res) {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabase.supabaseAdmin
                 .from('Hospede')
                 .select('*')
                 .eq('id', req.usuarioId)
@@ -121,7 +121,7 @@ class HospedeAuthController {
                 atualizado_em: new Date()
             };
 
-            const { data, error } = await supabase
+            const { data, error } = await supabase.supabaseAdmin
                 .from('Hospede')
                 .update(payload)
                 .eq('id', req.usuarioId)

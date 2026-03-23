@@ -126,18 +126,18 @@ class ReservasController {
                 { data: cupomDB }
             ] = await Promise.all([
                 // 1. Canal
-                supabase.from('Canal').select('*').eq('nome_canal', canalNome || 'SITE').single(),
+                supabase.supabaseAdmin.from('Canal').select('*').eq('nome_canal', canalNome || 'SITE').single(),
                 // 2. Quarto
-                supabase.from('Quarto').select('*').eq('id', quartoId).single(),
+                supabase.supabaseAdmin.from('Quarto').select('*').eq('id', quartoId).single(),
                 // 3. Tarifas
-                supabase.from('TarifaSazonal').select('*').eq('quarto_id', quartoId),
+                supabase.supabaseAdmin.from('TarifaSazonal').select('*').eq('quarto_id', quartoId),
                 // 4. Extras
-                (extrasIds && extrasIds.length > 0) 
-                    ? supabase.from('Extra').select('preco').in('id', extrasIds)
+                (extrasIds && extrasIds.length > 0)
+                    ? supabase.supabaseAdmin.from('Extra').select('preco').in('id', extrasIds)
                     : Promise.resolve({ data: [] }),
                 // 5. Cupom
                 cupomCodigo
-                    ? supabase.from('Cupom').select('*').eq('codigo', cupomCodigo.toUpperCase()).single()
+                    ? supabase.supabaseAdmin.from('Cupom').select('*').eq('codigo', cupomCodigo.toUpperCase()).single()
                     : Promise.resolve({ data: null })
             ]);
 
@@ -145,7 +145,7 @@ class ReservasController {
             let finalCanal = canalDB;
             if (!finalCanal) {
                 const nowCanal = new Date().toISOString();
-                const { data: novoC, error: errC } = await supabase
+                const { data: novoC, error: errC } = await supabase.supabaseAdmin
                     .from('Canal')
                     .insert([{ id: crypto.randomUUID(), nome_canal: canalNome || 'SITE', comissao_percentual: 0, criado_em: nowCanal, atualizado_em: nowCanal }])
                     .select().single();
@@ -231,7 +231,7 @@ class ReservasController {
 
             // Atualizar usos do cupom em background
             if (cupomValido) {
-                supabase.from('Cupom').update({ usos_atuais: cupomValido.usos_atuais + 1 }).eq('id', cupomValido.id).then();
+                supabase.supabaseAdmin.from('Cupom').update({ usos_atuais: cupomValido.usos_atuais + 1 }).eq('id', cupomValido.id).then();
             }
 
             const normalizedReserva = {
@@ -449,26 +449,26 @@ class ReservasController {
                 { data: canais }
             ] = await Promise.all([
                 // 1. KPIs do Mês
-                supabase.from('Reserva')
+                supabase.supabaseAdmin.from('Reserva')
                     .select('*')
                     .in('status', ['CONFIRMADA', 'CHECK_IN', 'CHECK_OUT'])
                     .gte('data_check_in', inicioMes)
                     .lte('data_check_in', fimMes),
 
                 // 2. Quartos Ativos
-                supabase.from('Quarto')
+                supabase.supabaseAdmin.from('Quarto')
                     .select('*', { count: 'exact', head: true })
                     .eq('ativo', true),
 
                 // 3. Reservas Hoje (Check-ins ativos)
-                supabase.from('Reserva')
+                supabase.supabaseAdmin.from('Reserva')
                     .select('*, Quarto(*), Hospede(*)')
                     .in('status', ['CONFIRMADA', 'CHECK_IN'])
                     .lte('data_check_in', fimDia)
                     .gte('data_check_out', inicioDia),
 
                 // 4. Próximos Check-ins (7 dias)
-                supabase.from('Reserva')
+                supabase.supabaseAdmin.from('Reserva')
                     .select('*, Quarto(*), Hospede(*)')
                     .eq('status', 'CONFIRMADA')
                     .gte('data_check_in', inicioDia)
@@ -476,7 +476,7 @@ class ReservasController {
                     .order('data_check_in', { ascending: true }),
 
                 // 5. Próximos Check-outs (7 dias)
-                supabase.from('Reserva')
+                supabase.supabaseAdmin.from('Reserva')
                     .select('*, Quarto(*), Hospede(*)')
                     .in('status', ['CHECK_IN', 'CONFIRMADA'])
                     .gte('data_check_out', inicioDia)
@@ -484,18 +484,18 @@ class ReservasController {
                     .order('data_check_out', { ascending: true }),
 
                 // 6. Calendário
-                supabase.from('Reserva')
+                supabase.supabaseAdmin.from('Reserva')
                     .select('*, Quarto(*), Hospede(*)')
                     .neq('status', 'CANCELADA')
                     .or(`data_check_in.gte.${inicioCal},data_check_out.gte.${inicioCal}`),
 
                 // 6.b Bloqueios
-                supabase.from('Bloqueio')
+                supabase.supabaseAdmin.from('Bloqueio')
                     .select('*, Quarto(*)')
                     .or(`data_inicio.gte.${inicioCal},data_fim.gte.${inicioCal}`),
 
                 // 7. Canais
-                supabase.from('Canal').select('*')
+                supabase.supabaseAdmin.from('Canal').select('*')
             ]);
 
             const receitaMes = reservasMes?.reduce((sum, r) => sum + Number(r.valor_total || 0), 0) || 0;
@@ -537,7 +537,7 @@ class ReservasController {
 
     static async deletarReserva(req, res) {
         try {
-            await supabase.from('Reserva').delete().eq('id', req.params.id);
+            await supabase.supabaseAdmin.from('Reserva').delete().eq('id', req.params.id);
             return res.json({ status: 'success', message: 'Reserva removida' });
         } catch (error) {
             return res.status(500).json({ error: error.message });

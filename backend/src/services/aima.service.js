@@ -170,7 +170,7 @@ class AimaService {
 
             if (soapResult === '0') {
                 console.log("✅ Boletim enviado com sucesso para a AIMA!");
-                await this.registrarLog(reserva.id, hospede, 'SUCESSO', null, xmlParaEnvio, responseData);
+                await this.registrarLog(reserva.id, hospedePrincipal, 'SUCESSO', null, xmlParaEnvio, responseData);
                 console.log("=========================================");
                 return { sucesso: true, mensagem: 'Boletim enviado para AIMA.' };
             } else {
@@ -187,14 +187,14 @@ class AimaService {
                     errorDesc = soapResult; // If it's not XML
                 }
 
-                await this.registrarLog(reserva.id, hospede, 'ERRO', errorDesc, xmlParaEnvio, responseData);
+                await this.registrarLog(reserva.id, hospedePrincipal, 'ERRO', errorDesc, xmlParaEnvio, responseData);
                 return { sucesso: false, erro: errorDesc };
             }
 
         } catch (error) {
             console.error("❌ Falha na comunicação SOAP para AIMA:", error.message);
             const erroMensagem = error.response ? JSON.stringify(error.response.data) : error.message;
-            await this.registrarLog(reserva?.id, hospede, 'ERRO', erroMensagem, xmlParaEnvio, erroMensagem);
+            await this.registrarLog(reserva?.id, hospedePrincipal, 'ERRO', erroMensagem, xmlParaEnvio, erroMensagem);
             // We do not throw, so it doesn't block the check-in process. We return false.
             return { sucesso: false, erro: erroMensagem };
         }
