@@ -31,7 +31,7 @@ class IcalService {
             if (!canalDB) {
                 const { data: novoCanal } = await supabase.supabaseAdmin
                     .from('Canal')
-                    .insert([{ nome_canal: canalFinal, comissao_percentual: 0 }])
+                    .insert([{ id: crypto.randomUUID(), nome_canal: canalFinal, comissao_percentual: 0 }])
                     .select()
                     .single();
                 canalDB = novoCanal;
