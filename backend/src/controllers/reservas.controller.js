@@ -147,7 +147,7 @@ class ReservasController {
                 const nowCanal = new Date().toISOString();
                 const { data: novoC, error: errC } = await supabase.supabaseAdmin
                     .from('Canal')
-                    .insert([{ id: crypto.randomUUID(), nome_canal: canalNome || 'SITE', comissao_percentual: 0, criado_em: nowCanal, atualizado_em: nowCanal }])
+                    .insert([{ id: crypto.randomUUID(), nome_canal: canalNome || 'SITE', comissao_percentual: 0, criado_em: nowCanal }])
                     .select().single();
                 if (errC) { console.error('Canal Insert Error:', errC); throw errC; }
                 finalCanal = novoC;
