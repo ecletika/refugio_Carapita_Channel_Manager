@@ -38,11 +38,20 @@ export default function AlojamentoGallery({
 
     return (
         <section id="alojamento" className="pb-20 lg:pb-32 px-4 md:px-8 max-w-[1400px] mx-auto w-full scroll-mt-44">
+            {/* Imagem principal do quarto */}
+            <div className="w-full mb-10 lg:mb-14 rounded-sm overflow-hidden">
+                <img
+                    src="/images/quarto-principal.jpg"
+                    alt="Quarto principal — Refúgio Carapita"
+                    className="w-full h-[320px] md:h-[480px] lg:h-[580px] object-cover"
+                />
+            </div>
+
             <div className="text-center mb-12 lg:mb-16">
-                <a 
-                    href="https://rnt.turismodeportugal.pt/RNT/RNAL.aspx?nr=172760" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
+                <a
+                    href="https://rnt.turismodeportugal.pt/RNT/RNAL.aspx?nr=172760"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-carapita-gold uppercase tracking-mega text-[10px] font-semibold block mb-4 hover:underline"
                 >
                     {t('alojamento_tag')}
