@@ -30,7 +30,7 @@ export default function EssenciaSection({ t, scrollTo }: EssenciaSectionProps) {
                     <div className="hidden lg:block absolute left-4 xl:-left-8 top-12 w-[65%] h-[110%] border opacity-20 border-carapita-gold z-0 pointer-events-none"></div>
 
                     {/* Coluna das Imagens (Esquerda) */}
-                    <div className="w-full lg:w-[82%] relative min-h-[400px] sm:min-h-[600px] md:min-h-[900px] flex items-center justify-center lg:justify-start">
+                    <div className="w-full lg:w-[82%] relative min-h-[400px] sm:min-h-[600px] md:min-h-[980px] flex items-center justify-center lg:justify-start">
 
                         {/* Imagem 1 — Fundo Direita (exterior) */}
                         <div className="absolute right-0 lg:-right-8 xl:-right-12 top-0 w-full md:w-[85%] lg:w-[75%] h-[320px] sm:h-[480px] md:h-[750px] z-10 overflow-hidden shadow-2xl">
@@ -51,7 +51,7 @@ export default function EssenciaSection({ t, scrollTo }: EssenciaSectionProps) {
                         </div>
 
                         {/* Imagem 3 — Baixo Direita Sobreposta (quarto principal) */}
-                        <div className="hidden md:block absolute left-[35%] lg:left-[32%] bottom-[-30px] md:bottom-[-50px] w-[40%] md:w-[34%] h-[220px] md:h-[300px] z-30 overflow-hidden group shadow-[0px_25px_60px_rgba(0,0,0,0.7)] border-4 border-white/30">
+                        <div className="hidden md:block absolute left-[33%] lg:left-[30%] bottom-[-80px] md:bottom-[-100px] w-[52%] md:w-[48%] h-[280px] md:h-[380px] z-30 overflow-hidden group shadow-[0px_25px_60px_rgba(0,0,0,0.7)] border-4 border-carapita-gold">
                             <img
                                 src="/images/quarto-principal.jpg"
                                 className="w-full h-full object-cover transform duration-[3s] group-hover:scale-105"
