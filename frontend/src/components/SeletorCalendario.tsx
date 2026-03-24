@@ -183,7 +183,7 @@ export default function SeletorCalendario({ onSelect, quartoId, initialSelection
         }
 
         return (
-            <div className="flex-1 min-w-[280px] lg:min-w-[360px] px-2 md:px-4">
+            <div className="flex-1 min-w-[220px] lg:min-w-[280px] px-1 md:px-3">
                 <div className="calendario-header flex justify-center items-center w-full mb-4 md:mb-6 relative">
                     <span className="font-serif text-[#C9A84C] text-[18px] md:text-[22px] uppercase tracking-[0.1em]">
                         {monthName} <span className="font-light text-[#8A9E96] text-[14px] md:text-[16px] ml-1">{year}</span>
@@ -212,8 +212,8 @@ export default function SeletorCalendario({ onSelect, quartoId, initialSelection
     secondDate.setMonth(secondDate.getMonth() + 1);
 
     return (
-        <div className="w-full flex flex-col items-center animate-fade-in py-4">
-            <div className="flex justify-between items-center w-full max-w-[800px] mb-8 px-4">
+        <div className="w-full flex flex-col items-center animate-fade-in py-2 md:py-4">
+            <div className="flex justify-between items-center w-full max-w-[800px] mb-4 md:mb-8 px-2 md:px-4">
                 <button onClick={prevMonth} className="text-[#C9A84C] hover:text-[#E8C96A] transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10 flex items-center justify-center">
                     <ChevronLeft size={24} strokeWidth={1.5} />
                 </button>
@@ -223,7 +223,7 @@ export default function SeletorCalendario({ onSelect, quartoId, initialSelection
                 </button>
             </div>
 
-            <div className="w-full flex flex-col md:flex-row gap-8 justify-center">
+            <div className="w-full flex flex-col md:flex-row gap-4 lg:gap-6 justify-center overflow-x-hidden">
                 {renderMonth(currentDate)}
                 {monthsToShow > 1 && renderMonth(secondDate)}
             </div>

@@ -32,9 +32,9 @@ export default function Step1Selection({
     idQuartoParaReserva
 }: Step1SelectionProps) {
     return (
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full max-w-[1400px] mx-auto animate-fade-in items-start h-full pb-10">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 xl:gap-8 w-full max-w-[1400px] mx-auto animate-fade-in items-start h-full pb-6 lg:pb-10">
             {/* Esquerda: Calendário Maior (~60%) */}
-            <div className="w-full lg:w-[60%] bg-[#1E3529] border border-[#C9A84C]/20 p-6 md:p-8 rounded-[24px] shadow-2xl">
+            <div className="w-full lg:w-[58%] xl:w-[60%] bg-[#1E3529] border border-[#C9A84C]/20 p-4 md:p-6 xl:p-8 rounded-[24px] shadow-2xl overflow-hidden">
                 <div className="w-full">
                     <SeletorCalendario
                         quartoId={idQuartoParaReserva || quartosEncontrados?.[0]?.id || ''}
@@ -50,30 +50,30 @@ export default function Step1Selection({
             </div>
 
             {/* Direita: Painel Interativo (~40%) */}
-            <div className="w-full lg:w-[40%] flex flex-col gap-4 lg:gap-6">
+            <div className="w-full lg:w-[42%] xl:w-[40%] flex flex-col gap-3 lg:gap-4 xl:gap-6">
                 {/* Cards Data */}
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
-                    <div className="flex-1 bg-[#1A2E26] border border-[#C9A84C]/40 rounded-[20px] p-6 text-center shadow-lg transition-transform duration-500 hover:scale-[1.02]">
-                        <span className="block font-sans text-[10px] text-[#C9A84C] uppercase tracking-[0.2em] mb-4">Check-in</span>
+                    <div className="flex-1 bg-[#1A2E26] border border-[#C9A84C]/40 rounded-[20px] p-4 xl:p-6 text-center shadow-lg transition-transform duration-500 hover:scale-[1.02]">
+                        <span className="block font-sans text-[10px] text-[#C9A84C] uppercase tracking-[0.2em] mb-2 xl:mb-4">Check-in</span>
                         {checkIn ? (
                             <>
-                                <div className="font-serif text-6xl text-[#F5F0E8] leading-none mb-2">{new Date(checkIn).getUTCDate()}</div>
+                                <div className="font-serif text-4xl xl:text-6xl text-[#F5F0E8] leading-none mb-2">{new Date(checkIn).getUTCDate()}</div>
                                 <div className="font-sans text-[10px] text-[#8A9E96] uppercase tracking-[0.2em]">{new Date(checkIn).toLocaleDateString('pt-PT', { month: 'short', year: 'numeric' }).replace(' de ', ' ')}</div>
                             </>
                         ) : (
-                            <div className="font-serif text-3xl text-white/20 mt-4 h-14">--</div>
+                            <div className="font-serif text-2xl xl:text-3xl text-white/20 mt-2 xl:mt-4 h-10 xl:h-14">--</div>
                         )}
                     </div>
 
-                    <div className="flex-1 bg-[#1A2E26] border border-[#C9A84C]/40 rounded-[20px] p-6 text-center shadow-lg transition-transform duration-500 hover:scale-[1.02]">
-                        <span className="block font-sans text-[10px] text-[#C9A84C] uppercase tracking-[0.2em] mb-4">Check-out</span>
+                    <div className="flex-1 bg-[#1A2E26] border border-[#C9A84C]/40 rounded-[20px] p-4 xl:p-6 text-center shadow-lg transition-transform duration-500 hover:scale-[1.02]">
+                        <span className="block font-sans text-[10px] text-[#C9A84C] uppercase tracking-[0.2em] mb-2 xl:mb-4">Check-out</span>
                         {checkOut ? (
                             <>
-                                <div className="font-serif text-6xl text-[#F5F0E8] leading-none mb-2">{new Date(checkOut).getUTCDate()}</div>
+                                <div className="font-serif text-4xl xl:text-6xl text-[#F5F0E8] leading-none mb-2">{new Date(checkOut).getUTCDate()}</div>
                                 <div className="font-sans text-[10px] text-[#8A9E96] uppercase tracking-[0.2em]">{new Date(checkOut).toLocaleDateString('pt-PT', { month: 'short', year: 'numeric' }).replace(' de ', ' ')}</div>
                             </>
                         ) : (
-                            <div className="font-serif text-3xl text-white/20 mt-4 h-14">--</div>
+                            <div className="font-serif text-2xl xl:text-3xl text-white/20 mt-2 xl:mt-4 h-10 xl:h-14">--</div>
                         )}
                     </div>
                 </div>

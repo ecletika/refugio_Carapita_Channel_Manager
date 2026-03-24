@@ -24,7 +24,7 @@ export default function SummarySidebar({
     disponiveisExtras
 }: SummarySidebarProps) {
     return (
-        <div className="w-full xl:w-80 xl:flex-shrink-0 mt-8 xl:mt-0">
+        <div className="w-full lg:w-64 xl:w-80 lg:flex-shrink-0 mt-6 lg:mt-0">
             <div className="sticky top-24 space-y-6">
                 <div className="bg-carapita-dark text-white p-6 rounded-2xl border border-white/5">
                     <h3 className="font-serif text-lg border-b border-white/10 pb-3 mb-4 uppercase tracking-widest italic">{t('summary_title')}</h3>
