@@ -30,23 +30,32 @@ export default function EssenciaSection({ t, scrollTo }: EssenciaSectionProps) {
                     <div className="hidden lg:block absolute left-4 xl:-left-8 top-12 w-[65%] h-[110%] border opacity-20 border-carapita-gold z-0 pointer-events-none"></div>
 
                     {/* Coluna das Imagens (Esquerda) */}
-                    <div className="w-full lg:w-[82%] relative min-h-[400px] sm:min-h-[600px] md:min-h-[850px] flex items-center justify-center lg:justify-start">
+                    <div className="w-full lg:w-[82%] relative min-h-[400px] sm:min-h-[600px] md:min-h-[900px] flex items-center justify-center lg:justify-start">
 
-                        {/* Imagem Maior (Fundo Direita) */}
+                        {/* Imagem 1 — Fundo Direita (exterior) */}
                         <div className="absolute right-0 lg:-right-8 xl:-right-12 top-0 w-full md:w-[85%] lg:w-[75%] h-[320px] sm:h-[480px] md:h-[750px] z-10 overflow-hidden shadow-2xl">
                             <img
-                                src="/images/quarto-principal.jpg"
+                                src="/essencia_carapita.jpg"
                                 className="w-full h-full object-cover transform duration-[3s] hover:scale-105 filter brightness-100"
-                                alt="Quarto Principal — Refúgio Carapita"
+                                alt="Vista Exterior Mágica"
                             />
                         </div>
 
-                        {/* Imagem Menor Sobreposta (Frente Esquerda) */}
-                        <div className="hidden md:block absolute left-0 lg:-left-12 xl:-left-20 bottom-[-20px] md:bottom-[-40px] w-[60%] md:w-[50%] lg:w-[40%] h-[320px] sm:h-[450px] md:h-[550px] z-20 overflow-hidden group shadow-[20px_20px_50px_rgba(0,0,0,0.5)] border-4 border-carapita-gold">
+                        {/* Imagem 2 — Frente Esquerda (detalhe alojamento) */}
+                        <div className="hidden md:block absolute left-0 lg:-left-12 xl:-left-20 bottom-[-20px] md:bottom-[-40px] w-[60%] md:w-[50%] lg:w-[40%] h-[320px] sm:h-[450px] md:h-[520px] z-20 overflow-hidden group shadow-[20px_20px_50px_rgba(0,0,0,0.5)] border-4 border-carapita-gold">
                             <img
                                 src="https://a0.muscache.com/im/pictures/hosting/Hosting-1580467683590335058/original/f0f4a673-77ef-4b5a-ba7a-2888f3e9eebf.jpeg?im_w=960"
                                 className="w-full h-full object-cover transform duration-[3s] group-hover:scale-105"
                                 alt="Detalhes do Alojamento"
+                            />
+                        </div>
+
+                        {/* Imagem 3 — Centro Sobreposta (quarto principal) */}
+                        <div className="hidden md:block absolute left-[28%] lg:left-[24%] top-[60px] md:top-[80px] w-[42%] md:w-[36%] h-[240px] md:h-[320px] z-30 overflow-hidden group shadow-[0px_25px_60px_rgba(0,0,0,0.7)] border-4 border-white/30">
+                            <img
+                                src="/images/quarto-principal.jpg"
+                                className="w-full h-full object-cover transform duration-[3s] group-hover:scale-105"
+                                alt="Quarto Principal"
                             />
                         </div>
                     </div>
