@@ -35,9 +35,9 @@ export default function EssenciaSection({ t, scrollTo }: EssenciaSectionProps) {
                         {/* Imagem Maior (Fundo Direita) */}
                         <div className="absolute right-0 lg:-right-8 xl:-right-12 top-0 w-full md:w-[85%] lg:w-[75%] h-[320px] sm:h-[480px] md:h-[750px] z-10 overflow-hidden shadow-2xl">
                             <img
-                                src="/essencia_carapita.jpg"
+                                src="/images/quarto-principal.jpg"
                                 className="w-full h-full object-cover transform duration-[3s] hover:scale-105 filter brightness-100"
-                                alt="Vista Exterior Mágica"
+                                alt="Quarto Principal — Refúgio Carapita"
                             />
                         </div>
 
