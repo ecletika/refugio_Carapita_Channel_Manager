@@ -50,8 +50,8 @@ export default function EssenciaSection({ t, scrollTo }: EssenciaSectionProps) {
                             />
                         </div>
 
-                        {/* Imagem 3 — Centro Sobreposta (quarto principal) */}
-                        <div className="hidden md:block absolute left-[28%] lg:left-[24%] top-[60px] md:top-[80px] w-[42%] md:w-[36%] h-[240px] md:h-[320px] z-30 overflow-hidden group shadow-[0px_25px_60px_rgba(0,0,0,0.7)] border-4 border-white/30">
+                        {/* Imagem 3 — Baixo Direita Sobreposta (quarto principal) */}
+                        <div className="hidden md:block absolute left-[35%] lg:left-[32%] bottom-[-30px] md:bottom-[-50px] w-[40%] md:w-[34%] h-[220px] md:h-[300px] z-30 overflow-hidden group shadow-[0px_25px_60px_rgba(0,0,0,0.7)] border-4 border-white/30">
                             <img
                                 src="/images/quarto-principal.jpg"
                                 className="w-full h-full object-cover transform duration-[3s] group-hover:scale-105"
