@@ -134,7 +134,7 @@ app.listen(PORT, () => {
         } catch (error) {
             console.error('Erro na sincronização automática:', error.message);
         }
-    }, 30 * 60 * 1000);
+    }, 15 * 60 * 1000);
 
     // Executar sync iCal imediatamente no arranque (após 10s)
     setTimeout(async () => {

@@ -408,6 +408,34 @@ class EmailService {
             console.log(`📧 Email cancelamento pag. final → ${hospede.email}`);
         } catch (e) { console.error('❌ Erro email cancelamento final:', e.message); }
     }
+
+    // ─── 9. Notificação de Nova Mensagem de Contato ─────────────────────────
+
+    static async enviarEmailContato(emailSite, nome, emailRemetente, assunto, mensagem) {
+        try {
+            await this.transporter.sendMail({
+                from: '"Refúgio Carapita (Site)" <reservas@refugiocarapita.com>',
+                to: emailSite,
+                replyTo: emailRemetente,
+                subject: `Nova Mensagem: ${assunto} — Refúgio Carapita`,
+                html: `<div style="${this._baseStyle}">
+                    ${this._header('Novo Contato do Site')}
+                    <div style="padding:32px 40px;">
+                        <p style="font-size:15px; margin-top:0;">Recebeu uma nova mensagem do formulário de contato do site!</p>
+                        <table width="100%" cellpadding="6" cellspacing="0" style="font-size:13px; margin:20px 0; border:1px solid #E8E0D5;">
+                            <tr><td style="color:#888; width:30%; text-transform:uppercase; font-size:11px;">Nome</td><td style="color:#1E3932; font-weight:bold;">${nome}</td></tr>
+                            <tr><td style="color:#888; text-transform:uppercase; font-size:11px;">Email</td><td style="color:#1E3932; font-weight:bold;"><a href="mailto:${emailRemetente}" style="color:#C4A484;">${emailRemetente}</a></td></tr>
+                            <tr><td style="color:#888; text-transform:uppercase; font-size:11px;">Assunto</td><td style="color:#1E3932; font-weight:bold;">${assunto}</td></tr>
+                        </table>
+                        <h4 style="color:#1E3932; font-size:12px; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid #E8E0D5; padding-bottom:10px;">Mensagem</h4>
+                        <p style="color:#444; line-height:1.6; white-space: pre-wrap;">${mensagem}</p>
+                    </div>
+                    ${this._footer()}
+                </div>`
+            });
+            console.log(`📧 Email de contato notificado para admin → ${emailSite}`);
+        } catch (e) { console.error('❌ Erro email contato info:', e.message); }
+    }
 }
 
 module.exports = EmailService;

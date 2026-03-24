@@ -15,5 +15,6 @@ router.post('/configuracoes', authMiddleware, SiteController.salvarConfiguracoes
 
 // Mensagens de Contato
 router.post('/contato', SiteController.enviarMensagemContato);
+router.get('/mensagens', authMiddleware, SiteController.listarMensagens);
 
 module.exports = router;

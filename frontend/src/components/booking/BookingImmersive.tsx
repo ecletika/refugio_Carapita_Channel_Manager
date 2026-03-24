@@ -309,7 +309,7 @@ export default function BookingImmersive({
             </div>
 
             <div className="max-w-[1400px] mx-auto py-2 md:py-6 px-4 md:px-8">
-                <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-start">
+                <div className="flex flex-col xl:flex-row gap-4 xl:gap-8 items-start">
                     <div className="flex-1 w-full min-w-0">
                         {bookingStep === 'selection' && (
                             <Step1Selection 

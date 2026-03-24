@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const EmailService = require('../services/email.service');
 const crypto = require('crypto');
 
 class SiteController {
@@ -125,10 +126,39 @@ class SiteController {
 
             if (error) throw error;
 
+            // Enviar notificação por email para o Admin
+            try {
+                const { data: configs } = await supabase.from('Configuracao').select('*').eq('chave', 'emailContato');
+                let emailDestino = 'contacto@refugiocarapita.com';
+                if (configs && configs.length > 0 && configs[0].valor) {
+                    emailDestino = configs[0].valor;
+                }
+                await EmailService.enviarEmailContato(emailDestino, nome, email, assunto || 'Sem Assunto', mensagem);
+            } catch (emailErr) {
+                console.error("Aviso: Falha ao enviar email do contato, mas guardado na BD", emailErr);
+            }
+
             return res.json({ status: 'success', message: 'Mensagem enviada com sucesso' });
         } catch (error) {
             console.error('Erro enviar mensagem:', error);
             return res.status(500).json({ error: 'Erro ao processar sua mensagem. Tente novamente mais tarde.' });
+        }
+    }
+
+    // ─── Mensagens de Contato (Admin) ───────────────────────────────────────
+
+    static async listarMensagens(req, res) {
+        try {
+            const { data, error } = await supabase
+                .from('MensagemContato')
+                .select('*')
+                .order('criado_em', { ascending: false });
+
+            if (error) throw error;
+            return res.json({ status: 'success', data });
+        } catch (error) {
+            console.error('Erro ao listar mensagens:', error);
+            return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
 }

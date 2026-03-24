@@ -101,7 +101,7 @@ export default function ContactosPage() {
                 </div>
             </section>
 
-            <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-20">
+            <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-20">
                 {/* Contact Information */}
                 <div className="animate-fade-in delay-300">
                     <h2 className="text-3xl font-serif text-white mb-6">{t('contact_info_title')}</h2>
@@ -176,7 +176,7 @@ export default function ContactosPage() {
                 </div>
 
                 {/* Contact Form */}
-                <div className="bg-white/5 border border-white/10 p-10 md:p-16 rounded-[3rem] backdrop-blur-md animate-fade-in delay-400">
+                <div className="bg-white/5 border border-white/10 p-8 lg:p-12 xl:p-16 rounded-[3rem] backdrop-blur-md animate-fade-in delay-400">
                     <div className="mb-12">
                         <MessageSquare className="text-carapita-gold mb-6" size={32} />
                         <h2 className="text-3xl font-serif text-white">{t('contact_form_title')}</h2>
