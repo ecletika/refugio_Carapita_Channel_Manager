@@ -136,9 +136,6 @@ export default function Step2Rates({
                                                         <span className="text-[16px] font-sans font-normal text-[#8A9E96]"> / estadia total</span>
                                                     </div>
                                                 </div>
-                                                <span className="text-[#8A9E96] text-[9px] uppercase font-sans tracking-[0.1em] mt-3 block bg-[#1A2E26] px-3 py-1.5 rounded w-fit">
-                                                    Inclui pequeno-almoço & impostos
-                                                </span>
                                             </div>
 
                                             <button onClick={() => iniciarReserva(q.id)} className="w-full md:w-auto mt-4 p-[22px] px-14 bg-[#C9A84C] text-[#1A2E26] font-sans text-[13px] font-bold tracking-[0.25em] uppercase border-none rounded-[16px] cursor-pointer transition-all hover:-translate-y-1 shadow-[0_8px_30px_rgba(201,168,76,0.3)] hover:bg-[#E8C96A]">
