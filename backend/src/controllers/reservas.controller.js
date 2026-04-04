@@ -2,6 +2,7 @@ const supabase = require('../config/supabase');
 const EmailService = require('../services/email.service');
 const AimaService = require('../services/aima.service');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
 class ReservasController {
 
@@ -98,6 +99,11 @@ class ReservasController {
                 dependentes: hospede.dependentes || [],
                 atualizado_em: now
             };
+
+            // Se o hóspede escolheu criar conta, guardar a senha com hash
+            if (hospede.senha) {
+                hospedeData.senha_hash = await bcrypt.hash(hospede.senha, 10);
+            }
 
             if (!hospedeDB) {
                 const { data: novoH, error: errH } = await supabase.supabaseAdmin
