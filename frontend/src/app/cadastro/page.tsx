@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function CadastroHospede() {
     const [form, setForm] = useState({ nome: '', email: '', senha: '', telefone: '' });
     const [loading, setLoading] = useState(false);
@@ -11,7 +13,7 @@ export default function CadastroHospede() {
         e.preventDefault();
         setLoading(true);
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hospede/register`, {
+            const resp = await fetch(`${EDGE_URL}/hospede-register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)

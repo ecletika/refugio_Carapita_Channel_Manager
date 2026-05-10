@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import { MapPin, X, Clock, Calendar, ChevronRight, Info } from "lucide-react";
 import { dictionaries as dict } from "@/i18n/dictionaries";
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function PasseiosPage() {
     const [lang, setLangState] = useState<'PT' | 'EN'>('PT');
     const [mounted, setMounted] = useState(false);
@@ -35,8 +37,8 @@ export default function PasseiosPage() {
         const fetchData = async () => {
             try {
                 const [passeiosResp, configsResp] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/passeios?t=${Date.now()}`),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes?t=${Date.now()}`)
+                    fetch(`${EDGE_URL}/site-passeios?t=${Date.now()}`),
+                    fetch(`${EDGE_URL}/site-configuracoes?t=${Date.now()}`)
                 ]);
 
                 const passeiosJson = await passeiosResp.json();

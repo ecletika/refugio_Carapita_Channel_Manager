@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, X, ToggleLeft, ToggleRight } from 'lucide-react';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 interface Extra {
     id: string;
     nome: string;
@@ -29,7 +31,7 @@ export function AdminExtrasContent() {
 
     const fetchTelaConfig = async () => {
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes`);
+            const resp = await fetch(`${EDGE_URL}/admin-site/configuracoes`);
             const json = await resp.json();
             if (json.status === 'success' && json.data) {
                 setTelaExtrasAtiva(!!json.data.tela_extras_ativa);
@@ -42,7 +44,7 @@ export function AdminExtrasContent() {
         const token = localStorage.getItem('token');
         const novoValor = !telaExtrasAtiva;
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes`, {
+            const resp = await fetch(`${EDGE_URL}/admin-site/configuracoes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ tela_extras_ativa: novoValor })
@@ -62,7 +64,7 @@ export function AdminExtrasContent() {
         const formData = new FormData();
         formData.append('foto', file);
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/`, {
+            const resp = await fetch(`${EDGE_URL}/upload`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -81,7 +83,7 @@ export function AdminExtrasContent() {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras/admin`, {
+            const resp = await fetch(`${EDGE_URL}/admin-extras`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await resp.json();
@@ -96,7 +98,7 @@ export function AdminExtrasContent() {
     const handleCreate = async () => {
         try {
             const token = localStorage.getItem('token');
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras`, {
+            const resp = await fetch(`${EDGE_URL}/admin-extras`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -120,7 +122,7 @@ export function AdminExtrasContent() {
     const handleUpdate = async (id: string, updates: Partial<Extra>) => {
         try {
             const token = localStorage.getItem('token');
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras/${id}`, {
+            const resp = await fetch(`${EDGE_URL}/admin-extras/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -142,7 +144,7 @@ export function AdminExtrasContent() {
         if (!confirm('Eliminar este extra?')) return;
         try {
             const token = localStorage.getItem('token');
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras/${id}`, {
+            await fetch(`${EDGE_URL}/admin-extras/${id}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -317,7 +319,7 @@ export function AdminExtrasContent() {
                                     const formData = new FormData();
                                     formData.append('foto', file);
                                     try {
-                                        const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/`, {
+                                        const resp = await fetch(`${EDGE_URL}/upload`, {
                                             method: 'POST',
                                             headers: { 'Authorization': `Bearer ${token}` },
                                             body: formData

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
 import { Mail, Calendar, Search, Trash2 } from 'lucide-react';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function AdminMensagensPage() {
     const [mensagens, setMensagens] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ export default function AdminMensagensPage() {
     const fetchMensagens = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/mensagens`, {
+            const res = await fetch(`${EDGE_URL}/admin-site/mensagens`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const json = await res.json();

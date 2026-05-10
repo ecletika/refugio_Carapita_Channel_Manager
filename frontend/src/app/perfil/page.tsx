@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
 import { LogOut, Calendar, Home, User, Plus, Trash2, MapPin, Instagram, Phone, Save, Navigation, Camera, FileText, X, CreditCard } from 'lucide-react';
 
 interface Dependente {
@@ -37,7 +39,7 @@ export default function PerfilHospede() {
         const fetchData = async () => {
             try {
                 // Fetch Hospede Data
-                const resMe = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hospede/me`, {
+                const resMe = await fetch(`${EDGE_URL}/hospede-me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (resMe.ok) {
@@ -49,7 +51,7 @@ export default function PerfilHospede() {
                 }
 
                 // Fetch Reservas
-                const resReservas = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/minhas-reservas`, {
+                const resReservas = await fetch(`${EDGE_URL}/minhas-reservas`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (resReservas.ok) {
@@ -60,7 +62,7 @@ export default function PerfilHospede() {
                 }
 
                 // Fetch Roteiros (Passeios)
-                const resRoteiros = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/passeios`);
+                const resRoteiros = await fetch(`${EDGE_URL}/site-passeios`);
                 if (resRoteiros.ok) {
                     const dadosRoteiros = await resRoteiros.json();
                     if (dadosRoteiros.status === 'success') {
@@ -69,7 +71,7 @@ export default function PerfilHospede() {
                 }
 
                 // Fetch Configs
-                const resConfigs = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configs`);
+                const resConfigs = await fetch(`${EDGE_URL}/site-configuracoes`);
                 if (resConfigs.ok) {
                     const dadosConfigs = await resConfigs.json();
                     if (dadosConfigs.status === 'success') {
@@ -117,7 +119,7 @@ export default function PerfilHospede() {
         const token = localStorage.getItem('token') || localStorage.getItem('guestToken');
         try {
             const payload = { ...hospede, dependentes };
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hospede/me`, {
+            const resp = await fetch(`${EDGE_URL}/hospede-me`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(payload)
@@ -146,7 +148,7 @@ export default function PerfilHospede() {
         formData.append('foto', file);
 
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
+            const resp = await fetch(`${EDGE_URL}/upload`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -157,7 +159,7 @@ export default function PerfilHospede() {
                 setHospede(updatedHospede);
 
                 // Salvar de imediato
-                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hospede/me`, {
+                await fetch(`${EDGE_URL}/hospede-me`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(updatedHospede)

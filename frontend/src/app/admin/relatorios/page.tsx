@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 interface Stats {
     receitaTotal: number;
     totalReservas: number;
@@ -24,7 +26,7 @@ export default function AdminRelatorios() {
         const token = localStorage.getItem('token');
         if (!token) { router.push('/login'); return; }
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/relatorios/geral`, {
+            const resp = await fetch(`${EDGE_URL}/admin-relatorios`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const json = await resp.json();

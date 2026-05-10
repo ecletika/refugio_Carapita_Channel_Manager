@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, Plus, Trash2, Calendar, Home, Euro, Info, Lock, Moon, ShieldAlert, Edit2 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 interface Quarto {
     id: string;
     nome: string;
@@ -48,9 +50,9 @@ export default function AdminTarifasBloqueios() {
         const token = localStorage.getItem('token');
         try {
             const [tResp, qResp, bResp] = await Promise.all([
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos`),
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bloqueios`, { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch(`${EDGE_URL}/admin-tarifas`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${EDGE_URL}/admin-quartos`),
+                fetch(`${EDGE_URL}/admin-bloqueios`, { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
             const tData = await tResp.json();
             const qData = await qResp.json();
@@ -74,7 +76,7 @@ export default function AdminTarifasBloqueios() {
         const token = localStorage.getItem('token');
         try {
             const payload = editandoTarifaId ? { ...novaTarifa, id: editandoTarifaId } : novaTarifa;
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas`, {
+            const resp = await fetch(`${EDGE_URL}/admin-tarifas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(payload)
@@ -104,7 +106,7 @@ export default function AdminTarifasBloqueios() {
     const handleDeletarTarifa = async (id: string) => {
         const token = localStorage.getItem('token');
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas/${id}`, {
+            await fetch(`${EDGE_URL}/admin-tarifas/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -117,7 +119,7 @@ export default function AdminTarifasBloqueios() {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bloqueios`, {
+            const resp = await fetch(`${EDGE_URL}/admin-bloqueios`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(novoBloqueio)
@@ -136,7 +138,7 @@ export default function AdminTarifasBloqueios() {
         if (!confirm("Remover este bloqueio de agenda? As datas ficarão disponíveis para reserva novamente.")) return;
         const token = localStorage.getItem('token');
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bloqueios/${id}`, {
+            await fetch(`${EDGE_URL}/admin-bloqueios/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

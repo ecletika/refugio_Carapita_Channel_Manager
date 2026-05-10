@@ -28,6 +28,8 @@ interface BookingImmersiveProps {
     initialRoomId?: string | null;
 }
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function BookingImmersive({
     t,
     lang,
@@ -174,7 +176,7 @@ export default function BookingImmersive({
                     const token = localStorage.getItem('guestToken');
                     if (!token) return;
                     
-                    const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hospede/me`, {
+                    const resp = await fetch(`${EDGE_URL}/hospede-me`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const resJson = await resp.json();
@@ -254,7 +256,7 @@ export default function BookingImmersive({
                 adultos,
                 criancas
             };
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas`, {
+            const resp = await fetch(`${EDGE_URL}/reservas-criar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, User, Home, Euro, Info, Tag } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 interface Reserva {
     id: string;
     data_check_in: string;
@@ -23,7 +25,7 @@ export default function AdminReservas() {
     const fetchReservas = async () => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas`, {
+            const resp = await fetch(`${EDGE_URL}/admin-reservas`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await resp.json();
@@ -40,7 +42,7 @@ export default function AdminReservas() {
     const updateStatus = async (id: string, endpoint: string) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/${id}/${endpoint}`, {
+            const resp = await fetch(`${EDGE_URL}/admin-reservas/${id}/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -61,7 +63,8 @@ export default function AdminReservas() {
     const sendAIMA = async (id: string) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/${id}/enviar-aima`, {
+            // TODO: AIMA endpoint - update when edge function is available
+            const resp = await fetch(`${EDGE_URL}/admin-reservas/${id}/aima`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

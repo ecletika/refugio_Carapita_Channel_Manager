@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 interface Quarto {
     id: string;
     nome: string;
@@ -24,7 +26,7 @@ export default function IntegracoesOTA() {
 
     const fetchQuartos = async () => {
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos`);
+            const resp = await fetch(`${EDGE_URL}/admin-quartos`);
             const json = await resp.json();
             if (json.status === 'success') {
                 setQuartos(json.data);
@@ -41,7 +43,7 @@ export default function IntegracoesOTA() {
     const updateIcal = async (quartoId: string) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos/${quartoId}`, {
+            const resp = await fetch(`${EDGE_URL}/admin-quartos/${quartoId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,7 +71,7 @@ export default function IntegracoesOTA() {
         setSyncing(`${quartoId}-${label}`);
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/sync`, {
+            const resp = await fetch(`${EDGE_URL}/sync-ical`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -94,7 +96,7 @@ export default function IntegracoesOTA() {
         setSyncing('ALL');
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/sync/all`, {
+            const resp = await fetch(`${EDGE_URL}/sync-ical/all`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Euro, Info, ArrowLeft } from 'lucide-react';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function TarifasPublicas() {
     const router = useRouter();
     const [tarifas, setTarifas] = useState<any[]>([]);
@@ -13,8 +15,8 @@ export default function TarifasPublicas() {
         const fetchTarifas = async () => {
             try {
                 const [tResp, qResp] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas`),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos`)
+                    fetch(`${EDGE_URL}/admin-tarifas`),
+                    fetch(`${EDGE_URL}/site-quartos`)
                 ]);
                 const tData = await tResp.json();
                 const qData = await qResp.json();

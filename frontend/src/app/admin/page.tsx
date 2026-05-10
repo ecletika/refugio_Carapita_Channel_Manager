@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 /* ─────────────────────────────────────────────
    Tipos
 ──────────────────────────────────────────────*/
@@ -252,7 +254,7 @@ export default function AdminDashboard() {
         if (!token) { router.push('/login'); return; }
         setCalLoading(true);
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/dashboard?ano=${ano}&mes=${mes}`, {
+            const resp = await fetch(`${EDGE_URL}/admin-dashboard?ano=${ano}&mes=${mes}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -288,7 +290,7 @@ export default function AdminDashboard() {
     const updateStatusDash = async (id: string, endpoint: string) => {
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/${id}/${endpoint}`, {
+            const resp = await fetch(`${EDGE_URL}/admin-reservas/${id}/${endpoint}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` }
             });

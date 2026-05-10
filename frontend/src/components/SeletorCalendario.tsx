@@ -10,6 +10,8 @@ interface PrecoDia {
     eCheckOut?: boolean;
 }
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function SeletorCalendario({ onSelect, quartoId, initialSelection, monthsToShow: propMonthsToShow }: { onSelect: (start: string, end: string) => void, quartoId: string, initialSelection?: { start: string | null, end: string | null }, monthsToShow?: number }) {
     const [currentDate, setCurrentDate] = useState(initialSelection?.start ? new Date(initialSelection.start) : new Date());
     const [selection, setSelection] = useState<{ start: string | null, end: string | null }>({ start: initialSelection?.start || null, end: initialSelection?.end || null });
@@ -44,7 +46,7 @@ export default function SeletorCalendario({ onSelect, quartoId, initialSelection
             const endDate = new Date(year, month + 2, 0); 
             const endStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
             try {
-                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${startStr}&fim=${endStr}&t=${Date.now()}`, {
+                const resp = await fetch(`${EDGE_URL}/tarifas-calendario?quartoId=${quartoId}&inicio=${startStr}&fim=${endStr}&t=${Date.now()}`, {
                     cache: 'no-store'
                 });
                 const dados = await resp.json();

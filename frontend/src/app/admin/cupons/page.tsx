@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Plus, Trash2, CircleCheck, Ticket, Percent } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function CuponsAdmin() {
     const [cupons, setCupons] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -23,7 +25,7 @@ export default function CuponsAdmin() {
 
     const fetchCupons = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cupons`);
+            const res = await fetch(`${EDGE_URL}/admin-cupons`);
             const json = await res.json();
             if (json.status === 'success') {
                 setCupons(json.data);
@@ -46,7 +48,7 @@ export default function CuponsAdmin() {
                 data_validade: form.data_validade || null
             };
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cupons`, {
+            const res = await fetch(`${EDGE_URL}/admin-cupons`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -70,7 +72,7 @@ export default function CuponsAdmin() {
     const handleExcluir = async (id: string) => {
         if (!confirm('Tem certeza que deseja excluir este cupão?')) return;
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cupons/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${EDGE_URL}/admin-cupons/${id}`, { method: 'DELETE' });
             if (res.ok) {
                 setCupons(cupons.filter(c => c.id !== id));
             }

@@ -63,7 +63,8 @@ function PagamentosContent() {
     const [showFatura, setShowFatura] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
-    const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+    const API = EDGE_URL;
 
     const getToken = () => localStorage.getItem('token') || localStorage.getItem('guestToken');
 
@@ -77,8 +78,8 @@ function PagamentosContent() {
         if (!token) { router.push('/login'); return; }
         try {
             const [meRes, resRes] = await Promise.all([
-                fetch(`${API}/api/hospede/me`, { headers: { Authorization: `Bearer ${token}` } }),
-                fetch(`${API}/api/reservas/minhas-reservas`, { headers: { Authorization: `Bearer ${token}` } }),
+                fetch(`${API}/hospede-me`, { headers: { Authorization: `Bearer ${token}` } }),
+                fetch(`${API}/minhas-reservas`, { headers: { Authorization: `Bearer ${token}` } }),
             ]);
             if (meRes.ok) { const d = await meRes.json(); if (d.status === 'success') setHospede(d.data); }
             if (resRes.ok) {

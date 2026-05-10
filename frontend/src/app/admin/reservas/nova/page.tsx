@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 interface Quarto {
     id: string;
     nome: string;
@@ -49,8 +51,8 @@ export default function NovaReservaManual() {
         const fetchData = async () => {
             try {
                 const [qResp, eResp] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos`),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras`)
+                    fetch(`${EDGE_URL}/admin-quartos`),
+                    fetch(`${EDGE_URL}/admin-extras`)
                 ]);
                 const qData = await qResp.json();
                 const eData = await eResp.json();
@@ -67,7 +69,7 @@ export default function NovaReservaManual() {
         setLoading(true);
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas`, {
+            const resp = await fetch(`${EDGE_URL}/reservas-criar`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

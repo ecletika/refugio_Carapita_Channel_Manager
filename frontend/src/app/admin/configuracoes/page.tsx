@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
 import { Save, User, Mail, Phone, MapPin, Instagram, Facebook } from 'lucide-react';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function AdminConfiguracoes() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -23,7 +25,7 @@ export default function AdminConfiguracoes() {
 
     const fetchConfigs = async () => {
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes?t=${Date.now()}`, {
+            const resp = await fetch(`${EDGE_URL}/admin-site/configuracoes?t=${Date.now()}`, {
                 cache: 'no-store'
             });
             const json = await resp.json();
@@ -43,7 +45,7 @@ export default function AdminConfiguracoes() {
         setSaving(true);
         const token = localStorage.getItem('token');
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes`, {
+            const resp = await fetch(`${EDGE_URL}/admin-site/configuracoes`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

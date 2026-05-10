@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function LoginHospede() {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
@@ -16,7 +18,7 @@ export default function LoginHospede() {
 
         try {
             // ── 1. Tenta login como Admin/Staff primeiro ──
-            const respAdmin = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+            const respAdmin = await fetch(`${EDGE_URL}/auth-admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha })
@@ -34,7 +36,7 @@ export default function LoginHospede() {
             }
 
             // ── 2. Se falhou como admin, tenta como hóspede ──
-            const respHospede = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hospede/login`, {
+            const respHospede = await fetch(`${EDGE_URL}/hospede-login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha })

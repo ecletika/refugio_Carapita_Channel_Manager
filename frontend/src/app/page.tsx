@@ -19,6 +19,8 @@ import { useBookingStore } from '@/store/bookingStore';
 import { dictionaries as dict } from '@/i18n/dictionaries';
 import { countries } from '@/i18n/countries';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function Home() {
     // --- Global State (Zustand) ---
     const { 
@@ -98,7 +100,7 @@ export default function Home() {
         const fetchData = async () => {
             try {
                 // Configs
-                const configResp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes`, { cache: 'no-store' });
+                const configResp = await fetch(`${EDGE_URL}/site-configuracoes`, { cache: 'no-store' });
                 const configJson = await configResp.json();
                 if (configJson.status === 'success') {
                     setSiteConfigs(configJson.data);
@@ -106,17 +108,17 @@ export default function Home() {
                 }
 
                 // Rooms for Gallery
-                const roomsResp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quartos?ativo=true`, { cache: 'no-store' });
+                const roomsResp = await fetch(`${EDGE_URL}/site-quartos?ativo=true`, { cache: 'no-store' });
                 const roomsJson = await roomsResp.json();
                 if (roomsJson.status === 'success') setGalleryRooms(roomsJson.data.filter((q: any) => q.ativo));
 
                 // Extras
-                const extrasResp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extras`, { cache: 'no-store' });
+                const extrasResp = await fetch(`${EDGE_URL}/site-extras`, { cache: 'no-store' });
                 const extrasJson = await extrasResp.json();
                 if (extrasJson.status === 'success') setDisponiveisExtras(extrasJson.data);
 
                 // Passeios
-                const passeiosResp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/passeios`, { cache: 'no-store' });
+                const passeiosResp = await fetch(`${EDGE_URL}/site-passeios`, { cache: 'no-store' });
                 const passeiosJson = await passeiosResp.json();
                 if (passeiosJson.status === 'success') setPasseios(passeiosJson.data.filter((p: any) => p.ativo !== false));
 
@@ -134,7 +136,7 @@ export default function Home() {
             const dateFim = new Date(start);
             dateFim.setMonth(dateFim.getMonth() + 4);
             const end = endDate || dateFim.toISOString().split('T')[0];
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tarifas/calendario?quartoId=${quartoId}&inicio=${start}&fim=${end}`, { cache: 'no-store' });
+            const resp = await fetch(`${EDGE_URL}/tarifas-calendario?quartoId=${quartoId}&inicio=${start}&fim=${end}`, { cache: 'no-store' });
             const data = await resp.json();
             if (data.status === 'success') setCalendarioPrecos(data.data);
         } catch (e) { console.error("Error fetching calendar", e); }
@@ -145,7 +147,7 @@ export default function Home() {
         const email = (e.target as any).email.value;
         const senha = (e.target as any).password.value;
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hospede/login`, {
+            const resp = await fetch(`${EDGE_URL}/hospede-login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha })

@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Instagram, Facebook } from "lucide-react";
 import { dictionaries as dict } from "@/i18n/dictionaries";
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function ContactosPage() {
     const [lang, setLangState] = useState<'PT' | 'EN'>('PT');
     const [mounted, setMounted] = useState(false);
@@ -32,7 +34,7 @@ export default function ContactosPage() {
 
         const fetchConfigs = async () => {
             try {
-                const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/configuracoes?t=${Date.now()}`);
+                const resp = await fetch(`${EDGE_URL}/site-configuracoes?t=${Date.now()}`);
                 const json = await resp.json();
                 if (json.status === 'success') {
                     setSiteConfigs(json.data);
@@ -54,7 +56,7 @@ export default function ContactosPage() {
         setFormStatus('loading');
         
         try {
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/site/contato`, {
+            const resp = await fetch(`${EDGE_URL}/site-contato`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

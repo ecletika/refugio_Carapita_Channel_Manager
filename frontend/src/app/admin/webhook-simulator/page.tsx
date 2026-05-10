@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Send, Terminal, CircleAlert, CircleCheck } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 export default function WebhookSimulator() {
     const [canal, setCanal] = useState<'booking' | 'airbnb'>('booking');
     const [payload, setPayload] = useState('{\n  "action": "RESERVATION_CANCELLED",\n  "reservationId": "EXT-12345"\n}');
@@ -13,7 +15,7 @@ export default function WebhookSimulator() {
         setLoading(true);
         try {
             const endpoint = canal === 'booking' ? 'booking' : 'airbnb';
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reservas/webhooks/${endpoint}`, {
+            const resp = await fetch(`${EDGE_URL}/admin-reservas/webhook/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: payload
