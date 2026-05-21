@@ -82,8 +82,11 @@ export default function AdminQuartos() {
 
     const fetchComodidades = async () => {
         setLoadingGlobal(true);
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         try {
-            const resp = await fetch(`${EDGE_URL}/admin-comodidades`);
+            const resp = await fetch(`${EDGE_URL}/admin-comodidades`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const data = await resp.json();
             if (data.status === 'success') {
                 setAllComodidades(data.data);
@@ -97,8 +100,11 @@ export default function AdminQuartos() {
 
 
     const fetchQuartos = async () => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         try {
-            const resp = await fetch(`${EDGE_URL}/admin-quartos`);
+            const resp = await fetch(`${EDGE_URL}/admin-quartos`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const data = await resp.json();
             if (data.status === 'success') setQuartos(data.data);
         } catch (e) {
