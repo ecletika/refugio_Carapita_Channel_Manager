@@ -364,10 +364,10 @@ export default function PerfilHospede() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {reservas.map((res: any) => (
                                             <div key={res.id} className="bg-black/20 p-6 border border-white/10 flex flex-col gap-4 hover:border-carapita-gold/50 transition-colors">
-                                                <div className="flex justify-between">
+                                                <div className="flex justify-between items-start">
                                                     <div>
                                                         <h3 className="font-serif text-lg text-white">{res.quarto?.nome}</h3>
-                                                        <span className={`text-[9px] uppercase tracking-widest font-bold ${res.status === 'CONFIRMADA' ? 'text-green-400' : 'text-carapita-gold'}`}>{res.status}</span>
+                                                        <span className={`text-[9px] uppercase tracking-widest font-bold ${res.status === 'CONFIRMADA' ? 'text-green-400' : res.status === 'CANCELADA' ? 'text-red-400' : 'text-carapita-gold'}`}>{res.status}</span>
                                                     </div>
                                                     <span className="text-lg font-bold text-white pr-2">€{Number(res.valor_total).toFixed(2)}</span>
                                                 </div>
@@ -375,6 +375,12 @@ export default function PerfilHospede() {
                                                     <div><span className="block text-[9px] text-white/40 uppercase tracking-widest">Check-In</span><strong className="text-white font-medium">{new Date(res.data_check_in).toLocaleDateString()}</strong></div>
                                                     <div><span className="block text-[9px] text-white/40 uppercase tracking-widest">Check-Out</span><strong className="text-white font-medium">{new Date(res.data_check_out).toLocaleDateString()}</strong></div>
                                                 </div>
+                                                {res.numero_reserva && (
+                                                    <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                                                        <span className="text-[9px] text-white/30 uppercase tracking-widest">Nº Reserva</span>
+                                                        <span className="text-xs font-mono text-carapita-gold tracking-widest">{res.numero_reserva}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
