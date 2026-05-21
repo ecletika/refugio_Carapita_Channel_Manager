@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
-import { Calendar, User, Home, Euro, Info, Tag, X, Send, FileText, CheckCircle, AlertCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Home, Info, Tag, X, Send, FileText, CheckCircle, AlertCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
 const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
@@ -123,7 +123,6 @@ export default function AdminReservas() {
       const data = await resp.json();
       setSendResult({ ok: data.status === 'success', msg: data.message || data.error || 'Erro desconhecido' });
       if (data.status === 'success') {
-        // Refresh logs
         setTimeout(() => openAimaModal(aimaModal), 800);
       }
     } catch { setSendResult({ ok: false, msg: 'Erro de comunicação com o servidor.' }); }
@@ -428,7 +427,7 @@ export default function AdminReservas() {
                     {sending ? (
                       <>
                         <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-                        A enviar...
+                        A enviar para AIMA...
                       </>
                     ) : (
                       <>
