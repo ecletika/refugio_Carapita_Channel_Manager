@@ -46,13 +46,11 @@ export default function NovaReservaManual() {
         },
     });
 
-    // ── carregar dados com auth ──────────────────────────────────────────────
+    // ── carregar quartos e extras (APIs públicas — sem auth necessária) ────────
     useEffect(() => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-        const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
         Promise.all([
-            fetch(`${EDGE_URL}/admin-quartos`, { headers }).then(r => r.json()),
-            fetch(`${EDGE_URL}/admin-extras`,  { headers }).then(r => r.json()),
+            fetch(`${EDGE_URL}/site-quartos?ativo=true`).then(r => r.json()),
+            fetch(`${EDGE_URL}/site-extras`).then(r => r.json()),
         ]).then(([qData, eData]) => {
             if (qData.status === 'success') setQuartos(qData.data || []);
             if (eData.status === 'success') setExtras(eData.data || []);
@@ -90,6 +88,11 @@ export default function NovaReservaManual() {
 
     // ── submissão ───────────────────────────────────────────────────────────
     const handleSubmit = async () => {
+        // Validação final antes de enviar
+        if (!form.quartoId) { setErro('Por favor selecione um alojamento no passo 2.'); return; }
+        if (!form.checkIn || !form.checkOut || noites <= 0) { setErro('Por favor defina as datas de check-in e check-out.'); return; }
+        if (!form.hospede.nome.trim() || !form.hospede.email.trim()) { setErro('Nome e email do hóspede são obrigatórios.'); return; }
+
         setErro('');
         setLoading(true);
         const token = localStorage.getItem('token');
@@ -103,9 +106,9 @@ export default function NovaReservaManual() {
                 requerimentosEspeciais: form.requerimentosEspeciais || null,
                 extrasIds: form.extrasIds.length > 0 ? form.extrasIds : [],
                 hospede: {
-                    nome:             form.hospede.nome,
-                    sobrenome:        form.hospede.sobrenome || '',
-                    email:            form.hospede.email,
+                    nome:             form.hospede.nome.trim(),
+                    sobrenome:        form.hospede.sobrenome.trim() || '',
+                    email:            form.hospede.email.trim(),
                     telefone:         form.hospede.telefone || null,
                     pais:             form.hospede.pais,
                     numero_documento: form.hospede.numero_documento || null,
@@ -113,7 +116,10 @@ export default function NovaReservaManual() {
             };
             const resp = await fetch(`${EDGE_URL}/reservas-criar`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                },
                 body: JSON.stringify(payload),
             });
             const data = await resp.json();
@@ -184,7 +190,7 @@ export default function NovaReservaManual() {
                 {/* Header */}
                 <div className="mb-10 flex items-start justify-between flex-wrap gap-4">
                     <div>
-                        <span className="text-[#C4A484] text-[10px] uppercase tracking-mega font-bold block mb-1">Recepção</span>
+                        <span className="text-[#C4A484] text-[10px] uppercase tracking-widest font-bold block mb-1">Recepção</span>
                         <h1 className="text-4xl font-serif text-[#1E3932]">Nova Reserva Manual</h1>
                     </div>
                     <button onClick={() => router.push('/admin/reservas')}
@@ -332,7 +338,7 @@ export default function NovaReservaManual() {
 
                                     {extras.length > 0 && (
                                         <div className="mb-10">
-                                            <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-4 flex items-center gap-2">
+                                            <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold flex items-center gap-2 mb-4">
                                                 <Sparkles size={12} className="text-[#C4A484]" /> Serviços Adicionais
                                             </label>
                                             <div className="flex flex-wrap gap-2">
@@ -351,7 +357,7 @@ export default function NovaReservaManual() {
                                     )}
 
                                     <div>
-                                        <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-2 flex items-center gap-2">
+                                        <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold flex items-center gap-2 mb-2">
                                             <StickyNote size={12} /> Notas Internas
                                         </label>
                                         <textarea rows={3}
