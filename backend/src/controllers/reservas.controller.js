@@ -5,6 +5,9 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
 class ReservasController {
+    static gerarAimaFormToken() {
+        return crypto.randomBytes(24).toString('hex');
+    }
 
     // 1. Listar Disponibilidade Real
     static async listarDisponibilidade(req, res) {
@@ -212,6 +215,7 @@ class ReservasController {
 
             // Salvar Reserva
             const nowReserva = new Date().toISOString();
+            const aimaFormToken = ReservasController.gerarAimaFormToken();
             const { data: novaReserva, error } = await supabase.supabaseAdmin
                 .from('Reserva')
                 .insert([{
@@ -227,6 +231,8 @@ class ReservasController {
                     requerimentos_especiais: requerimentosEspeciais,
                     extras_ids: extrasIds && extrasIds.length > 0 ? extrasIds : null,
                     cupom_id: cupomValido ? cupomValido.id : null,
+                    aima_form_token: aimaFormToken,
+                    aima_dados_completos: false,
                     criado_em: nowReserva,
                     atualizado_em: nowReserva
                 }])

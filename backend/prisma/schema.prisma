@@ -52,6 +52,14 @@ model Hospede {
   cep           String?
   nif           String?
   passaporte    String?
+  estrangeiro   Boolean  @default(false)
+  data_nascimento String?
+  local_nascimento String?
+  nacionalidade String?
+  tipo_documento String?
+  numero_documento String?
+  pais_emissor_documento String?
+  dependentes   Json     @default("[]")
   criado_em     DateTime @default(now())
   atualizado_em DateTime @updatedAt
   reservas      Reserva[]
@@ -88,6 +96,8 @@ model Reserva {
   extras_ids             String?
   requerimentos_especiais String?
   cupom_id               String?
+  aima_form_token        String?  @unique
+  aima_dados_completos   Boolean @default(false)
   criado_em              DateTime @default(now())
   atualizado_em          DateTime @updatedAt
 
