@@ -263,7 +263,27 @@ export default function BookingImmersive({
                 signal: controller.signal
             });
             const data = await resp.json();
-            if (data.status === 'success') setBookingStep('success');
+            if (data.status === 'success') {
+                // Auto-login: se o hóspede criou conta durante a reserva, autentica-o
+                // automaticamente para que o botão "Entrar no Portal Carapita" abra
+                // o /perfil já com sessão iniciada.
+                if (bookingForm.criarConta && bookingForm.senha) {
+                    try {
+                        const loginResp = await fetch(`${EDGE_URL}/hospede-login`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: bookingForm.email, senha: bookingForm.senha }),
+                        });
+                        const loginData = await loginResp.json();
+                        if (loginData.status === 'success' && loginData.token) {
+                            localStorage.setItem('guestToken', loginData.token);
+                        }
+                    } catch (loginErr) {
+                        console.error('Auto-login após reserva falhou:', loginErr);
+                    }
+                }
+                setBookingStep('success');
+            }
             else alert(data.error || "Erro ao criar reserva");
         } catch (e: any) {
             if (e?.name === 'AbortError') {
