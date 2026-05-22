@@ -5,7 +5,6 @@ import AdminSidebar from '@/components/AdminSidebar';
 
 const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
 const PUBLIC_SITE_URL = 'https://refugiocarapita.pt';
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
 interface Reserva {
   id: string;
@@ -140,9 +139,7 @@ export default function AdminReservas() {
     setSendingForm(true);
     setFormSendResult(null);
     try {
-      const url = API_URL
-        ? `${API_URL}/api/reservas/${aimaModal}/enviar-formulario-aima`
-        : `${EDGE_URL}/reservas/${aimaModal}/enviar-formulario-aima`;
+      const url = `${EDGE_URL}/enviar-formulario-aima/${aimaModal}`;
       const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
