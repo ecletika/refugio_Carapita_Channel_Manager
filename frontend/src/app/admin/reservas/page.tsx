@@ -4,6 +4,7 @@ import { Calendar, Home, Info, Tag, X, Send, FileText, CheckCircle, AlertCircle,
 import AdminSidebar from '@/components/AdminSidebar';
 
 const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+const PUBLIC_SITE_URL = 'https://refugiocarapita.pt';
 
 interface Reserva {
   id: string;
@@ -144,6 +145,14 @@ export default function AdminReservas() {
 
   const showAimaButton = (res: Reserva) =>
     ['CONFIRMADA', 'CHECK_IN', 'CHECK_OUT', 'PENDENTE'].includes(res.status);
+
+  const selectedReserva = aimaModal ? reservas.find(res => res.id === aimaModal) : null;
+  const aimaFormUrl = selectedReserva?.aima_form_token
+    ? `${PUBLIC_SITE_URL}/aima?token=${selectedReserva.aima_form_token}`
+    : '';
+  const aimaMailto = selectedReserva && aimaFormUrl
+    ? `mailto:${encodeURIComponent(selectedReserva.hospede.email)}?subject=${encodeURIComponent('Formulario de identificacao AIMA - Refugio Carapita')}&body=${encodeURIComponent(`Ola ${selectedReserva.hospede.nome},\n\nPara concluirmos os dados obrigatorios da sua estadia no Refugio Carapita, por favor preencha o formulario de identificacao AIMA neste link:\n\n${aimaFormUrl}\n\nObrigado,\nRefugio Carapita`)}`
+    : '';
 
   if (loading) return (
     <div className="min-h-screen bg-[#F9F8F6] flex items-center justify-center">
@@ -323,6 +332,43 @@ export default function AdminReservas() {
                     </p>
                   </div>
                 </div>
+
+                {!aimaData.reserva.aima_dados_completos && (
+                  <div className="border border-amber-200 bg-white p-4">
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-[#C4A484] mb-2">Enviar formulario ao hospede</p>
+                    {aimaFormUrl ? (
+                      <>
+                        <div className="bg-[#FAF8F4] border border-gray-100 px-3 py-2 text-[10px] text-[#1E3932] break-all mb-3">
+                          {aimaFormUrl}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <a
+                            href={aimaMailto}
+                            className="py-2 bg-[#1E3932] text-[#C4A484] text-[9px] uppercase tracking-widest font-bold hover:bg-[#C4A484] hover:text-white transition-colors text-center"
+                          >
+                            Enviar Email
+                          </a>
+                          <button
+                            onClick={() => window.open(aimaFormUrl, '_blank')}
+                            className="py-2 border border-gray-200 text-gray-500 text-[9px] uppercase tracking-widest font-bold hover:bg-gray-50 transition-colors cursor-pointer"
+                          >
+                            Abrir Link
+                          </button>
+                          <button
+                            onClick={() => navigator.clipboard?.writeText(aimaFormUrl)}
+                            className="py-2 border border-gray-200 text-gray-500 text-[9px] uppercase tracking-widest font-bold hover:bg-gray-50 transition-colors cursor-pointer"
+                          >
+                            Copiar Link
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-xs text-amber-700 leading-relaxed">
+                        Esta reserva ainda nao devolveu um token do formulario AIMA. Verifique se a funcao de criacao de reserva esta a gerar o token.
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Guest list */}
                 {aimaData.hospedes.length > 0 && (
