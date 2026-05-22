@@ -26,7 +26,10 @@ const config: Config = {
             letterSpacing: {
                 widest: '.2em',
                 mega: '.3em',
-            }
+            },
+            animation: {
+                'spin-slow': 'spin 3s linear infinite',
+            },
         },
     },
     plugins: [],

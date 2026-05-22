@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { dictionaries as dict } from "@/i18n/dictionaries";
-import { Menu, X, User, LogIn } from "lucide-react";
+import { Menu, X, User, LogIn, Plus } from "lucide-react";
 
 interface HeaderProps {
     scrolled?: boolean;
@@ -100,24 +100,44 @@ export default function Header({ scrolled: propScrolled, lang, setLang, mounted,
                         {lang === 'PT' ? 'EN' : 'PT'}
                     </button>
 
+                    {/* Botão conta/login — fica redondo (ícone apenas) com scroll */}
                     <button
                         onClick={() => {
                             const token = localStorage.getItem('token');
                             if (token) router.push('/perfil');
                             else router.push('/login');
                         }}
-                        className={`hidden md:flex items-center gap-2 px-6 py-2 rounded-full text-[10px] uppercase tracking-widest transition-all duration-300 border ${scrolled
-                            ? 'border-white/20 text-white hover:bg-white hover:text-carapita-green'
-                            : 'border-white text-white hover:bg-white hover:text-carapita-dark'
-                            }`}
+                        className={`hidden md:flex items-center justify-center gap-2 transition-all duration-500 border overflow-hidden ${
+                            scrolled
+                                ? 'w-10 h-10 p-0 rounded-lg border-white/20 text-white hover:bg-white hover:text-carapita-green'
+                                : 'px-6 py-2 rounded-full border-white text-white hover:bg-white hover:text-carapita-dark'
+                        }`}
+                        title={mounted && isLoggedIn ? t('btn_conta') : t('btn_login')}
                     >
                         {isLoggedIn ? <User size={14} /> : <LogIn size={14} />}
-                        <span>{mounted && isLoggedIn ? t('btn_conta') : t('btn_login')}</span>
+                        <span className={`transition-all duration-500 whitespace-nowrap text-[10px] uppercase tracking-widest ${scrolled ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
+                            {mounted && isLoggedIn ? t('btn_conta') : t('btn_login')}
+                        </span>
                     </button>
 
-                    <button onClick={onReservar} className={`text-[8px] md:text-[10px] uppercase tracking-mega font-bold rounded-full px-4 md:px-8 py-2 md:py-3 transition-all duration-500 bg-carapita-dark text-white hover:bg-carapita-gold text-center shadow-lg border border-white/5`}>
-                        <span className="hidden sm:inline">{t('btn_reservar_now')}</span>
-                        <span className="sm:hidden">{t('btn_reservar')}</span>
+                    {/* Botão Reservar — fica compacto com ícone + girante com scroll */}
+                    <button
+                        onClick={onReservar}
+                        className={`flex items-center justify-center transition-all duration-500 bg-carapita-dark text-white hover:bg-carapita-gold shadow-lg border border-white/5 overflow-hidden ${
+                            scrolled
+                                ? 'w-10 h-10 p-0 rounded-lg'
+                                : 'rounded-full px-4 md:px-8 py-2 md:py-3'
+                        }`}
+                        title={t('btn_reservar_now')}
+                    >
+                        <Plus
+                            size={16}
+                            className={`flex-shrink-0 transition-all duration-500 ${scrolled ? 'animate-spin-slow' : ''}`}
+                        />
+                        <span className={`transition-all duration-500 whitespace-nowrap text-[8px] md:text-[10px] uppercase tracking-mega font-bold ${scrolled ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100 ml-2'}`}>
+                            <span className="hidden sm:inline">{t('btn_reservar_now')}</span>
+                            <span className="sm:hidden">{t('btn_reservar')}</span>
+                        </span>
                     </button>
                 </div>
             </header>
