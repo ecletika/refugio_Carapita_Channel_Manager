@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import PortalLoader from '../../components/PortalLoader';
 
 const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
 import { LogOut, Calendar, Home, User, Plus, Trash2, MapPin, Instagram, Phone, Save, Navigation, Camera, FileText, X, CreditCard } from 'lucide-react';
@@ -174,7 +175,7 @@ export default function PerfilHospede() {
         }
     };
 
-    if (loading) return <div className="min-h-screen bg-white flex items-center justify-center font-sans tracking-mega uppercase text-xs">Carregando O Seu Portal...</div>;
+    if (loading) return <PortalLoader label="A preparar o seu portal..." />;
 
     return (
         <main className="min-h-screen bg-carapita-green flex flex-col font-sans">

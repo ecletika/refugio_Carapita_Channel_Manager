@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CreditCard, FileText, CircleCheck, Clock, AlertTriangle, ArrowLeft, Download, ExternalLink, Home, LogOut, Loader2, Shield } from 'lucide-react';
+import PortalLoader from '../../../components/PortalLoader';
 
 interface Parcela {
     tipo: string;
@@ -160,14 +161,7 @@ function PagamentosContent() {
         router.push('/');
     };
 
-    if (loading) return (
-        <div className="min-h-screen bg-carapita-green flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4">
-                <Loader2 className="animate-spin text-carapita-gold" size={40} />
-                <p className="text-white/60 text-xs uppercase tracking-widest">A carregar pagamentos...</p>
-            </div>
-        </div>
-    );
+    if (loading) return <PortalLoader label="A carregar pagamentos..." />;
 
     const progresso = dadosPagamento ? (dadosPagamento.resumo.valor_pago / dadosPagamento.resumo.valor_total) * 100 : 0;
 
