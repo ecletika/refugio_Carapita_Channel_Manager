@@ -65,6 +65,13 @@ function PagamentosContent() {
 
     const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
     const API = EDGE_URL;
+    const PAYMENTS_API = (process.env.NEXT_PUBLIC_PAYMENTS_API_URL || process.env.NEXT_PUBLIC_API_URL || EDGE_URL).replace(/\/$/, '');
+    const pagamentosUrl = (path: string) => {
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        if (PAYMENTS_API.includes('/functions/v1')) return `${PAYMENTS_API}/pagamentos${cleanPath}`;
+        const base = PAYMENTS_API.endsWith('/api') ? PAYMENTS_API : `${PAYMENTS_API}/api`;
+        return `${base}/pagamentos${cleanPath}`;
+    };
 
     const getToken = () => localStorage.getItem('token') || localStorage.getItem('guestToken');
 
@@ -98,10 +105,10 @@ function PagamentosContent() {
         const token = getToken();
         if (!token || !id) return;
         try {
-            const res = await fetch(`${API}/api/pagamentos/reserva/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+            const res = await fetch(pagamentosUrl(`/reserva/${id}`), { headers: { Authorization: `Bearer ${token}` } });
             if (res.ok) { const d = await res.json(); if (d.status === 'success') setDadosPagamento(d.data); }
         } catch (e) { console.error(e); }
-    }, [API]);
+    }, [PAYMENTS_API]);
 
     useEffect(() => { fetchReservas(); }, []);
 
@@ -119,7 +126,7 @@ function PagamentosContent() {
         if (!token || !reservaSelecionada) return;
         setLoadingPagamento(true);
         try {
-            const res = await fetch(`${API}/api/pagamentos/checkout`, {
+            const res = await fetch(pagamentosUrl('/checkout'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ reservaId: reservaSelecionada, tipo }),
@@ -139,7 +146,7 @@ function PagamentosContent() {
         if (!token || !reservaSelecionada) return;
         setLoadingFatura(true);
         try {
-            const res = await fetch(`${API}/api/pagamentos/fatura/${reservaSelecionada}`, { headers: { Authorization: `Bearer ${token}` } });
+            const res = await fetch(pagamentosUrl(`/fatura/${reservaSelecionada}`), { headers: { Authorization: `Bearer ${token}` } });
             const data = await res.json();
             if (data.status === 'success') { setFatura(data.data); setShowFatura(true); }
             else showToast('error', data.error || 'Erro ao gerar fatura.');

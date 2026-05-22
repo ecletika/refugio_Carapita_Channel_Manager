@@ -4,7 +4,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY || 'dummy_key');
 const EmailService = require('../services/email.service');
 
 const frontendUrl = process.env.NODE_ENV === 'production'
-    ? 'https://refugiocarapita.com'
+    ? (process.env.FRONTEND_URL || 'https://refugiocarapita.pt')
     : 'http://localhost:3000';
 
 class PagamentosController {
