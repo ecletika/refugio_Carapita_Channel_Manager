@@ -9,6 +9,7 @@ import {
 import AdminSidebar from '@/components/AdminSidebar';
 
 const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+const PUBLIC_SITE_URL = 'https://refugiocarapita.com';
 
 const PAISES = ['Portugal','Brasil','Espanha','França','Reino Unido','Alemanha','Itália',
     'Estados Unidos','Canadá','Suíça','Angola','Cabo Verde','Moçambique','Irlanda','Bélgica','Outro'];
@@ -136,6 +137,11 @@ export default function NovaReservaManual() {
     };
 
     const quartoSelecionado = quartos.find(q => q.id === form.quartoId);
+    const aimaFormToken = reservaCriada?.aima_form_token || reservaCriada?.aimaFormToken || reservaCriada?.aimaToken;
+    const aimaFormUrl = aimaFormToken ? `${PUBLIC_SITE_URL}/aima?token=${aimaFormToken}` : '';
+    const aimaMailto = aimaFormUrl
+        ? `mailto:${encodeURIComponent(form.hospede.email)}?subject=${encodeURIComponent('Formulario de identificacao AIMA - Refugio Carapita')}&body=${encodeURIComponent(`Ola ${form.hospede.nome},\n\nPara concluirmos os dados obrigatorios da sua estadia no Refugio Carapita, por favor preencha o formulario de identificacao AIMA neste link:\n\n${aimaFormUrl}\n\nObrigado,\nRefugio Carapita`)}`
+        : '';
 
     // ── SUCESSO ─────────────────────────────────────────────────────────────
     if (reservaCriada) {
@@ -163,6 +169,39 @@ export default function NovaReservaManual() {
                                 <div><span className="text-white/40 uppercase tracking-widest block mb-1">Total</span><span className="text-[#C4A484] font-bold text-base">€{total.toFixed(2)}</span></div>
                                 <div><span className="text-white/40 uppercase tracking-widest block mb-1">Estado</span><span className="text-green-400 font-bold uppercase text-[10px] tracking-widest">Confirmada</span></div>
                             </div>
+                        </div>
+
+                        <div className="bg-white border border-gray-100 p-6 mb-6 text-left">
+                            <span className="text-[10px] uppercase tracking-widest text-[#C4A484] font-bold block mb-2">Formulario AIMA</span>
+                            {aimaFormUrl ? (
+                                <>
+                                    <p className="text-xs text-gray-500 leading-relaxed mb-4">
+                                        Envie este link ao hospede para recolher os dados de identificacao antes do check-in.
+                                    </p>
+                                    <div className="bg-[#FAF8F4] border border-gray-100 px-4 py-3 text-xs text-[#1E3932] break-all mb-4">
+                                        {aimaFormUrl}
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <a href={aimaMailto}
+                                            className="text-center bg-[#1E3932] text-[#C4A484] py-3 text-[10px] uppercase tracking-widest hover:bg-[#C4A484] hover:text-white transition-colors duration-300">
+                                            Enviar Email
+                                        </a>
+                                        <button onClick={() => window.open(aimaFormUrl, '_blank')}
+                                            className="border border-[#1E3932] text-[#1E3932] py-3 text-[10px] uppercase tracking-widest hover:bg-[#1E3932] hover:text-white transition-colors duration-300 cursor-pointer">
+                                            Abrir Link
+                                        </button>
+                                        <button onClick={() => navigator.clipboard?.writeText(aimaFormUrl)}
+                                            className="border border-gray-200 text-gray-500 py-3 text-[10px] uppercase tracking-widest hover:bg-gray-50 transition-colors duration-300 cursor-pointer">
+                                            Copiar Link
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 p-4 text-amber-700 text-sm">
+                                    <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                                    A reserva foi criada, mas a API nao devolveu o token do formulario AIMA. Abra a reserva em "Ver Todas as Reservas" para verificar o estado AIMA.
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex gap-3">
