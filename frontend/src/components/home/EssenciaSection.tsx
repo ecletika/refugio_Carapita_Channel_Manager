@@ -44,18 +44,20 @@ export default function EssenciaSection({ t, scrollTo }: EssenciaSectionProps) {
                         {/* Imagem 2 — Frente Esquerda (detalhe alojamento) */}
                         <div className="hidden md:block absolute left-0 lg:-left-12 xl:-left-20 bottom-[-20px] md:bottom-[-40px] w-[60%] md:w-[50%] lg:w-[40%] h-[320px] sm:h-[450px] md:h-[520px] z-20 overflow-hidden group shadow-[20px_20px_50px_rgba(0,0,0,0.5)] border-4 border-carapita-gold">
                             <img
-                                src="https://a0.muscache.com/im/pictures/hosting/Hosting-1580467683590335058/original/f0f4a673-77ef-4b5a-ba7a-2888f3e9eebf.jpeg?im_w=960"
+                                src="https://cf.bstatic.com/xdata/images/hotel/max1024x768/826730877.jpg?k=fc9b835d1bdb1169df946909e38c19b06b9131b7c3fa72703b8d7e064e45849d&o="
                                 className="w-full h-full object-cover transform duration-[3s] group-hover:scale-105"
                                 alt="Detalhes do Alojamento"
+                                onError={(e) => { (e.target as HTMLImageElement).src = '/essencia_carapita.jpg'; }}
                             />
                         </div>
 
                         {/* Imagem 3 — Baixo Direita Sobreposta (quarto principal) */}
                         <div className="hidden md:block absolute left-[33%] lg:left-[30%] bottom-[-80px] md:bottom-[-100px] w-[52%] md:w-[48%] h-[280px] md:h-[380px] z-30 overflow-hidden group shadow-[0px_25px_60px_rgba(0,0,0,0.7)] border-4 border-carapita-gold">
                             <img
-                                src="/images/quarto-principal.jpg"
+                                src="https://cf.bstatic.com/xdata/images/hotel/max1024x768/808586033.jpg?k=e38ec43a7b82ffd6a24db7470dc5cbd76365352b4ef7330b4ba3db04608921dd&o="
                                 className="w-full h-full object-cover transform duration-[3s] group-hover:scale-105"
                                 alt="Quarto Principal"
+                                onError={(e) => { (e.target as HTMLImageElement).src = '/images/quarto-principal.jpg'; }}
                             />
                         </div>
                     </div>

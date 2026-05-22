@@ -39,7 +39,7 @@ export default function PasseiosSection({ t, passeios }: PasseiosSectionProps) {
                 {passeios.slice(0, 4).map((passeio, idx) => (
                     <div key={idx} className="group flex flex-col items-center text-center cursor-pointer" onClick={() => setPasseioSelecionado(passeio)}>
                         <div className="w-full h-64 md:h-72 overflow-hidden mb-6 relative border border-white/10">
-                            <img src={passeio.img} alt={passeio.nome} className="w-full h-full object-cover transform duration-700 group-hover:scale-105 filter group-hover:brightness-110" />
+                            <img src={passeio.img} alt={passeio.nome} className="w-full h-full object-cover transform duration-700 group-hover:scale-105 filter group-hover:brightness-110" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/essencia_carapita.jpg'; }} />
                             <div className="absolute top-4 left-4 bg-carapita-green/90 backdrop-blur-sm px-3 py-1 flex items-center gap-1 shadow-sm border border-white/5">
                                 <MapPin size={10} className="text-carapita-gold" />
                                 <span className="text-[9px] uppercase tracking-widest font-semibold text-white">{passeio.dist || passeio.distancia}</span>
@@ -70,7 +70,7 @@ export default function PasseiosSection({ t, passeios }: PasseiosSectionProps) {
                         </button>
 
                         <div className="w-full md:w-1/2 h-[300px] md:h-auto sticky top-0 md:relative">
-                            <img src={passeioSelecionado.img} className="w-full h-full object-cover" alt={passeioSelecionado.nome} />
+                            <img src={passeioSelecionado.img} className="w-full h-full object-cover" alt={passeioSelecionado.nome} onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/essencia_carapita.jpg'; }} />
                             <div className="absolute inset-0 bg-gradient-to-t from-carapita-green via-transparent to-transparent opacity-60 md:hidden" />
                         </div>
 
