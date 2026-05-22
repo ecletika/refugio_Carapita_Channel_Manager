@@ -406,6 +406,67 @@ class ReservasController {
         }
     }
 
+    static async enviarFormularioAima(req, res) {
+        try {
+            const { id } = req.params;
+
+            const { data, error } = await supabase.supabaseAdmin
+                .from('Reserva')
+                .select('*, Hospede(*), Quarto(*)')
+                .eq('id', id)
+                .single();
+
+            if (error || !data) {
+                return res.status(404).json({ error: 'Reserva não encontrada' });
+            }
+
+            if (!data.Hospede?.email) {
+                return res.status(400).json({ error: 'Esta reserva não tem email de hóspede.' });
+            }
+
+            let reserva = data;
+            if (!reserva.aima_form_token) {
+                const { data: updated, error: updateError } = await supabase.supabaseAdmin
+                    .from('Reserva')
+                    .update({
+                        aima_form_token: ReservasController.gerarAimaFormToken(),
+                        aima_dados_completos: false,
+                        atualizado_em: new Date().toISOString()
+                    })
+                    .eq('id', id)
+                    .select('*, Hospede(*), Quarto(*)')
+                    .single();
+
+                if (updateError || !updated) {
+                    return res.status(500).json({ error: 'Não foi possível gerar o token do formulário AIMA.' });
+                }
+                reserva = updated;
+            }
+
+            const formularioUrl = EmailService._aimaFormUrl(reserva.aima_form_token);
+            await EmailService.enviarFormularioAima(reserva.Hospede, {
+                ...reserva,
+                hospede: reserva.Hospede,
+                quarto: reserva.Quarto
+            }, formularioUrl);
+
+            return res.json({
+                status: 'success',
+                message: 'Formulário AIMA enviado com sucesso para o hóspede e para contacto@refugiocarapita.pt.',
+                data: {
+                    reservaId: reserva.id,
+                    numero_reserva: reserva.numero_reserva,
+                    aima_form_token: reserva.aima_form_token,
+                    formulario_url: formularioUrl,
+                    enviado_para: [reserva.Hospede.email, process.env.EMAIL_CONTATO || 'contacto@refugiocarapita.pt']
+                }
+            });
+        } catch (error) {
+            console.error('❌ enviarFormularioAima:', error.message);
+            return res.status(500).json({ error: `Erro ao enviar formulário AIMA: ${error.message}` });
+        }
+    }
+
 
     // 7. Admin List
     static async listarTodas(req, res) {

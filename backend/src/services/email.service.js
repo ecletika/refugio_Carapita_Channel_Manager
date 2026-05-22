@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 class EmailService {
     static transporter = nodemailer.createTransport({
@@ -60,6 +61,102 @@ class EmailService {
 
     static _pagamentosUrl = (reservaId) =>
         `https://refugiocarapita.com/perfil?tab=pagamentos&reserva=${reservaId}`;
+
+    static _siteUrl = () => (process.env.FRONTEND_URL || 'https://refugiocarapita.pt').replace(/\/$/, '');
+
+    static _aimaFormUrl = (token) => `${this._siteUrl()}/aima?token=${token}`;
+
+    static async _sendTransactionalEmail({ to, subject, html }) {
+        const fromEmail = process.env.EMAIL_FROM || 'reservas@refugiocarapita.com';
+        const fromName = process.env.EMAIL_FROM_NAME || 'Refúgio Carapita';
+
+        if (process.env.BREVO_API_KEY) {
+            await axios.post('https://api.brevo.com/v3/smtp/email', {
+                sender: { name: fromName, email: fromEmail },
+                to: [{ email: to }],
+                subject,
+                htmlContent: html
+            }, {
+                headers: {
+                    'api-key': process.env.BREVO_API_KEY,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            return;
+        }
+
+        await this.transporter.sendMail({
+            from: `"${fromName}" <${fromEmail}>`,
+            to,
+            subject,
+            html
+        });
+    }
+
+    static async enviarFormularioAima(hospede, reserva, formularioUrl) {
+        const emailContato = process.env.EMAIL_CONTATO || 'contacto@refugiocarapita.pt';
+        const nomeHospede = `${hospede?.nome || ''} ${hospede?.sobrenome || ''}`.trim() || 'Hóspede';
+        const codigoReserva = reserva.numero_reserva || reserva.id?.substring(0, 8).toUpperCase() || '';
+        const checkIn = reserva.data_check_in
+            ? new Date(reserva.data_check_in).toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+            : '';
+        const checkOut = reserva.data_check_out
+            ? new Date(reserva.data_check_out).toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+            : '';
+
+        const htmlCliente = `<div style="${this._baseStyle}">
+            ${this._header('Formulário de Identificação AIMA')}
+            <div style="padding:32px 40px;">
+                <p style="font-size:15px; margin-top:0;">Olá, <strong>${nomeHospede}</strong>,</p>
+                <p style="color:#444; line-height:1.8;">
+                    Para cumprirmos as obrigações legais do Alojamento Local junto da <strong>AIMA</strong>, precisamos que preencha o formulário de identificação dos hóspedes da sua reserva.
+                </p>
+                ${this._reservaBox(reserva)}
+                <div style="background:#FFFBF0; border-left:3px solid #C4A484; padding:16px 20px; margin:24px 0; font-size:13px; line-height:1.9; color:#444;">
+                    <p style="margin:0;"><strong>Reserva:</strong> ${codigoReserva}</p>
+                    ${checkIn ? `<p style="margin:8px 0 0;"><strong>Check-in:</strong> ${checkIn}</p>` : ''}
+                    ${checkOut ? `<p style="margin:8px 0 0;"><strong>Check-out:</strong> ${checkOut}</p>` : ''}
+                </div>
+                ${this._ctaButton('Preencher Formulário AIMA', formularioUrl)}
+                <p style="font-size:12px; color:#777; line-height:1.7; text-align:center;">
+                    Caso o botão não funcione, copie e cole este link no navegador:<br>
+                    <a href="${formularioUrl}" style="color:#C4A484; word-break:break-all;">${formularioUrl}</a>
+                </p>
+            </div>
+            ${this._footer()}
+        </div>`;
+
+        const htmlAdmin = `<div style="${this._baseStyle}">
+            ${this._header('Cópia do Formulário AIMA')}
+            <div style="padding:32px 40px;">
+                <p style="font-size:15px; margin-top:0;">Foi enviado um formulário AIMA ao hóspede.</p>
+                <table width="100%" cellpadding="6" cellspacing="0" style="font-size:13px; margin:20px 0; border:1px solid #E8E0D5;">
+                    <tr><td style="color:#888; width:35%; text-transform:uppercase; font-size:11px;">Reserva</td><td style="color:#1E3932; font-weight:bold;">${codigoReserva}</td></tr>
+                    <tr><td style="color:#888; text-transform:uppercase; font-size:11px;">Hóspede</td><td style="color:#1E3932; font-weight:bold;">${nomeHospede}</td></tr>
+                    <tr><td style="color:#888; text-transform:uppercase; font-size:11px;">Email</td><td style="color:#1E3932; font-weight:bold;">${hospede.email}</td></tr>
+                    ${checkIn ? `<tr><td style="color:#888; text-transform:uppercase; font-size:11px;">Check-in</td><td style="color:#1E3932; font-weight:bold;">${checkIn}</td></tr>` : ''}
+                </table>
+                ${this._ctaButton('Abrir Formulário AIMA', formularioUrl)}
+                <p style="font-size:12px; color:#777; line-height:1.7; text-align:center; word-break:break-all;">${formularioUrl}</p>
+            </div>
+            ${this._footer()}
+        </div>`;
+
+        await this._sendTransactionalEmail({
+            to: hospede.email,
+            subject: `Formulário de identificação AIMA — Reserva ${codigoReserva}`,
+            html: htmlCliente
+        });
+
+        await this._sendTransactionalEmail({
+            to: emailContato,
+            subject: `Cópia do formulário AIMA enviado — Reserva ${codigoReserva}`,
+            html: htmlAdmin
+        });
+
+        console.log(`📧 Formulário AIMA enviado → ${hospede.email} e ${emailContato}`);
+    }
 
     // ─── 1. Email de Confirmação de Reserva (após submissão no site) ──────────
 

@@ -5,6 +5,7 @@ import AdminSidebar from '@/components/AdminSidebar';
 
 const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
 const PUBLIC_SITE_URL = 'https://refugiocarapita.pt';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
 interface Reserva {
   id: string;
@@ -66,6 +67,8 @@ export default function AdminReservas() {
   const [aimaLoading, setAimaLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [formSendResult, setFormSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [sendingForm, setSendingForm] = useState(false);
   const [expandedGuest, setExpandedGuest] = useState<number>(0);
 
   const fetchReservas = async () => {
@@ -98,6 +101,7 @@ export default function AdminReservas() {
     setAimaModal(reservaId);
     setAimaData(null);
     setSendResult(null);
+    setFormSendResult(null);
     setExpandedGuest(0);
     setAimaLoading(true);
     try {
@@ -130,7 +134,36 @@ export default function AdminReservas() {
     finally { setSending(false); }
   };
 
-  const closeModal = () => { setAimaModal(null); setAimaData(null); setSendResult(null); };
+  const sendAimaFormEmail = async () => {
+    if (!aimaModal) return;
+    const token = localStorage.getItem('token');
+    setSendingForm(true);
+    setFormSendResult(null);
+    try {
+      const url = API_URL
+        ? `${API_URL}/api/reservas/${aimaModal}/enviar-formulario-aima`
+        : `${EDGE_URL}/reservas/${aimaModal}/enviar-formulario-aima`;
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await resp.json();
+      if (data.status === 'success') {
+        setFormSendResult({ ok: true, msg: data.message || 'Formulário enviado com sucesso.' });
+        if (data.data?.aima_form_token) {
+          setReservas(prev => prev.map(res => res.id === aimaModal ? { ...res, aima_form_token: data.data.aima_form_token } : res));
+        }
+      } else {
+        setFormSendResult({ ok: false, msg: data.error || 'Erro ao enviar formulário.' });
+      }
+    } catch {
+      setFormSendResult({ ok: false, msg: 'Erro de comunicação ao enviar formulário.' });
+    } finally {
+      setSendingForm(false);
+    }
+  };
+
+  const closeModal = () => { setAimaModal(null); setAimaData(null); setSendResult(null); setFormSendResult(null); };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -150,9 +183,6 @@ export default function AdminReservas() {
   const aimaToken = selectedReserva?.aima_form_token || aimaData?.reserva.aima_form_token;
   const aimaFormUrl = aimaToken
     ? `${PUBLIC_SITE_URL}/aima?token=${aimaToken}`
-    : '';
-  const aimaMailto = selectedReserva && aimaFormUrl
-    ? `mailto:${encodeURIComponent(selectedReserva.hospede.email)}?subject=${encodeURIComponent('Formulario de identificacao AIMA - Refugio Carapita')}&body=${encodeURIComponent(`Ola ${selectedReserva.hospede.nome},\n\nPara concluirmos os dados obrigatorios da sua estadia no Refugio Carapita, por favor preencha o formulario de identificacao AIMA neste link:\n\n${aimaFormUrl}\n\nObrigado,\nRefugio Carapita`)}`
     : '';
 
   if (loading) return (
@@ -343,12 +373,13 @@ export default function AdminReservas() {
                           {aimaFormUrl}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          <a
-                            href={aimaMailto}
-                            className="py-2 bg-[#1E3932] text-[#C4A484] text-[9px] uppercase tracking-widest font-bold hover:bg-[#C4A484] hover:text-white transition-colors text-center"
+                          <button
+                            onClick={sendAimaFormEmail}
+                            disabled={sendingForm}
+                            className="py-2 bg-[#1E3932] text-[#C4A484] text-[9px] uppercase tracking-widest font-bold hover:bg-[#C4A484] hover:text-white transition-colors text-center disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                           >
-                            Enviar Email
-                          </a>
+                            {sendingForm ? 'A Enviar...' : 'Enviar Email'}
+                          </button>
                           <button
                             onClick={() => window.open(aimaFormUrl, '_blank')}
                             className="py-2 border border-gray-200 text-gray-500 text-[9px] uppercase tracking-widest font-bold hover:bg-gray-50 transition-colors cursor-pointer"
@@ -362,6 +393,11 @@ export default function AdminReservas() {
                             Copiar Link
                           </button>
                         </div>
+                        {formSendResult && (
+                          <p className={`mt-3 text-xs leading-relaxed ${formSendResult.ok ? 'text-emerald-700' : 'text-red-600'}`}>
+                            {formSendResult.msg}
+                          </p>
+                        )}
                       </>
                     ) : (
                       <p className="text-xs text-amber-700 leading-relaxed">

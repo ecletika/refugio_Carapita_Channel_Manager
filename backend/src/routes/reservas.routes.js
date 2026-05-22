@@ -44,6 +44,9 @@ router.post('/:id/checkout', authMiddleware, ReservasController.checkOut);
 // 3.5 Enviar AIMA Manualmente
 router.post('/:id/enviar-aima', authMiddleware, ReservasController.enviarAima);
 
+// 3.6 Enviar link do formulário AIMA ao hóspede e ao contacto interno
+router.post('/:id/enviar-formulario-aima', authMiddleware, ReservasController.enviarFormularioAima);
+
 // ============================================
 // ROTAS DE INTEGRAÇÃO (Webhooks de Canais)
 // ============================================
