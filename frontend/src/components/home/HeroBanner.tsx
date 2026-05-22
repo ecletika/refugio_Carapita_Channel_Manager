@@ -8,12 +8,9 @@ interface HeroBannerProps {
 export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
     const [currentHeroIndex, setCurrentHeroIndex] = React.useState(0);
     const heroImages = [
-        // Imagem principal (upload direto — Supabase Storage)
-        "https://vuidkeygtxfbgxvmilya.supabase.co/storage/v1/object/public/carapita-images/1772751561638-WhatsApp_Image_2026-02-23_at_22.22.54_(7).jpeg",
-        // Exterior da propriedade (Airbnb CDN)
-        "https://a0.muscache.com/im/pictures/hosting/Hosting-1580467683590335058/original/6b48752c-55b9-44ba-a6e8-61c2c68239df.jpeg?im_w=1440",
-        // Quarto (Booking.com CDN)
-        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/808586137.jpg?k=7c0dbcd1b2989c9eb0784f8d5edb580acca24f4095745aba62a6f844b02d8f3d&o=",
+        "https://templarportugal.com/media/images/TZC03808-min.original.jpg",
+        "https://templarportugal.com/media/images/TZC03798-min.original.jpg",
+        "https://templarportugal.com/media/images/Castelo_e_Paao_dos_Condes_de_OurCm_iluminado.original.jpg"
     ];
 
     React.useEffect(() => {
