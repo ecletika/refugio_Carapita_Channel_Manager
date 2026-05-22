@@ -51,7 +51,7 @@ interface AimaLog {
 }
 
 interface AimaData {
-  reserva: { id: string; numero_reserva?: string; data_check_in: string; data_check_out: string; aima_dados_completos: boolean; quartoNome?: string };
+  reserva: { id: string; numero_reserva?: string; data_check_in: string; data_check_out: string; aima_dados_completos: boolean; aima_form_token?: string; quartoNome?: string };
   hospedes: AimaHospede[];
   logs: AimaLog[];
 }
@@ -147,8 +147,9 @@ export default function AdminReservas() {
     ['CONFIRMADA', 'CHECK_IN', 'CHECK_OUT', 'PENDENTE'].includes(res.status);
 
   const selectedReserva = aimaModal ? reservas.find(res => res.id === aimaModal) : null;
-  const aimaFormUrl = selectedReserva?.aima_form_token
-    ? `${PUBLIC_SITE_URL}/aima?token=${selectedReserva.aima_form_token}`
+  const aimaToken = selectedReserva?.aima_form_token || aimaData?.reserva.aima_form_token;
+  const aimaFormUrl = aimaToken
+    ? `${PUBLIC_SITE_URL}/aima?token=${aimaToken}`
     : '';
   const aimaMailto = selectedReserva && aimaFormUrl
     ? `mailto:${encodeURIComponent(selectedReserva.hospede.email)}?subject=${encodeURIComponent('Formulario de identificacao AIMA - Refugio Carapita')}&body=${encodeURIComponent(`Ola ${selectedReserva.hospede.nome},\n\nPara concluirmos os dados obrigatorios da sua estadia no Refugio Carapita, por favor preencha o formulario de identificacao AIMA neste link:\n\n${aimaFormUrl}\n\nObrigado,\nRefugio Carapita`)}`
