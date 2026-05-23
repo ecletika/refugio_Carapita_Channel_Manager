@@ -84,7 +84,7 @@ export default function CuponsAdmin() {
     return (
         <div className="min-h-screen bg-[#F9F8F6]">
             <AdminSidebar />
-            <div className="ml-20 p-8 md:p-12 max-w-7xl mx-auto space-y-6">
+            <div className="ml-0 md:ml-20 p-4 md:p-8 lg:p-12 max-w-7xl mx-auto space-y-6 pb-24 md:pb-4">
                 <div className="flex justify-between items-center bg-white p-6 shadow-sm border border-gray-100 rounded-sm">
                     <div>
                         <h1 className="text-2xl font-serif text-gray-900 tracking-wide">Cupons de Desconto</h1>

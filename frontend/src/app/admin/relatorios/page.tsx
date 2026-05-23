@@ -53,7 +53,7 @@ export default function AdminRelatorios() {
         <div className="min-h-screen bg-[#F9F8F6]">
             <AdminSidebar />
 
-            <div className="ml-20 p-8 md:p-12 max-w-7xl mx-auto">
+            <div className="ml-0 md:ml-20 p-4 md:p-8 lg:p-12 max-w-7xl mx-auto pb-24 md:pb-4">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
                     <div>
                         <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-1">Inteligência de Negócio</span>

@@ -102,7 +102,7 @@ export default function AdminConfiguracoes() {
                 </div>
             )}
 
-            <div className="ml-20 p-8 md:p-12 max-w-5xl mx-auto">
+            <div className="ml-0 md:ml-20 p-4 md:p-8 lg:p-12 max-w-5xl mx-auto pb-24 md:pb-4">
                 <div className="flex items-end justify-between mb-12">
                     <div>
                         <span className="text-[#C4A484] text-[10px] uppercase tracking-widest font-bold block mb-1">

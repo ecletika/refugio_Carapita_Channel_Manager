@@ -119,7 +119,7 @@ export default function AdminPasseios() {
     return (
         <div className="min-h-screen bg-[#F9F8F6]">
             <AdminSidebar />
-            <div className="ml-20 p-8 md:p-12 max-w-6xl mx-auto">
+            <div className="ml-0 md:ml-20 p-4 md:p-8 lg:p-12 max-w-6xl mx-auto pb-24 md:pb-4">
                 <div className="flex items-end justify-between mb-12">
                     <div>
                         <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-1">

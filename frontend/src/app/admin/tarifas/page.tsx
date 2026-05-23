@@ -199,7 +199,7 @@ export default function AdminTarifasBloqueios() {
                 </div>
             )}
 
-            <div className="ml-20 p-8 xl:p-12 max-w-[1400px] mx-auto">
+            <div className="ml-0 md:ml-20 p-4 md:p-8 xl:p-12 max-w-[1400px] mx-auto pb-24 md:pb-4">
 
                 {/* Header */}
                 <div className="mb-10">

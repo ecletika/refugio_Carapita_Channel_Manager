@@ -330,7 +330,7 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-[#F9F8F6] font-sans">
             <AdminSidebar />
 
-            <div className="ml-20 p-8 md:p-12 max-w-[1600px]">
+            <div className="ml-0 md:ml-20 p-4 md:p-8 lg:p-12 max-w-[1600px] pb-24 md:pb-4">
                 <div className="flex items-end justify-between mb-10">
                     <div>
                         <span className="text-carapita-gold text-[10px] uppercase tracking-mega font-bold block mb-1">
