@@ -14,6 +14,12 @@ interface HeaderProps {
     onReservar: () => void;
 }
 
+// Deve corresponder a ANIM_SCROLL do HeroBanner
+// A navbar desaparece quando a imagem do hero está completamente fora do ecrã:
+// wrapper = 100vh + 240px → sticky liberta aos 240px → imagem sai ao 240 + 100vh
+// Usamos innerHeight + 240 como limiar dinâmico, calculado no scroll handler.
+const HERO_EXTRA = 240;
+
 export default function Header({
     scrolled: propScrolled,
     lang,
@@ -29,17 +35,20 @@ export default function Header({
 
     useEffect(() => {
         const handle = () => {
-            const y = window.scrollY;
+            const y  = window.scrollY;
+            const vh = window.innerHeight;
 
-            // scrolled: pill navbar aparece após 80px
+            // Pill navbar: aparece após 80px
             if (propScrolled === undefined) {
                 setScrolled(y > 80);
             }
 
-            // pastHero: navbar some quando a imagem termina de descer
-            // A imagem completa o slide-down aos 160px de scroll
-            // Adicionamos uma pequena margem para o fade ser suave
-            setPastHero(y >= 160);
+            // A imagem do hero (sticky 100vh dentro de wrapper 100vh+240px):
+            // - Sticky liberta-se aos 240px de scroll
+            // - A partir daí, rola naturalmente para cima
+            // - Sai completamente do viewport aos ≈ 240 + vh px
+            // Navbar some quando a imagem está COMPLETAMENTE fora do ecrã.
+            setPastHero(y >= HERO_EXTRA + vh);
         };
 
         if (propScrolled !== undefined) setScrolled(propScrolled);
@@ -72,7 +81,7 @@ export default function Header({
         router.push(path);
     };
 
-    // Navbar some quando passa do hero (exceto se menu mobile aberto)
+    // Navbar some quando passou do hero (exceto se menu mobile aberto)
     const isHidden = pastHero && !mobileMenuOpen;
 
     return (
@@ -80,13 +89,13 @@ export default function Header({
             <header
                 className="fixed z-50 transition-all duration-500 ease-in-out"
                 style={{
-                    // Ocultar quando passou do hero
                     opacity: isHidden ? 0 : 1,
                     pointerEvents: isHidden ? 'none' : 'auto',
                     transform: isHidden ? 'translateY(-20px)' : 'translateY(0)',
 
                     ...(scrolled || mobileMenuOpen
                         ? {
+                              // ── ESTADO PILL ──────────────────────────────────
                               top: '12px',
                               left: '15%',
                               right: '15%',
@@ -96,13 +105,14 @@ export default function Header({
                               WebkitBackdropFilter: 'blur(14px)',
                               border: '1px solid rgba(255,255,255,0.12)',
                               boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
-                              padding: '12px 28px',
+                              padding: '10px 20px',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: '16px',
+                              gap: '6px',   // ← 6px entre todos os grupos
                           }
                         : {
+                              // ── ESTADO NORMAL (transparente) ──────────────
                               top: 0,
                               left: 0,
                               right: 0,
@@ -121,16 +131,18 @@ export default function Header({
                 }}
             >
 
-                {/* ── ESTADO NORMAL: Layout spread ─────────────────────────── */}
+                {/* ══════════════════════════════════════════════════════════
+                    ESTADO NORMAL — layout spread (transparente)
+                ═════════════════════════════════════════════════════════ */}
                 {!scrolled && !mobileMenuOpen && (
                     <>
-                        {/* Esquerda: Nav desktop — mais afastado do centro */}
+                        {/* Esquerda: Nav desktop */}
                         <nav className="flex-1 hidden lg:block">
-                            <ul className="flex gap-10 xl:gap-16 text-[10px] uppercase tracking-widest font-medium text-white">
+                            <ul className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-medium text-white">
                                 {navItems.map((item, idx) => (
                                     <li
                                         key={idx}
-                                        className="hover:text-[#C4A484] transition-colors duration-300 cursor-pointer whitespace-nowrap"
+                                        className="hover:text-[#C4A484] transition-colors duration-300 cursor-pointer whitespace-nowrap px-3 py-1"
                                         onClick={() =>
                                             item.type === "scroll"
                                                 ? scrollToOrNavigate(item.id!)
@@ -153,7 +165,7 @@ export default function Header({
                             </button>
                         </div>
 
-                        {/* Centro: Logo — maior */}
+                        {/* Centro: Logo */}
                         <div
                             className="flex-shrink-0 mx-6 relative group cursor-pointer"
                             onClick={() => router.push("/")}
@@ -167,29 +179,33 @@ export default function Header({
                             </div>
                         </div>
 
-                        {/* Direita: Idioma + Conta + Reservar — mais afastado do centro */}
-                        <div className="flex-1 flex justify-end items-center gap-6 md:gap-10">
-                            <button
-                                onClick={() => setLang(lang === "PT" ? "EN" : "PT")}
-                                className="text-[10px] font-bold uppercase tracking-widest text-white hover:text-[#C4A484] transition-colors cursor-pointer"
-                            >
-                                {lang === "PT" ? "EN" : "PT"}
-                            </button>
+                        {/* Direita: Idioma | Login | Reservar */}
+                        <div className="flex-1 flex justify-end items-center">
+                            {/* Grupo: idioma + login — 6px entre si */}
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    onClick={() => setLang(lang === "PT" ? "EN" : "PT")}
+                                    className="text-[10px] font-bold uppercase tracking-widest text-white hover:text-[#C4A484] transition-colors cursor-pointer px-2 py-1"
+                                >
+                                    {lang === "PT" ? "EN" : "PT"}
+                                </button>
 
-                            <button
-                                onClick={() => {
-                                    const token = localStorage.getItem("token");
-                                    router.push(token ? "/perfil" : "/login");
-                                }}
-                                className="hidden md:flex items-center gap-2 px-5 py-2 rounded-full border border-white text-white hover:bg-white hover:text-[#1E3932] transition-all duration-500 cursor-pointer text-[10px] uppercase tracking-widest"
-                            >
-                                {isLoggedIn ? <User size={13} /> : <LogIn size={13} />}
-                                {mounted && (isLoggedIn ? t("btn_conta") : t("btn_login"))}
-                            </button>
+                                <button
+                                    onClick={() => {
+                                        const token = localStorage.getItem("token");
+                                        router.push(token ? "/perfil" : "/login");
+                                    }}
+                                    className="hidden md:flex items-center gap-2 px-5 py-2 rounded-full border border-white text-white hover:bg-white hover:text-[#1E3932] transition-all duration-500 cursor-pointer text-[10px] uppercase tracking-widest"
+                                >
+                                    {isLoggedIn ? <User size={13} /> : <LogIn size={13} />}
+                                    {mounted && (isLoggedIn ? t("btn_conta") : t("btn_login"))}
+                                </button>
+                            </div>
 
+                            {/* Reservar — separado 6px do grupo anterior, empurrado para a direita */}
                             <button
                                 onClick={onReservar}
-                                className="flex items-center gap-2 rounded-full px-4 md:px-7 py-2 md:py-3 bg-[#1E3932] text-white hover:bg-[#C4A484] shadow-lg border border-white/10 transition-all duration-500 cursor-pointer text-[9px] md:text-[10px] uppercase tracking-widest font-bold"
+                                className="ml-1.5 flex items-center gap-2 rounded-full px-4 md:px-7 py-2 md:py-3 bg-[#1E3932] text-white hover:bg-[#C4A484] shadow-lg border border-white/10 transition-all duration-500 cursor-pointer text-[9px] md:text-[10px] uppercase tracking-widest font-bold"
                             >
                                 <Plus size={14} className="flex-shrink-0" />
                                 <span className="hidden sm:inline">{t("btn_reservar_now")}</span>
@@ -199,15 +215,17 @@ export default function Header({
                     </>
                 )}
 
-                {/* ── ESTADO PILL (scrolled): Layout centrado ───────────────── */}
+                {/* ══════════════════════════════════════════════════════════
+                    ESTADO PILL (scrolled) — layout centrado compacto
+                ═════════════════════════════════════════════════════════ */}
                 {(scrolled || mobileMenuOpen) && (
                     <>
-                        {/* Nav items — visível apenas desktop */}
-                        <nav className="hidden lg:flex items-center gap-5">
+                        {/* Nav items — desktop */}
+                        <nav className="hidden lg:flex items-center gap-1.5">
                             {navItems.map((item, idx) => (
                                 <span
                                     key={idx}
-                                    className="text-[10px] uppercase tracking-widest font-medium text-white/80 hover:text-[#C4A484] transition-colors duration-300 cursor-pointer whitespace-nowrap"
+                                    className="text-[10px] uppercase tracking-widest font-medium text-white/80 hover:text-[#C4A484] transition-colors duration-300 cursor-pointer whitespace-nowrap px-2 py-1"
                                     onClick={() =>
                                         item.type === "scroll"
                                             ? scrollToOrNavigate(item.id!)
@@ -229,7 +247,7 @@ export default function Header({
 
                         {/* Logo */}
                         <div
-                            className="relative group cursor-pointer flex-shrink-0"
+                            className="relative group cursor-pointer flex-shrink-0 mx-1.5"
                             onClick={() => router.push("/")}
                         >
                             <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-[#C4A484] bg-[#1E3932] p-0.5 shadow-lg">
@@ -241,11 +259,11 @@ export default function Header({
                             </div>
                         </div>
 
-                        {/* Acções */}
-                        <div className="flex items-center gap-3">
+                        {/* Acções: idioma | login | reservar — 6px entre cada */}
+                        <div className="flex items-center gap-1.5">
                             <button
                                 onClick={() => setLang(lang === "PT" ? "EN" : "PT")}
-                                className="text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-[#C4A484] transition-colors cursor-pointer"
+                                className="text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-[#C4A484] transition-colors cursor-pointer px-2 py-1"
                             >
                                 {lang === "PT" ? "EN" : "PT"}
                             </button>
@@ -255,7 +273,7 @@ export default function Header({
                                     const token = localStorage.getItem("token");
                                     router.push(token ? "/perfil" : "/login");
                                 }}
-                                className="hidden md:flex items-center justify-center w-10 h-10 rounded-full border border-white/25 text-white hover:bg-white hover:text-[#1E3932] transition-all duration-300 cursor-pointer"
+                                className="hidden md:flex items-center justify-center w-9 h-9 rounded-full border border-white/25 text-white hover:bg-white hover:text-[#1E3932] transition-all duration-300 cursor-pointer"
                                 title={mounted && isLoggedIn ? t("btn_conta") : t("btn_login")}
                             >
                                 {isLoggedIn ? <User size={14} /> : <LogIn size={14} />}
@@ -263,9 +281,9 @@ export default function Header({
 
                             <button
                                 onClick={onReservar}
-                                className="flex items-center gap-2 rounded-full px-5 py-2.5 bg-[#C4A484] text-[#1E3932] font-bold shadow-lg border border-[#C4A484]/50 hover:bg-white transition-all duration-300 cursor-pointer text-[10px] uppercase tracking-widest"
+                                className="flex items-center gap-1.5 rounded-full px-4 py-2 bg-[#C4A484] text-[#1E3932] font-bold shadow-lg border border-[#C4A484]/50 hover:bg-white transition-all duration-300 cursor-pointer text-[10px] uppercase tracking-widest"
                             >
-                                <Plus size={13} />
+                                <Plus size={12} />
                                 <span className="hidden sm:inline">{t("btn_reservar_now")}</span>
                             </button>
                         </div>

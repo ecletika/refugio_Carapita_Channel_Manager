@@ -12,6 +12,9 @@ const HERO_IMAGES = [
     "https://templarportugal.com/media/images/Castelo_e_Paao_dos_Condes_de_OurCm_iluminado.original.jpg"
 ];
 
+// Total de scroll que o wrapper "consome" para a animação
+const ANIM_SCROLL = 240; // px — quanto de scroll existe além dos 100vh
+
 export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
     const [slide, setSlide]     = useState(0);
     const [scrollY, setScrollY] = useState(0);
@@ -39,82 +42,54 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
         return () => window.removeEventListener('scroll', handle);
     }, []);
 
-    // ── Parâmetros ────────────────────────────────────────────────────────────
-    // Navbar pill: top=12px, altura≈72px → fundo ≈ 84px + 6px gap = 90px
-    const NAVBAR_BOTTOM = 90;    // px — topo da imagem encolhida
-    const SCALE_FINAL   = 0.70;  // escala final
-    const SHRINK_END    = 80;    // px de scroll para completar o shrink
+    // ── Animação suave ─────────────────────────────────────────────────────
+    // progresso (0→1) ao longo de ANIM_SCROLL px de scroll
+    const progress = Math.min(1, Math.max(0, scrollY / ANIM_SCROLL));
 
-    // t1: progresso do shrink (0→1)
-    const t1    = Math.min(1, Math.max(0, scrollY / SHRINK_END));
-    const scale = 1 - t1 * (1 - SCALE_FINAL); // 1 → 0.70
+    // Escala muito subtil: de 1.0 → 0.93
+    const SCALE_FINAL = 0.93;
+    const scale = 1 - progress * (1 - SCALE_FINAL);
 
-    // ── Posição da imagem ─────────────────────────────────────────────────────
-    // Usamos position absolute com top/left/right/bottom calculados
-    // em vez de transform, para evitar o problema do transformOrigin.
-    //
-    // Estado inicial (t1=0):
-    //   top:0, left:0, right:0, bottom:0 → cobre 100% do ecrã
-    //
-    // Estado encolhido (t1=1):
-    //   A imagem tem scale 0.70 → largura = 70vw, altura = 70vh
-    //   Centramos horizontalmente: left = 15vw, right = 15vw
-    //   Topo: NAVBAR_BOTTOM = 90px
-    //   Fundo: NAVBAR_BOTTOM + 70vh
-    //
-    // Interpolamos entre os dois estados.
+    // Margens laterais: 0 → 5% da largura
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1440;
+    const marginH = progress * vw * 0.05;
 
+    // Topo/fundo calculados a partir da escala (centrado verticalmente)
     const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
-    const vw = typeof window !== 'undefined' ? window.innerWidth  : 1440;
+    const shrunkH = vh * scale;
+    const topVal    = (vh - shrunkH) / 2;
+    const bottomVal = topVal;
 
-    // Margens horizontais: 0 → 15% da largura
-    const marginH = t1 * vw * 0.15;
-    // Topo: 0 → NAVBAR_BOTTOM
-    const topVal  = t1 * NAVBAR_BOTTOM;
-    // Fundo: 0 → NAVBAR_BOTTOM + vh*0.70
-    // bottom = vh - (topVal + vh*scale) → distância do fundo do viewport
-    const bottomVal = vh - (topVal + vh * scale);
-
-    // Fase 2: após shrink completo, imagem desce até fundo do viewport
-    // Quando t2=1: topVal = vh*(1-SCALE_FINAL) = vh*0.30, bottomVal = 0
-    const SLIDE_END = 160;
-    const t2 = Math.min(1, Math.max(0, (scrollY - SHRINK_END) / (SLIDE_END - SHRINK_END)));
-
-    // Posição final fase 2: topo = vh - vh*SCALE_FINAL = vh*0.30, bottom = 0
-    const topFinal    = vh * (1 - SCALE_FINAL);   // ≈ 240px
-    const bottomFinal = 0;
-
-    const finalTop    = t1 < 1 ? topVal    : NAVBAR_BOTTOM + t2 * (topFinal    - NAVBAR_BOTTOM);
-    const finalBottom = t1 < 1 ? bottomVal : (vh - NAVBAR_BOTTOM - vh * SCALE_FINAL) + t2 * (bottomFinal - (vh - NAVBAR_BOTTOM - vh * SCALE_FINAL));
-    const finalLeft   = marginH;
-    const finalRight  = marginH;
-
-    const isShrunken  = t1 > 0.05;
-    const textOpacity = Math.max(0, 1 - t1 * 2.5);
+    // Border-radius e sombra crescem suavemente
+    const radius    = progress * 16;   // 0 → 16px
+    const shadowOpa = progress * 0.45;
 
     const imgStyle: React.CSSProperties = {
         position: 'absolute',
-        top:    `${finalTop}px`,
-        bottom: `${finalBottom}px`,
-        left:   `${finalLeft}px`,
-        right:  `${finalRight}px`,
-        transition: scrollY < 3
-            ? 'top 0.6s ease-in-out, bottom 0.6s ease-in-out, left 0.6s ease-in-out, right 0.6s ease-in-out, border-radius 0.5s, box-shadow 0.5s'
+        top:    `${topVal}px`,
+        bottom: `${bottomVal}px`,
+        left:   `${marginH}px`,
+        right:  `${marginH}px`,
+        borderRadius: `${radius}px`,
+        boxShadow: progress > 0.02
+            ? `0 20px 60px rgba(0,0,0,${shadowOpa})`
             : 'none',
-        borderRadius: isShrunken ? '18px' : '0px',
-        boxShadow:    isShrunken ? '0 20px 60px rgba(0,0,0,0.55)' : 'none',
         overflow: 'hidden',
         willChange: 'top, bottom, left, right',
+        transition: scrollY < 4
+            ? 'all 0.6s cubic-bezier(0.16,1,0.3,1)'
+            : 'none',
     };
 
+    const textOpacity = Math.max(0, 1 - progress * 3);
+
     return (
-        <div ref={wrapperRef} className="hero" style={{ height: 'calc(100vh + 180px)' }}>
-            {/* bg-[#1E3932] = cor verde do site, aparece quando a imagem encolhe */}
+        <div ref={wrapperRef} className="hero" style={{ height: `calc(100vh + ${ANIM_SCROLL}px)` }}>
             <section
                 className="sticky top-0 w-full h-screen flex items-center justify-center"
                 style={{ zIndex: 1, background: '#1E3932' }}
             >
-                {/* Imagem posicionada absolutamente */}
+                {/* Imagem */}
                 <div style={imgStyle}>
                     {HERO_IMAGES.map((img, idx) => (
                         <div
@@ -133,7 +108,7 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                     className="relative z-10 text-center px-4 max-w-5xl mt-24"
                     style={{
                         opacity: textOpacity,
-                        pointerEvents: t1 > 0.1 ? 'none' : 'auto',
+                        pointerEvents: progress > 0.1 ? 'none' : 'auto',
                         transition: 'opacity 0.2s ease',
                     }}
                 >
@@ -150,8 +125,8 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                 <div
                     className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white flex flex-col items-center gap-4 cursor-pointer hover:text-[#C4A484] transition-all duration-500 z-20"
                     style={{
-                        opacity: Math.max(0, (1 - t1 * 4) * 0.8),
-                        pointerEvents: t1 > 0.1 ? 'none' : 'auto',
+                        opacity: Math.max(0, (1 - progress * 4) * 0.8),
+                        pointerEvents: progress > 0.1 ? 'none' : 'auto',
                     }}
                     onClick={onReservar}
                 >
