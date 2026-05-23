@@ -278,7 +278,7 @@ export default function AdminQuartos() {
         <div className="min-h-screen bg-[#F9F8F6] flex items-center justify-center">
             <div className="text-center">
                 <div className="w-8 h-8 border-2 border-[#C4A484] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-[10px] uppercase tracking-widest text-gray-400">A carregar o inventário...</p>
+                <p className="text-[10px] uppercase tracking-widest text-gray-600">A carregar o inventário...</p>
             </div>
         </div>
     );
@@ -297,7 +297,7 @@ export default function AdminQuartos() {
                 <div className="mb-8 md:mb-12">
                     <span className="text-[#C4A484] text-[10px] uppercase tracking-widest font-bold block mb-1">Inventário Global</span>
                     <h1 className="text-3xl md:text-4xl font-serif text-[#1E3932]">Alojamento & Extras</h1>
-                    <p className="text-sm text-gray-400 mt-2 font-light">Gerencie os alojamentos e os serviços adicionais disponíveis.</p>
+                    <p className="text-sm text-gray-600 mt-2 font-light">Gerencie os alojamentos e os serviços adicionais disponíveis.</p>
                 </div>
 
                 {/* ── ALOJAMENTOS ── */}
@@ -360,7 +360,7 @@ export default function AdminQuartos() {
                                             </div>
 
                                             {/* Description */}
-                                            <p className="text-xs text-gray-400 line-clamp-1 mb-2 leading-relaxed">{q.descricao}</p>
+                                            <p className="text-xs text-gray-600 line-clamp-1 mb-2 leading-relaxed">{q.descricao}</p>
 
                                             {/* Stats - wraps naturally on mobile */}
                                             <div className="flex flex-wrap gap-3">
@@ -391,7 +391,7 @@ export default function AdminQuartos() {
                         {quartos.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-16 bg-white border border-dashed border-gray-200 rounded-lg gap-3">
                                 <Home size={32} className="text-gray-200" />
-                                <p className="text-sm text-gray-400">Nenhum alojamento registado.</p>
+                                <p className="text-sm text-gray-600">Nenhum alojamento registado.</p>
                                 <BtnPrimary onClick={() => openEdit()}>
                                     <Plus size={12} /> Adicionar Alojamento
                                 </BtnPrimary>
@@ -421,7 +421,7 @@ export default function AdminQuartos() {
                                 </h2>
                             </div>
                             <button type="button" onClick={() => setEditQuarto(null)}
-                                className="p-2 text-gray-400 hover:text-[#1E3932] hover:bg-gray-50 rounded-full transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center">
+                                className="p-2 text-gray-600 hover:text-[#1E3932] hover:bg-gray-50 rounded-full transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center">
                                 <X size={20} />
                             </button>
                         </div>
@@ -463,7 +463,7 @@ export default function AdminQuartos() {
 
                                 {/* Ativo toggle */}
                                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Visível no Site</span>
+                                    <span className="text-[10px] uppercase tracking-widest text-gray-600 font-bold">Visível no Site</span>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" checked={!!editQuarto.ativo}
                                             onChange={e => setEditQuarto({ ...editQuarto, ativo: e.target.checked })}
@@ -495,7 +495,7 @@ export default function AdminQuartos() {
 
                             {/* Galeria de Fotos */}
                             <fieldset className="space-y-4 pt-5 border-t border-gray-100">
-                                <legend className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">
+                                <legend className="text-[10px] uppercase tracking-widest text-gray-600 font-bold">
                                     Fotos ({fotosEdit.length})
                                 </legend>
 
@@ -552,8 +552,8 @@ export default function AdminQuartos() {
                                         <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileUpload} />
                                         {uploading
                                             ? <Loader2 size={14} className="text-[#C4A484] animate-spin" />
-                                            : <Upload size={14} className="text-gray-300" />}
-                                        <span className="text-[9px] uppercase tracking-widest text-gray-400">
+                                            : <Upload size={14} className="text-gray-500" />}
+                                        <span className="text-[9px] uppercase tracking-widest text-gray-600">
                                             {uploading ? 'A enviar...' : 'Upload do dispositivo'}
                                         </span>
                                     </div>
@@ -563,7 +563,7 @@ export default function AdminQuartos() {
                             {/* Comodidades */}
                             <fieldset className="space-y-4 pt-5 border-t border-gray-100">
                                 <div className="flex items-center justify-between flex-wrap gap-2">
-                                    <legend className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">
+                                    <legend className="text-[10px] uppercase tracking-widest text-gray-600 font-bold">
                                         Comodidades
                                     </legend>
                                     <span className="text-[8px] text-[#C4A484] uppercase font-bold px-2 py-0.5 bg-[#C4A484]/10 rounded-full">Base de Dados Supabase</span>
@@ -605,7 +605,7 @@ export default function AdminQuartos() {
                                                     <div key={catName} className="border-l-2 border-gray-100 pl-3">
                                                         <p className="text-[9px] uppercase tracking-widest text-[#1E3932] font-bold mb-2 flex items-center justify-between">
                                                             <span>{CAT_LABELS[catName] || catName}</span>
-                                                            <span className="text-[8px] font-normal text-gray-400">{items.length} itens</span>
+                                                            <span className="text-[8px] font-normal text-gray-600">{items.length} itens</span>
                                                         </p>
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {items.map(c => {
@@ -621,7 +621,7 @@ export default function AdminQuartos() {
                                                                 );
                                                             })}
                                                             {items.length === 0 && (
-                                                                <p className="text-[8px] italic text-gray-300">Vazio — adicione itens acima.</p>
+                                                                <p className="text-[8px] italic text-gray-500">Vazio — adicione itens acima.</p>
                                                             )}
                                                         </div>
                                                     </div>
@@ -725,7 +725,7 @@ function StatChip({ icon, label, className = '' }: { icon: React.ReactNode; labe
 function ModalField({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div className="space-y-1.5">
-            <label className="text-[9px] uppercase tracking-widest text-gray-400 font-bold block">{label}</label>
+            <label className="text-[9px] uppercase tracking-widest text-gray-600 font-bold block">{label}</label>
             {children}
         </div>
     );

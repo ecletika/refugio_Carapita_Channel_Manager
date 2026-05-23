@@ -133,10 +133,10 @@ export function AdminExtrasContent() {
             {/* Tela toggle */}
             <div className={`flex items-center justify-between p-5 mb-8 border rounded-lg transition-all duration-300 ${telaExtrasAtiva ? 'border-green-200 bg-green-50' : 'border-gray-100 bg-white'}`}>
                 <div className="min-w-0 mr-4">
-                    <p className={`text-sm font-bold uppercase tracking-widest mb-1 ${telaExtrasAtiva ? 'text-green-700' : 'text-gray-400'}`}>
+                    <p className={`text-sm font-bold uppercase tracking-widest mb-1 ${telaExtrasAtiva ? 'text-green-700' : 'text-gray-600'}`}>
                         Tela "Personalize a Sua Estadia"
                     </p>
-                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                    <p className="text-[11px] text-gray-600 leading-relaxed">
                         {telaExtrasAtiva
                             ? 'Visível no fluxo de reserva — os hóspedes podem adicionar extras antes de confirmar.'
                             : 'Oculto — o passo de extras não aparece durante a reserva.'}
@@ -152,8 +152,8 @@ export function AdminExtrasContent() {
                         ? <Loader2 size={24} className="text-[#C4A484] animate-spin" />
                         : telaExtrasAtiva
                             ? <ToggleRight size={40} className="text-green-500" />
-                            : <ToggleLeft size={40} className="text-gray-300" />}
-                    <span className={`text-[10px] uppercase tracking-widest font-bold hidden sm:block ${telaExtrasAtiva ? 'text-green-600' : 'text-gray-400'}`}>
+                            : <ToggleLeft size={40} className="text-gray-500" />}
+                    <span className={`text-[10px] uppercase tracking-widest font-bold hidden sm:block ${telaExtrasAtiva ? 'text-green-600' : 'text-gray-600'}`}>
                         {telaExtrasAtiva ? 'Ativado' : 'Desativado'}
                     </span>
                 </button>
@@ -166,7 +166,7 @@ export function AdminExtrasContent() {
                 </div>
             ) : extras.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-14 bg-white border border-dashed border-gray-200 rounded-lg gap-3">
-                    <p className="text-sm text-gray-300">Nenhum extra registado.</p>
+                    <p className="text-sm text-gray-500">Nenhum extra registado.</p>
                 </div>
             ) : (
                 <>
@@ -174,7 +174,7 @@ export function AdminExtrasContent() {
                     <div className="hidden sm:block bg-white border border-gray-100 rounded-lg overflow-hidden">
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 border-b border-gray-100">
-                                <tr className="text-[10px] uppercase tracking-widest text-gray-400">
+                                <tr className="text-[10px] uppercase tracking-widest text-gray-600">
                                     <th className="px-5 py-4 font-normal">Extra</th>
                                     <th className="px-5 py-4 font-normal">Preço</th>
                                     <th className="px-5 py-4 font-normal">Estado</th>
@@ -191,7 +191,7 @@ export function AdminExtrasContent() {
                                                     : <span className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded border border-gray-100 text-lg">{e.icone || '✦'}</span>}
                                                 <div>
                                                     <p className="text-sm font-medium text-[#1E3932]">{e.nome}</p>
-                                                    <p className="text-[10px] text-gray-400 max-w-xs truncate">{e.descricao}</p>
+                                                    <p className="text-[10px] text-gray-600 max-w-xs truncate">{e.descricao}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -207,11 +207,11 @@ export function AdminExtrasContent() {
                                         <td className="px-5 py-4 text-right">
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button type="button" onClick={() => setEditingExtra(e)}
-                                                    className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#C4A484] hover:bg-gray-50 rounded border border-gray-100 transition-all cursor-pointer">
+                                                    className="w-9 h-9 flex items-center justify-center text-gray-600 hover:text-[#C4A484] hover:bg-gray-50 rounded border border-gray-100 transition-all cursor-pointer">
                                                     <Edit2 size={13} />
                                                 </button>
                                                 <button type="button" onClick={() => handleDelete(e.id)}
-                                                    className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded border border-gray-100 transition-all cursor-pointer">
+                                                    className="w-9 h-9 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-red-50 rounded border border-gray-100 transition-all cursor-pointer">
                                                     <Trash2 size={13} />
                                                 </button>
                                             </div>
@@ -232,7 +232,7 @@ export function AdminExtrasContent() {
                                         : <span className="w-12 h-12 flex items-center justify-center bg-gray-50 rounded border border-gray-100 text-xl shrink-0">{e.icone || '✦'}</span>}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-[#1E3932]">{e.nome}</p>
-                                        <p className="text-[11px] text-gray-400 mt-0.5 leading-relaxed">{e.descricao}</p>
+                                        <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">{e.descricao}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between border-t border-gray-50 pt-3">
@@ -245,11 +245,11 @@ export function AdminExtrasContent() {
                                     </div>
                                     <div className="flex gap-2">
                                         <button type="button" onClick={() => setEditingExtra(e)}
-                                            className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#C4A484] rounded border border-gray-100 transition-colors cursor-pointer">
+                                            className="w-9 h-9 flex items-center justify-center text-gray-600 hover:text-[#C4A484] rounded border border-gray-100 transition-colors cursor-pointer">
                                             <Edit2 size={13} />
                                         </button>
                                         <button type="button" onClick={() => handleDelete(e.id)}
-                                            className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 rounded border border-gray-100 transition-colors cursor-pointer">
+                                            className="w-9 h-9 flex items-center justify-center text-gray-600 hover:text-red-500 rounded border border-gray-100 transition-colors cursor-pointer">
                                             <Trash2 size={13} />
                                         </button>
                                     </div>
@@ -305,7 +305,7 @@ function ExtraModal({ title, data, onClose, onSave, onChange, uploadPhoto, uploa
                 <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100 shrink-0">
                     <h3 className="text-xl font-serif text-[#1E3932]">{title}</h3>
                     <button type="button" onClick={onClose}
-                        className="text-gray-400 hover:text-[#1E3932] transition-colors cursor-pointer p-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                        className="text-gray-600 hover:text-[#1E3932] transition-colors cursor-pointer p-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
                         <X size={20} />
                     </button>
                 </div>
@@ -313,27 +313,27 @@ function ExtraModal({ title, data, onClose, onSave, onChange, uploadPhoto, uploa
                 {/* Body */}
                 <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
                     <div>
-                        <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1.5">Ícone / Emoji</label>
+                        <label className="text-[10px] uppercase text-gray-600 tracking-widest block mb-1.5">Ícone / Emoji</label>
                         <input type="text" className="w-full border border-gray-100 p-3 text-2xl rounded-lg outline-none focus:border-[#C4A484] transition-colors"
                             value={data.icone || ''} onChange={e => onChange({ icone: e.target.value })} />
                     </div>
                     <div>
-                        <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1.5">Nome do Item</label>
+                        <label className="text-[10px] uppercase text-gray-600 tracking-widest block mb-1.5">Nome do Item</label>
                         <input type="text" className="w-full border border-gray-100 p-3 text-sm rounded-lg outline-none focus:border-[#C4A484] transition-colors"
                             value={data.nome || ''} onChange={e => onChange({ nome: e.target.value })} placeholder="Ex: Cesto VIP Romântico" />
                     </div>
                     <div>
-                        <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1.5">Descrição</label>
+                        <label className="text-[10px] uppercase text-gray-600 tracking-widest block mb-1.5">Descrição</label>
                         <textarea className="w-full border border-gray-100 p-3 text-sm h-20 rounded-lg outline-none focus:border-[#C4A484] transition-colors resize-none"
                             value={data.descricao || ''} onChange={e => onChange({ descricao: e.target.value })} placeholder="Descreva o que está incluído..." />
                     </div>
                     <div>
-                        <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1.5">Preço (€)</label>
+                        <label className="text-[10px] uppercase text-gray-600 tracking-widest block mb-1.5">Preço (€)</label>
                         <input type="number" className="w-full border border-gray-100 p-3 text-sm rounded-lg outline-none focus:border-[#C4A484] transition-colors"
                             value={data.preco || 0} onChange={e => onChange({ preco: Number(e.target.value) })} placeholder="0.00" />
                     </div>
                     <div>
-                        <label className="text-[10px] uppercase text-gray-400 tracking-widest block mb-1.5">Foto do Produto</label>
+                        <label className="text-[10px] uppercase text-gray-600 tracking-widest block mb-1.5">Foto do Produto</label>
                         <input type="file" accept="image/*" className="text-[10px] w-full" onChange={handlePhoto} />
                         {data.foto && <img src={data.foto} className="w-16 h-16 mt-2 rounded object-cover shadow-sm" alt="" />}
                         {uploading && (
