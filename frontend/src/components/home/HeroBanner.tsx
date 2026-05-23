@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface HeroBannerProps {
     t: (key: string) => string;
@@ -12,23 +12,70 @@ const HERO_IMAGES = [
     "https://templarportugal.com/media/images/Castelo_e_Paao_dos_Condes_de_OurCm_iluminado.original.jpg"
 ];
 
-// Scroll distance over which the image shrinks.
-// Using position:fixed (not sticky) so overflow-x:hidden on parent doesn't break it.
-// Content after the hero only enters viewport once scrollY > SHRINK_SCROLL.
-export const SHRINK_SCROLL = 320;
+export const SHRINK_SCROLL = 320;   // px of scroll for phase 1
 export const ANIM_TOTAL    = SHRINK_SCROLL;
 
-// Navbar pill bottom (top 12 + height 66 + bottom 12 = 90) + 4px gap
-const NAVBAR_BOTTOM = 94;
+const NAVBAR_BOTTOM = 94;  // navbar pill bottom + 4px gap
+const GAP_PX        = 40;  // fixed gap between image bottom and content top
+
+/*
+ * WHY TWO PHASES WITH DIFFERENT TRANSFORMS
+ * ─────────────────────────────────────────
+ * Phase 1 (0 → SHRINK_SCROLL):
+ *   top: 0 → 94px    — image descends below navbar
+ *   transform: scale(1 → 0.7) with transformOrigin:'top center'
+ *   → top edge is anchored, bottom rises (image shrinks downward)
+ *
+ * Phase 2 (SHRINK_SCROLL → ∞):
+ *   top stays at 94px
+ *   transform: translateY(-slideUp) scale(0.7)
+ *   CSS applies right-to-left: first scale(0.7) then translateY(-X)
+ *   → the already-scaled element is translated bodily; BOTH top and
+ *     bottom move at exactly -1px/px of scroll, matching the content
+ *     scroll speed → gap stays constant throughout.
+ *
+ *   If we kept "top: 94 - slideUp" (phase-1 approach) in phase 2,
+ *   transformOrigin:top-center anchors the visual top while the bottom
+ *   is compressed → bottom moves at only -0.3px/px and content closes
+ *   the gap in ~43px of scroll.
+ *
+ * PLACEHOLDER HEIGHT
+ * ──────────────────
+ * Content enters viewport when scrollY = extraH (the extra px above 100vh).
+ * At that moment (slideUp = extraH - SHRINK_SCROLL for extraH > SHRINK_SCROLL,
+ * but actually at scrollY = SHRINK_SCROLL the content enters at position:
+ *   content_top_in_viewport = placeholder - SHRINK_SCROLL
+ *   image_bottom_in_viewport = NAVBAR_BOTTOM + (vh - NAVBAR_BOTTOM) * 0.7
+ *
+ * For gap = GAP_PX:
+ *   placeholder = GAP_PX + SHRINK_SCROLL + 0.3*NAVBAR_BOTTOM + 0.3*(vh - vh)
+ *               = GAP_PX + SHRINK_SCROLL + 0.3*(NAVBAR_BOTTOM - vh) + vh ... simplified:
+ *   extraH      = GAP_PX + SHRINK_SCROLL + 0.3*(NAVBAR_BOTTOM - vh)
+ *   (calculated dynamically from window.innerHeight)
+ */
 
 export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
-    const [slide, setSlide]     = useState(0);
+    const [slide, setSlide]   = useState(0);
     const [scrollY, setScrollY] = useState(0);
+    // Dynamic extra height so the gap is always GAP_PX regardless of viewport
+    const [extraH, setExtraH] = useState(160); // SSR fallback
 
     // Slideshow
     useEffect(() => {
         const id = setInterval(() => setSlide(p => (p + 1) % HERO_IMAGES.length), 5000);
         return () => clearInterval(id);
+    }, []);
+
+    // Calculate placeholder height from viewport
+    useEffect(() => {
+        const calc = () => {
+            const vh = window.innerHeight;
+            const h = Math.round(GAP_PX + SHRINK_SCROLL + 0.3 * (NAVBAR_BOTTOM - vh));
+            setExtraH(Math.max(20, h)); // never negative
+        };
+        calc();
+        window.addEventListener('resize', calc);
+        return () => window.removeEventListener('resize', calc);
     }, []);
 
     // Scroll tracker — RAF throttle
@@ -44,16 +91,14 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
         return () => window.removeEventListener('scroll', handle);
     }, []);
 
-    // Phase 1: 0 → 1 as scroll goes 0 → SHRINK_SCROLL  (image shrinks & docks)
+    // ── Phase 1 progress ──────────────────────────────────────────────────
     const p1 = Math.min(1, Math.max(0, scrollY / SHRINK_SCROLL));
 
-    // Phase 2: extra scroll past SHRINK_SCROLL → image slides up and exits
+    // ── Phase 2: extra scroll past SHRINK_SCROLL ─────────────────────────
     const slideUp = Math.max(0, scrollY - SHRINK_SCROLL);
 
-    // Scale stays at 0.70 after phase 1 ends
-    const scale     = 1 - p1 * 0.30;
-    // top: descends to NAVBAR_BOTTOM during phase 1, then climbs up in phase 2
-    const topOffset = p1 * NAVBAR_BOTTOM - slideUp;
+    const scale     = 1 - p1 * 0.30;          // 1.0 → 0.70, stays at 0.70 in phase 2
+    const topOffset = p1 * NAVBAR_BOTTOM;      // 0 → 94px (phase 1 only, fixed in phase 2)
     const radius    = p1 * 20;
 
     const imgStyle: React.CSSProperties = {
@@ -64,10 +109,12 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
         bottom:          0,
         borderRadius:    `${radius}px`,
         overflow:        'hidden',
-        transform:       `scale(${scale})`,
+        // CSS applies right-to-left:
+        //   phase 1 (slideUp=0): just scale(p1) — shrinks from top
+        //   phase 2:  scale(0.7) first, then translateY(-slideUp) — moves entire element up at -1px/px
+        transform:       `translateY(-${slideUp}px) scale(${scale})`,
         transformOrigin: 'top center',
         willChange:      'transform, top',
-        // Smooth snap-back only when at rest
         transition:      scrollY < 3
             ? 'transform 0.55s cubic-bezier(0.16,1,0.3,1), top 0.55s cubic-bezier(0.16,1,0.3,1), border-radius 0.55s'
             : 'none',
@@ -78,28 +125,18 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
     return (
         <>
             {/*
-             * Placeholder — creates the scrollable height that "absorbs" the
-             * animation scroll. The fixed hero below does NOT take up flow space,
-             * so this div is what makes the page tall enough.
-             * Content after HeroBanner only enters the viewport after scrollY > SHRINK_SCROLL.
+             * Placeholder: height = 100vh + extraH
+             * extraH is calculated so content enters exactly GAP_PX below the
+             * image bottom at the start of phase 2, and the gap stays constant.
              */}
-            {/*
-             * Placeholder height = 100vh + 160px (metade de SHRINK_SCROLL).
-             * O conteúdo branco começa a subir a scrollY=160px, ainda durante
-             * a fase 1 — assim cobre o espaço verde antes de a imagem terminar
-             * de encolher, sem gap visível.
-             */}
-            <div style={{ height: `calc(100vh + ${Math.round(SHRINK_SCROLL * 0.5)}px)` }} aria-hidden="true" />
+            <div style={{ height: `calc(100vh + ${extraH}px)` }} aria-hidden="true" />
 
-            {/*
-             * Fixed hero — position:fixed is NOT broken by overflow-x:hidden on parent.
-             * z-index 1 → content sections (z-index 2) slide over the top of it.
-             */}
+            {/* Fixed hero — z-index 1, content (z-index 2) slides over the top */}
             <div
                 className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center"
                 style={{ zIndex: 1, background: '#1E3932' }}
             >
-                {/* ── Shrinking image ───────────────────────────────────── */}
+                {/* ── Shrinking / sliding image ───────────────────────── */}
                 <div style={imgStyle}>
                     {HERO_IMAGES.map((img, idx) => (
                         <div
