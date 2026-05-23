@@ -106,6 +106,14 @@ export const dictionaries = {
         form_faturacao: 'Endereço de Faturação',
         form_requerimentos_desc: 'Pode adicionar aqui informações como idade das crianças, pedidos de restaurante, dietas especiais ou animais de estimação.',
 
+        editorial_coord: "39°36'N · 8°40'W · Ourém, Portugal",
+        editorial_tag: 'O Refúgio',
+        editorial_title_line1: 'Uma casa com alma,',
+        editorial_title_line2: 'no coração de Portugal.',
+        editorial_body: 'Rodeado de colinas verdes e séculos de história, o Refúgio Carapita é um lugar onde o tempo abranda. Cada detalhe foi pensado para que se sinta em casa — mas numa casa verdadeiramente extraordinária.',
+        editorial_cta: 'Viver a Experiência',
+        editorial_marquee_label: 'Ourém · Portugal · Natureza · Exclusividade',
+
         contact_tag: 'Contactos',
         contact_title: 'Sinta-se em',
         contact_title_casa: 'Casa',
@@ -226,6 +234,14 @@ export const dictionaries = {
         form_info_contato: 'Contact Information',
         form_faturacao: 'Billing Address',
         form_requerimentos_desc: 'You can add information here such as ages of children, restaurant requests, special diets, or pets.',
+
+        editorial_coord: "39°36'N · 8°40'W · Ourém, Portugal",
+        editorial_tag: 'The Refuge',
+        editorial_title_line1: 'A home with soul,',
+        editorial_title_line2: 'in the heart of Portugal.',
+        editorial_body: 'Surrounded by green hills and centuries of history, Refúgio Carapita is a place where time slows down. Every detail was crafted so you feel at home — but in a truly extraordinary home.',
+        editorial_cta: 'Live the Experience',
+        editorial_marquee_label: 'Ourém · Portugal · Nature · Exclusivity',
 
         contact_tag: 'Contacts',
         contact_title: 'Feel at',
