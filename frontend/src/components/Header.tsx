@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { dictionaries as dict } from "@/i18n/dictionaries";
 import { Menu, X, User, LogIn, Plus } from "lucide-react";
+import { SHRINK_SCROLL } from "@/components/home/HeroBanner";
 
 interface HeaderProps {
     scrolled?: boolean;
@@ -13,7 +14,6 @@ interface HeaderProps {
     isLoggedIn: boolean;
     onReservar: () => void;
 }
-
 
 export default function Header({
     scrolled: propScrolled,
@@ -25,22 +25,27 @@ export default function Header({
 }: HeaderProps) {
     const [scrolled, setScrolled]             = useState(propScrolled || false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [pastHero, setPastHero]             = useState(false);
-    const router = useRouter();
+    // heroProgress: 0→1 as user scrolls during the hero shrink animation (home page only)
+    const [heroProgress, setHeroProgress]     = useState(0);
+
+    const router   = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         const handle = () => {
-            const y  = window.scrollY;
-            const vh = window.innerHeight;
+            const y = window.scrollY;
 
-            // Pill navbar: aparece após 80px
+            // Pill navbar: appears after 50px of scroll
             if (propScrolled === undefined) {
-                setScrolled(y > 80);
+                setScrolled(y > 50);
             }
 
-            // A imagem do hero fica sempre visível (encolhe mas não sai).
-            // A navbar fica sempre visível — nunca esconder.
-            setPastHero(false);
+            // Only sync with hero animation on the home page
+            if (pathname === '/') {
+                setHeroProgress(Math.min(1, Math.max(0, y / SHRINK_SCROLL)));
+            } else {
+                setHeroProgress(0);
+            }
         };
 
         if (propScrolled !== undefined) setScrolled(propScrolled);
@@ -48,7 +53,7 @@ export default function Header({
         window.addEventListener("scroll", handle, { passive: true });
         handle();
         return () => window.removeEventListener("scroll", handle);
-    }, [propScrolled]);
+    }, [propScrolled, pathname]);
 
     const t = (key: string) => dict[lang][key as keyof typeof dict["PT"]] || key;
 
@@ -73,56 +78,60 @@ export default function Header({
         router.push(path);
     };
 
-    // Navbar some quando passou do hero (exceto se menu mobile aberto)
-    const isHidden = pastHero && !mobileMenuOpen;
+    // ── Dynamic values that sync with hero shrink animation ──────────────
+    // Pill expands left/right as image shrinks: 15% → 4%
+    const pillEdge = `${Math.max(4, 15 - heroProgress * 11)}%`;
+    // Inner horizontal padding grows: 20px → 48px
+    const pillPad  = `10px ${Math.round(20 + heroProgress * 28)}px`;
+    // Gap between all sibling items grows: 6px → 36px
+    const itemGap  = `${Math.round(6 + heroProgress * 30)}px`;
 
     return (
         <>
             <header
                 className="fixed z-50 transition-all duration-500 ease-in-out"
                 style={{
-                    opacity: isHidden ? 0 : 1,
-                    pointerEvents: isHidden ? 'none' : 'auto',
-                    transform: isHidden ? 'translateY(-20px)' : 'translateY(0)',
+                    opacity:       1,
+                    pointerEvents: 'auto',
+                    transform:     'translateY(0)',
 
                     ...(scrolled || mobileMenuOpen
                         ? {
-                              // ── ESTADO PILL ──────────────────────────────────
-                              top: '12px',
-                              left: '15%',
-                              right: '15%',
-                              borderRadius: '9999px',
-                              background: 'rgba(30, 57, 50, 0.92)',
-                              backdropFilter: 'blur(14px)',
+                              // ── ESTADO PILL (dinâmico) ─────────────────────────
+                              top:                  '12px',
+                              left:                 pillEdge,
+                              right:                pillEdge,
+                              borderRadius:         '9999px',
+                              background:           'rgba(30, 57, 50, 0.92)',
+                              backdropFilter:       'blur(14px)',
                               WebkitBackdropFilter: 'blur(14px)',
-                              border: '1px solid rgba(255,255,255,0.12)',
-                              boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
-                              padding: '10px 20px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '6px',   // ← 6px entre todos os grupos
+                              border:               '1px solid rgba(255,255,255,0.12)',
+                              boxShadow:            '0 8px 32px rgba(0,0,0,0.35)',
+                              padding:              pillPad,
+                              display:              'flex',
+                              alignItems:           'center',
+                              justifyContent:       'space-between',
+                              gap:                  itemGap,
                           }
                         : {
-                              // ── ESTADO NORMAL (transparente) ──────────────
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              borderRadius: 0,
-                              background: 'transparent',
-                              backdropFilter: 'none',
+                              // ── ESTADO NORMAL (transparente) ──────────────────
+                              top:                  0,
+                              left:                 0,
+                              right:                0,
+                              borderRadius:         0,
+                              background:           'transparent',
+                              backdropFilter:       'none',
                               WebkitBackdropFilter: 'none',
-                              border: 'none',
-                              borderBottom: '1px solid rgba(255,255,255,0.2)',
-                              boxShadow: 'none',
-                              padding: '20px 48px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
+                              border:               'none',
+                              borderBottom:         '1px solid rgba(255,255,255,0.2)',
+                              boxShadow:            'none',
+                              padding:              '20px 48px',
+                              display:              'flex',
+                              alignItems:           'center',
+                              justifyContent:       'space-between',
                           }),
                 }}
             >
-
                 {/* ══════════════════════════════════════════════════════════
                     ESTADO NORMAL — layout spread (transparente)
                 ═════════════════════════════════════════════════════════ */}
@@ -172,29 +181,25 @@ export default function Header({
                         </div>
 
                         {/* Direita: Idioma | Login | Reservar */}
-                        <div className="flex-1 flex justify-end items-center">
-                            {/* Grupo: idioma + login — 6px entre si */}
-                            <div className="flex items-center gap-1.5">
-                                <button
-                                    onClick={() => setLang(lang === "PT" ? "EN" : "PT")}
-                                    className="text-[10px] font-bold uppercase tracking-widest text-white hover:text-[#C4A484] transition-colors cursor-pointer px-2 py-1"
-                                >
-                                    {lang === "PT" ? "EN" : "PT"}
-                                </button>
+                        <div className="flex-1 flex justify-end items-center gap-1.5">
+                            <button
+                                onClick={() => setLang(lang === "PT" ? "EN" : "PT")}
+                                className="text-[10px] font-bold uppercase tracking-widest text-white hover:text-[#C4A484] transition-colors cursor-pointer px-2 py-1"
+                            >
+                                {lang === "PT" ? "EN" : "PT"}
+                            </button>
 
-                                <button
-                                    onClick={() => {
-                                        const token = localStorage.getItem("token");
-                                        router.push(token ? "/perfil" : "/login");
-                                    }}
-                                    className="hidden md:flex items-center gap-2 px-5 py-2 rounded-full border border-white text-white hover:bg-white hover:text-[#1E3932] transition-all duration-500 cursor-pointer text-[10px] uppercase tracking-widest"
-                                >
-                                    {isLoggedIn ? <User size={13} /> : <LogIn size={13} />}
-                                    {mounted && (isLoggedIn ? t("btn_conta") : t("btn_login"))}
-                                </button>
-                            </div>
+                            <button
+                                onClick={() => {
+                                    const token = localStorage.getItem("token");
+                                    router.push(token ? "/perfil" : "/login");
+                                }}
+                                className="hidden md:flex items-center gap-2 px-5 py-2 rounded-full border border-white text-white hover:bg-white hover:text-[#1E3932] transition-all duration-500 cursor-pointer text-[10px] uppercase tracking-widest"
+                            >
+                                {isLoggedIn ? <User size={13} /> : <LogIn size={13} />}
+                                {mounted && (isLoggedIn ? t("btn_conta") : t("btn_login"))}
+                            </button>
 
-                            {/* Reservar — separado 6px do grupo anterior, empurrado para a direita */}
                             <button
                                 onClick={onReservar}
                                 className="ml-1.5 flex items-center gap-2 rounded-full px-4 md:px-7 py-2 md:py-3 bg-[#1E3932] text-white hover:bg-[#C4A484] shadow-lg border border-white/10 transition-all duration-500 cursor-pointer text-[9px] md:text-[10px] uppercase tracking-widest font-bold"
@@ -208,12 +213,12 @@ export default function Header({
                 )}
 
                 {/* ══════════════════════════════════════════════════════════
-                    ESTADO PILL (scrolled) — layout centrado compacto
+                    ESTADO PILL (scrolled) — dinâmico: expande com hero
                 ═════════════════════════════════════════════════════════ */}
                 {(scrolled || mobileMenuOpen) && (
                     <>
-                        {/* Nav items — desktop */}
-                        <nav className="hidden lg:flex items-center gap-1.5">
+                        {/* Nav items — desktop, gap dinâmico */}
+                        <nav className="hidden lg:flex items-center" style={{ gap: itemGap }}>
                             {navItems.map((item, idx) => (
                                 <span
                                     key={idx}
@@ -237,9 +242,9 @@ export default function Header({
                             <Menu size={20} />
                         </button>
 
-                        {/* Logo */}
+                        {/* Logo — centro */}
                         <div
-                            className="relative group cursor-pointer flex-shrink-0 mx-1.5"
+                            className="relative group cursor-pointer flex-shrink-0"
                             onClick={() => router.push("/")}
                         >
                             <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-[#C4A484] bg-[#1E3932] p-0.5 shadow-lg">
@@ -251,8 +256,8 @@ export default function Header({
                             </div>
                         </div>
 
-                        {/* Acções: idioma | login | reservar — 6px entre cada */}
-                        <div className="flex items-center gap-1.5">
+                        {/* Acções: idioma | login | reservar — gap dinâmico */}
+                        <div className="flex items-center" style={{ gap: itemGap }}>
                             <button
                                 onClick={() => setLang(lang === "PT" ? "EN" : "PT")}
                                 className="text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-[#C4A484] transition-colors cursor-pointer px-2 py-1"
