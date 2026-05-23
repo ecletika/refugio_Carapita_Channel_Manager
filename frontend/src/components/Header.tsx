@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { dictionaries as dict } from "@/i18n/dictionaries";
 import { Menu, X, User, LogIn, Plus } from "lucide-react";
+import { ANIM_TOTAL } from "@/components/home/HeroBanner";
 
 interface HeaderProps {
     scrolled?: boolean;
@@ -14,11 +15,8 @@ interface HeaderProps {
     onReservar: () => void;
 }
 
-// Deve corresponder a ANIM_SCROLL do HeroBanner
-// A navbar desaparece quando a imagem do hero está completamente fora do ecrã:
-// wrapper = 100vh + 240px → sticky liberta aos 240px → imagem sai ao 240 + 100vh
-// Usamos innerHeight + 240 como limiar dinâmico, calculado no scroll handler.
-const HERO_EXTRA = 240;
+// Navbar desaparece quando a imagem do hero sai completamente do ecrã.
+// ANIM_TOTAL (470px) é o scroll onde a imagem termina de sair pelo topo.
 
 export default function Header({
     scrolled: propScrolled,
@@ -43,12 +41,8 @@ export default function Header({
                 setScrolled(y > 80);
             }
 
-            // A imagem do hero (sticky 100vh dentro de wrapper 100vh+240px):
-            // - Sticky liberta-se aos 240px de scroll
-            // - A partir daí, rola naturalmente para cima
-            // - Sai completamente do viewport aos ≈ 240 + vh px
-            // Navbar some quando a imagem está COMPLETAMENTE fora do ecrã.
-            setPastHero(y >= HERO_EXTRA + vh);
+            // Navbar some quando a animação do hero termina (imagem completamente fora).
+            setPastHero(y >= ANIM_TOTAL);
         };
 
         if (propScrolled !== undefined) setScrolled(propScrolled);

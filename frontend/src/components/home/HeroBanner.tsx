@@ -12,8 +12,17 @@ const HERO_IMAGES = [
     "https://templarportugal.com/media/images/Castelo_e_Paao_dos_Condes_de_OurCm_iluminado.original.jpg"
 ];
 
-// Total de scroll que o wrapper "consome" para a animação
-const ANIM_SCROLL = 240; // px — quanto de scroll existe além dos 100vh
+// ── Parâmetros da animação ─────────────────────────────────────────────────
+// Fase 1 (0 → P1_END px de scroll):
+//   Imagem "assenta" 6px abaixo do navbar pill (top: 0 → NAVBAR_BOTTOM)
+// Fase 2 (P1_END → P1_END + P2_SCROLL px de scroll):
+//   Imagem sobe com translateY até sair completamente pelo topo
+const NAVBAR_BOTTOM = 90;   // px — bottom do navbar pill (~12 + 66 + 12) + 6px gap
+const P1_END        = 90;   // px de scroll para completar Fase 1
+const P2_SCROLL     = 380;  // px de scroll para a imagem sair completamente
+const ANIM_TOTAL    = P1_END + P2_SCROLL; // 470px total
+
+export { ANIM_TOTAL };
 
 export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
     const [slide, setSlide]     = useState(0);
@@ -42,49 +51,48 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
         return () => window.removeEventListener('scroll', handle);
     }, []);
 
-    // ── Animação suave ─────────────────────────────────────────────────────
-    // progresso (0→1) ao longo de ANIM_SCROLL px de scroll
-    const progress = Math.min(1, Math.max(0, scrollY / ANIM_SCROLL));
-
-    // Escala muito subtil: de 1.0 → 0.93
-    const SCALE_FINAL = 0.93;
-    const scale = 1 - progress * (1 - SCALE_FINAL);
-
-    // Margens laterais: 0 → 5% da largura
-    const vw = typeof window !== 'undefined' ? window.innerWidth : 1440;
-    const marginH = progress * vw * 0.05;
-
-    // Topo/fundo calculados a partir da escala (centrado verticalmente)
     const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
-    const shrunkH = vh * scale;
-    const topVal    = (vh - shrunkH) / 2;
-    const bottomVal = topVal;
 
-    // Border-radius e sombra crescem suavemente
-    const radius    = progress * 16;   // 0 → 16px
-    const shadowOpa = progress * 0.45;
+    // ── Progressos ─────────────────────────────────────────────────────────
+    // Fase 1: imagem desce para ficar 6px abaixo do navbar
+    const p1 = Math.min(1, Math.max(0, scrollY / P1_END));
+
+    // Fase 2: imagem sobe e sai pelo topo (via translateY)
+    const p2 = Math.min(1, Math.max(0, (scrollY - P1_END) / P2_SCROLL));
+
+    // ── Estilos da imagem ──────────────────────────────────────────────────
+    // Fase 1: top cresce de 0 → NAVBAR_BOTTOM (imagem "descola" para baixo do navbar)
+    const topInset = p1 * NAVBAR_BOTTOM;
+
+    // Fase 2: translateY sobe a imagem de 0 → -(vh + NAVBAR_BOTTOM)
+    // Assim a imagem sobe, passa pelo navbar e sai pelo topo
+    const slideUp = p2 * (vh + NAVBAR_BOTTOM);
+
+    // Border-radius suave enquanto assenta
+    const radius = p1 * 12;
 
     const imgStyle: React.CSSProperties = {
-        position: 'absolute',
-        top:    `${topVal}px`,
-        bottom: `${bottomVal}px`,
-        left:   `${marginH}px`,
-        right:  `${marginH}px`,
+        position:     'absolute',
+        top:          `${topInset}px`,
+        left:         0,
+        right:        0,
+        bottom:       0,
         borderRadius: `${radius}px`,
-        boxShadow: progress > 0.02
-            ? `0 20px 60px rgba(0,0,0,${shadowOpa})`
-            : 'none',
-        overflow: 'hidden',
-        willChange: 'top, bottom, left, right',
-        transition: scrollY < 4
-            ? 'all 0.6s cubic-bezier(0.16,1,0.3,1)'
+        overflow:     'hidden',
+        transform:    `translateY(-${slideUp}px)`,
+        willChange:   'transform, top',
+        // Transição suave apenas quando em repouso (scroll=0)
+        transition: scrollY < 3
+            ? 'top 0.5s cubic-bezier(0.16,1,0.3,1), border-radius 0.5s'
             : 'none',
     };
 
-    const textOpacity = Math.max(0, 1 - progress * 3);
+    // Texto desaparece rapidamente durante a Fase 1
+    const textOpacity = Math.max(0, 1 - p1 * 2.5);
 
     return (
-        <div ref={wrapperRef} className="hero" style={{ height: `calc(100vh + ${ANIM_SCROLL}px)` }}>
+        <div ref={wrapperRef} className="hero" style={{ height: `calc(100vh + ${ANIM_TOTAL + 60}px)` }}>
+            {/* Verde do site aparece quando a imagem se afasta */}
             <section
                 className="sticky top-0 w-full h-screen flex items-center justify-center"
                 style={{ zIndex: 1, background: '#1E3932' }}
@@ -103,13 +111,13 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                     <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/60" />
                 </div>
 
-                {/* Texto hero */}
+                {/* Texto hero — desaparece na Fase 1 */}
                 <div
                     className="relative z-10 text-center px-4 max-w-5xl mt-24"
                     style={{
-                        opacity: textOpacity,
-                        pointerEvents: progress > 0.1 ? 'none' : 'auto',
-                        transition: 'opacity 0.2s ease',
+                        opacity:        textOpacity,
+                        pointerEvents:  p1 > 0.1 ? 'none' : 'auto',
+                        transition:     'opacity 0.15s ease',
                     }}
                 >
                     <p className="text-white text-xs md:text-sm tracking-widest uppercase mb-8 font-light drop-shadow-md">
@@ -121,12 +129,12 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                     </h2>
                 </div>
 
-                {/* Scroll indicator */}
+                {/* Scroll indicator — desaparece rapidamente */}
                 <div
                     className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white flex flex-col items-center gap-4 cursor-pointer hover:text-[#C4A484] transition-all duration-500 z-20"
                     style={{
-                        opacity: Math.max(0, (1 - progress * 4) * 0.8),
-                        pointerEvents: progress > 0.1 ? 'none' : 'auto',
+                        opacity:       Math.max(0, (1 - p1 * 5) * 0.8),
+                        pointerEvents: p1 > 0.05 ? 'none' : 'auto',
                     }}
                     onClick={onReservar}
                 >
@@ -135,7 +143,10 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                 </div>
 
                 {/* Dots */}
-                <div className="absolute bottom-8 right-8 flex gap-2 z-20">
+                <div
+                    className="absolute bottom-8 right-8 flex gap-2 z-20"
+                    style={{ opacity: Math.max(0, 1 - p1 * 3) }}
+                >
                     {HERO_IMAGES.map((_, idx) => (
                         <button
                             key={idx}
