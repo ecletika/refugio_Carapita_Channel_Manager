@@ -108,7 +108,7 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
     };
 
     return (
-        <div ref={wrapperRef} className="hero" style={{ height: '180vh' }}>
+        <div ref={wrapperRef} className="hero" style={{ height: 'calc(100vh + 180px)' }}>
             {/* bg-[#1E3932] = cor verde do site, aparece quando a imagem encolhe */}
             <section
                 className="sticky top-0 w-full h-screen flex items-center justify-center"
