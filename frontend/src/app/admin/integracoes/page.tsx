@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Link2, Save, Check, AlertCircle, Info } from 'lucide-react';
+import { RefreshCw, Link2, Save, Check, AlertCircle, Info, Instagram, Eye, EyeOff } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
 const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
@@ -101,6 +101,13 @@ export default function IntegracoesOTA() {
     const [syncAllMsg, setSyncAllMsg] = useState<string | null>(null);
     const [roomStates, setRoomStates] = useState<Record<string, RoomState>>({});
 
+    // ── Instagram state ──────────────────────────────────────────────────────
+    const [igToken, setIgToken]           = useState('');
+    const [igTokenVisible, setIgTokenVisible] = useState(false);
+    const [igSaving, setIgSaving]         = useState(false);
+    const [igMsg, setIgMsg]               = useState<{ text: string; ok: boolean } | null>(null);
+    const [igStatus, setIgStatus]         = useState<{ count: number; fetched_at: string } | null>(null);
+
     const fetchQuartos = async () => {
         setLoading(true);
         setLoadError(null);
@@ -136,7 +143,19 @@ export default function IntegracoesOTA() {
         }
     };
 
-    useEffect(() => { fetchQuartos(); }, []);
+    useEffect(() => {
+        fetchQuartos();
+        // Check current Instagram cache status
+        (async () => {
+            try {
+                const res = await fetch(`${EDGE_URL}/instagram-feed`);
+                const json = await res.json();
+                if (json.data?.length) {
+                    setIgStatus({ count: json.data.length, fetched_at: json.data[0]?.timestamp || '' });
+                }
+            } catch { /* silently ignore */ }
+        })();
+    }, []);
 
     const updateRoom = (id: string, patch: Partial<RoomState>) => {
         setRoomStates(prev => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -192,6 +211,33 @@ export default function IntegracoesOTA() {
             const msg = `Erro de conexão (${label})`;
             if (channel === 'airbnb') updateRoom(q.id, { syncingAirbnb: false, syncMsg: msg });
             else updateRoom(q.id, { syncingBooking: false, syncMsg: msg });
+        }
+    };
+
+    const saveInstagramToken = async () => {
+        if (!igToken.trim()) return;
+        setIgSaving(true);
+        setIgMsg(null);
+        try {
+            const token = localStorage.getItem('token');
+            const resp = await fetch(`${EDGE_URL}/instagram-feed/refresh-token`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ token: igToken.trim() })
+            });
+            const json = await resp.json();
+            if (json.status === 'success') {
+                setIgMsg({ text: `✓ Token guardado! ${json.posts_count} publicações carregadas.`, ok: true });
+                setIgStatus({ count: json.posts_count, fetched_at: new Date().toISOString() });
+                setIgToken('');
+            } else {
+                setIgMsg({ text: json.error || 'Erro ao guardar token', ok: false });
+            }
+        } catch {
+            setIgMsg({ text: 'Erro de conexão', ok: false });
+        } finally {
+            setIgSaving(false);
+            setTimeout(() => setIgMsg(null), 6000);
         }
     };
 
@@ -377,6 +423,111 @@ export default function IntegracoesOTA() {
                             <p className="text-gray-500 text-sm">Nenhum alojamento encontrado.</p>
                         </div>
                     )}
+                </div>
+
+                {/* ═══════════════════════════════════════════════════════════
+                    ── Instagram Feed ──
+                ════════════════════════════════════════════════════════ */}
+                <div className="mt-12 pt-8 border-t border-gray-200">
+                    <div className="flex items-center gap-3 mb-6">
+                        <Instagram size={18} className="text-[#C4A484]" />
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">
+                            Instagram Feed — Últimas publicações no site
+                        </p>
+                        {igStatus && (
+                            <span className="ml-auto flex items-center gap-1 text-[10px] text-emerald-600 font-bold">
+                                <Check size={11} /> {igStatus.count} posts em cache
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="bg-white border border-gray-100 p-6 space-y-5">
+                        {/* Status */}
+                        {igStatus ? (
+                            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-4 py-3">
+                                <Check size={14} className="text-emerald-600 flex-shrink-0" />
+                                <span className="text-[12px] text-emerald-700">
+                                    Feed activo — {igStatus.count} publicações carregadas. O token renova automaticamente a cada 50 dias.
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 px-4 py-3">
+                                <AlertCircle size={14} className="text-amber-600 flex-shrink-0" />
+                                <span className="text-[12px] text-amber-700">
+                                    Ainda não configurado. Cole o Access Token do Instagram abaixo para ativar o feed.
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Token input */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] uppercase tracking-widest font-bold text-gray-600 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-[#E1306C] flex-shrink-0" />
+                                Instagram Long-Lived Access Token
+                            </label>
+                            <div className="flex items-center gap-2 border-b border-gray-200 focus-within:border-[#C4A484] transition-colors">
+                                <input
+                                    type={igTokenVisible ? 'text' : 'password'}
+                                    value={igToken}
+                                    onChange={e => setIgToken(e.target.value)}
+                                    placeholder="IGQVJWa3h4…"
+                                    style={{ fontSize: '16px' }}
+                                    className="flex-1 py-2 text-xs outline-none bg-transparent text-gray-800 placeholder-gray-400 font-mono min-w-0"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setIgTokenVisible(v => !v)}
+                                    className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1"
+                                    aria-label={igTokenVisible ? 'Ocultar token' : 'Mostrar token'}
+                                >
+                                    {igTokenVisible ? <EyeOff size={14} /> : <Eye size={14} />}
+                                </button>
+                            </div>
+                            <p className="text-[11px] text-gray-400">
+                                Cole aqui o Long-Lived Access Token obtido no Meta Developers. Validade: 60 dias (renovação automática activada).
+                            </p>
+                        </div>
+
+                        {igMsg && (
+                            <p className={`text-[12px] font-medium ${igMsg.ok ? 'text-emerald-600' : 'text-red-500'}`}>
+                                {igMsg.text}
+                            </p>
+                        )}
+
+                        <BtnPrimary onClick={saveInstagramToken} disabled={igSaving || !igToken.trim()}>
+                            {igSaving ? <><RefreshCw size={12} className="animate-spin" /> A validar…</> : <><Instagram size={12} /> Guardar e Activar Feed</>}
+                        </BtnPrimary>
+
+                        {/* Step-by-step guide */}
+                        <details className="group mt-2">
+                            <summary className="text-[11px] text-[#C4A484] font-bold uppercase tracking-widest cursor-pointer hover:text-[#1E3932] transition-colors list-none flex items-center gap-2">
+                                <svg className="w-3 h-3 transition-transform group-open:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                                Como obter o Access Token (passo a passo)
+                            </summary>
+                            <div className="mt-4 space-y-3 border-l-2 border-[#C4A484]/30 pl-4">
+                                {[
+                                    { n: '1', t: 'Conta Instagram Business', d: 'Certifique-se que a sua conta Instagram está configurada como "Conta Profissional" (Criador ou Empresa). Defina nos Definições → Conta → Mudar para conta profissional.' },
+                                    { n: '2', t: 'Criar App no Meta', d: 'Aceda a developers.facebook.com → Criar App → Escolha "Outros" → Tipo "Consumidor". Dê um nome (ex: Refugio Carapita Feed).' },
+                                    { n: '3', t: 'Adicionar Instagram Graph API', d: 'No painel da app, clique "Adicionar produto" → Instagram Graph API. Depois vá a "Configuração básica" e adicione a plataforma Web.' },
+                                    { n: '4', t: 'Gerar Short-Lived Token', d: 'Vá a Instagram Graph API → Gerar Token de Acesso → Autorize com a sua conta Instagram. Copia o token temporário (1 hora).' },
+                                    { n: '5', t: 'Converter para Long-Lived Token', d: 'Abra o browser e aceda a:\nhttps://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_id={APP_ID}&client_secret={APP_SECRET}&access_token={SHORT_LIVED_TOKEN}\nCopie o access_token da resposta JSON.' },
+                                    { n: '6', t: 'Colar aqui', d: 'Cole o Long-Lived Token no campo acima e clique "Guardar e Activar Feed". O sistema renova automaticamente antes de expirar.' },
+                                ].map(step => (
+                                    <div key={step.n} className="flex gap-3">
+                                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1E3932] text-white text-[9px] font-bold flex items-center justify-center">
+                                            {step.n}
+                                        </span>
+                                        <div>
+                                            <p className="text-[11px] font-bold text-[#1E3932] mb-0.5">{step.t}</p>
+                                            <p className="text-[11px] text-gray-500 leading-relaxed whitespace-pre-line">{step.d}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </details>
+                    </div>
                 </div>
 
                 {/* ── How-to section ── */}

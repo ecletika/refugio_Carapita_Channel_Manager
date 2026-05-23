@@ -114,6 +114,10 @@ export const dictionaries = {
         editorial_cta: 'Viver a Experiência',
         editorial_marquee_label: 'Ourém · Portugal · Natureza · Exclusividade',
 
+        instagram_tag: 'Siga-nos',
+        instagram_title: 'Momentos do Refúgio',
+        instagram_seguir: 'Seguir no Instagram',
+
         contact_tag: 'Contactos',
         contact_title: 'Sinta-se em',
         contact_title_casa: 'Casa',
@@ -242,6 +246,10 @@ export const dictionaries = {
         editorial_body: 'Surrounded by green hills and centuries of history, Refúgio Carapita is a place where time slows down. Every detail was crafted so you feel at home — but in a truly extraordinary home.',
         editorial_cta: 'Live the Experience',
         editorial_marquee_label: 'Ourém · Portugal · Nature · Exclusivity',
+
+        instagram_tag: 'Follow us',
+        instagram_title: 'Moments from the Refuge',
+        instagram_seguir: 'Follow on Instagram',
 
         contact_tag: 'Contacts',
         contact_title: 'Feel at',
