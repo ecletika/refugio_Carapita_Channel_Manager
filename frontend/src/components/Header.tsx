@@ -36,12 +36,10 @@ export default function Header({
                 setScrolled(y > 80);
             }
 
-            // pastHero: navbar some quando o hero acaba (180vh)
-            const heroEl = document.querySelector('.hero') as HTMLElement | null;
-            if (heroEl) {
-                const heroBottom = heroEl.offsetTop + heroEl.offsetHeight;
-                setPastHero(y >= heroBottom - window.innerHeight * 0.1);
-            }
+            // pastHero: navbar some quando a imagem termina de descer
+            // A imagem completa o slide-down aos 160px de scroll
+            // Adicionamos uma pequena margem para o fade ser suave
+            setPastHero(y >= 160);
         };
 
         if (propScrolled !== undefined) setScrolled(propScrolled);
