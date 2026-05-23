@@ -6,34 +6,6 @@ interface ImmersiveEditorialSectionProps {
     onReservar: () => void;
 }
 
-/* ─── Marquee photos ──────────────────────────────────────────────────────── */
-const MARQUEE_PHOTOS = [
-    {
-        src: 'https://templarportugal.com/media/images/TZC03808-min.original.jpg',
-        alt: 'Vista panorâmica da região de Ourém',
-    },
-    {
-        src: '/essencia_carapita.jpg',
-        alt: 'Refúgio Carapita — exterior',
-    },
-    {
-        src: 'https://templarportugal.com/media/images/TZC03798-min.original.jpg',
-        alt: 'Natureza intacta de Portugal Central',
-    },
-    {
-        src: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/826730877.jpg?k=fc9b835d1bdb1169df946909e38c19b06b9131b7c3fa72703b8d7e064e45849d&o=',
-        alt: 'Alojamento de charme',
-    },
-    {
-        src: 'https://templarportugal.com/media/images/Castelo_e_Paao_dos_Condes_de_OurCm_iluminado.original.jpg',
-        alt: 'Castelo de Ourém iluminado ao anoitecer',
-    },
-    {
-        src: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/808586033.jpg?k=e38ec43a7b82ffd6a24db7470dc5cbd76365352b4ef7330b4ba3db04608921dd&o=',
-        alt: 'Interior exclusivo do alojamento',
-    },
-];
-
 /* ─── Stats ─────────────────────────────────────────────────────────────── */
 const STATS = [
     { num: 'XXIV', ptLabel: 'séculos\nde história', enLabel: 'centuries\nof history' },
@@ -226,78 +198,6 @@ export default function ImmersiveEditorialSection({ t, onReservar }: ImmersiveEd
                 </div>
             </div>
 
-            {/* ═══════════════════════════════════════════════════════════
-                PARTE B — Cinematic photo marquee (dark bg)
-                Bridges visually from this section into EssenciaSection
-            ════════════════════════════════════════════════════════════ */}
-            <div className="bg-[#1E3932] w-full py-10 overflow-hidden">
-
-                {/* Eyebrow label */}
-                <div className="flex items-center justify-center gap-4 mb-7 px-4">
-                    <div className="w-8 h-[1px] bg-[#C4A484]/40" />
-                    <span className="text-[8px] uppercase tracking-[0.5em] text-[#C4A484]/70 font-medium">
-                        {t('editorial_marquee_label')}
-                    </span>
-                    <div className="w-8 h-[1px] bg-[#C4A484]/40" />
-                </div>
-
-                {/* Marquee track */}
-                <div
-                    className="flex gap-4"
-                    style={{
-                        /* Duplicate items fill the track; CSS animates the whole strip */
-                        width: 'max-content',
-                        animation: prefersReducedMotion
-                            ? 'none'
-                            : 'marquee-scroll 32s linear infinite',
-                    }}
-                    onMouseEnter={e => {
-                        if (!prefersReducedMotion)
-                            (e.currentTarget as HTMLDivElement).style.animationPlayState = 'paused';
-                    }}
-                    onMouseLeave={e => {
-                        (e.currentTarget as HTMLDivElement).style.animationPlayState = 'running';
-                    }}
-                >
-                    {/* Original set + duplicate for seamless loop */}
-                    {[...MARQUEE_PHOTOS, ...MARQUEE_PHOTOS].map((photo, i) => (
-                        <div
-                            key={i}
-                            className="relative flex-shrink-0 overflow-hidden"
-                            style={{
-                                width: '240px',
-                                height: '320px',
-                                /* Alternate slight tilt for dynamic feel */
-                                transform: i % 3 === 1 ? 'rotate(1deg)' : i % 3 === 2 ? 'rotate(-0.7deg)' : 'none',
-                            }}
-                        >
-                            <img
-                                src={photo.src}
-                                alt={photo.alt}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                                onError={e => {
-                                    (e.target as HTMLImageElement).src = '/essencia_carapita.jpg';
-                                }}
-                            />
-                            {/* Subtle vignette */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30 pointer-events-none" />
-                            {/* Thin gold border accent on every 3rd */}
-                            {i % 3 === 0 && (
-                                <div className="absolute inset-2 border border-[#C4A484]/30 pointer-events-none" />
-                            )}
-                        </div>
-                    ))}
-                </div>
-
-                {/* CSS keyframe via style tag — avoids globals.css dependency */}
-                <style>{`
-                    @keyframes marquee-scroll {
-                        from { transform: translateX(0); }
-                        to   { transform: translateX(-50%); }
-                    }
-                `}</style>
-            </div>
         </section>
     );
 }
