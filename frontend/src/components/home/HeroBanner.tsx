@@ -44,13 +44,17 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
         return () => window.removeEventListener('scroll', handle);
     }, []);
 
-    // 0 → 1 as scroll goes 0 → SHRINK_SCROLL
-    const p = Math.min(1, Math.max(0, scrollY / SHRINK_SCROLL));
+    // Phase 1: 0 → 1 as scroll goes 0 → SHRINK_SCROLL  (image shrinks & docks)
+    const p1 = Math.min(1, Math.max(0, scrollY / SHRINK_SCROLL));
 
-    // Image shrinks 30%, docks 4px below navbar
-    const scale     = 1 - p * 0.30;
-    const topOffset = p * NAVBAR_BOTTOM;
-    const radius    = p * 20;
+    // Phase 2: extra scroll past SHRINK_SCROLL → image slides up and exits
+    const slideUp = Math.max(0, scrollY - SHRINK_SCROLL);
+
+    // Scale stays at 0.70 after phase 1 ends
+    const scale     = 1 - p1 * 0.30;
+    // top: descends to NAVBAR_BOTTOM during phase 1, then climbs up in phase 2
+    const topOffset = p1 * NAVBAR_BOTTOM - slideUp;
+    const radius    = p1 * 20;
 
     const imgStyle: React.CSSProperties = {
         position:        'absolute',
@@ -63,12 +67,13 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
         transform:       `scale(${scale})`,
         transformOrigin: 'top center',
         willChange:      'transform, top',
+        // Smooth snap-back only when at rest
         transition:      scrollY < 3
             ? 'transform 0.55s cubic-bezier(0.16,1,0.3,1), top 0.55s cubic-bezier(0.16,1,0.3,1), border-radius 0.55s'
             : 'none',
     };
 
-    const textOpacity = Math.max(0, 1 - p * 2.5);
+    const textOpacity = Math.max(0, 1 - p1 * 2.5);
 
     return (
         <>
@@ -107,7 +112,7 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                     className="relative z-10 text-center px-4 max-w-5xl mt-24"
                     style={{
                         opacity:       textOpacity,
-                        pointerEvents: p > 0.1 ? 'none' : 'auto',
+                        pointerEvents: p1 > 0.1 ? 'none' : 'auto',
                         transition:    'opacity 0.15s ease',
                     }}
                 >
@@ -124,8 +129,8 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                 <div
                     className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white flex flex-col items-center gap-4 cursor-pointer hover:text-[#C4A484] transition-all duration-500 z-20"
                     style={{
-                        opacity:       Math.max(0, (1 - p * 5) * 0.8),
-                        pointerEvents: p > 0.05 ? 'none' : 'auto',
+                        opacity:       Math.max(0, (1 - p1 * 5) * 0.8),
+                        pointerEvents: p1 > 0.05 ? 'none' : 'auto',
                     }}
                     onClick={onReservar}
                 >
@@ -136,7 +141,7 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                 {/* ── Dots ──────────────────────────────────────────────── */}
                 <div
                     className="absolute bottom-8 right-8 flex gap-2 z-20"
-                    style={{ opacity: Math.max(0, 1 - p * 3) }}
+                    style={{ opacity: Math.max(0, 1 - p1 * 3) }}
                 >
                     {HERO_IMAGES.map((_, idx) => (
                         <button
