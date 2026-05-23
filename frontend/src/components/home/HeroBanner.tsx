@@ -12,15 +12,10 @@ const HERO_IMAGES = [
     "https://templarportugal.com/media/images/Castelo_e_Paao_dos_Condes_de_OurCm_iluminado.original.jpg"
 ];
 
-// Altura total do hero wrapper (180vh = scroll range)
-// A secção sticky tem 100vh, o wrapper tem 180vh → 80vh de scroll range
-const HERO_SCROLL_RANGE_VH = 80; // vh de scroll disponível dentro do hero
-
 export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
-    const [slide, setSlide]           = useState(0);
-    const [scrollY, setScrollY]       = useState(0);
-    const [heroHeight, setHeroHeight] = useState(0);
-    const wrapperRef                  = useRef<HTMLDivElement>(null);
+    const [slide, setSlide]     = useState(0);
+    const [scrollY, setScrollY] = useState(0);
+    const wrapperRef            = useRef<HTMLDivElement>(null);
 
     // Slideshow
     useEffect(() => {
@@ -28,66 +23,92 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
         return () => clearInterval(id);
     }, []);
 
-    // Scroll tracker
+    // Scroll tracker — RAF para 60fps sem jank
     useEffect(() => {
-        const handle = () => setScrollY(window.scrollY);
+        let ticking = false;
+        const handle = () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    setScrollY(window.scrollY);
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
         window.addEventListener('scroll', handle, { passive: true });
-        handle();
         return () => window.removeEventListener('scroll', handle);
     }, []);
 
-    // Medir altura do wrapper para saber quando o hero acaba
-    useEffect(() => {
-        const measure = () => {
-            if (wrapperRef.current) {
-                setHeroHeight(wrapperRef.current.offsetHeight);
-            }
-        };
-        measure();
-        window.addEventListener('resize', measure);
-        return () => window.removeEventListener('resize', measure);
-    }, []);
+    // ── Parâmetros ────────────────────────────────────────────────────────────
+    // Navbar pill: top=12px, altura≈72px → fundo da navbar ≈ 84px
+    // Gap abaixo da navbar: 6px
+    // Topo da imagem encolhida: 90px
+    const NAVBAR_BOTTOM = 90;   // px — onde a imagem encolhida deve começar
+    const SCALE_FINAL   = 0.70; // escala final da imagem
 
-    // ── Lógica de scroll ──────────────────────────────────────────────────────
-    // scrollY = 0..80 → fase 1: imagem encolhe (scale 1→0.70) e desce 90px
-    // scrollY = 80..heroHeight-vh → fase 2: imagem desce progressivamente
-    //   até sair do ecrã pelo fundo
+    // Fase 1: 0→80px scroll → shrink
+    const SHRINK_END = 80;
+    const t1 = Math.min(1, Math.max(0, scrollY / SHRINK_END));
+
+    // Escala actual: 1 → 0.70
+    const scale = 1 - t1 * (1 - SCALE_FINAL);
+
+    // Fase 2: 80px→160px scroll → imagem desce do topo da navbar até ao fundo do viewport
+    // Quando t2=0: imagem está em top=NAVBAR_BOTTOM
+    // Quando t2=1: imagem está em top=100vh (saiu pelo fundo)
+    const SLIDE_START = SHRINK_END;
+    const SLIDE_END   = 160;
+    const t2 = Math.min(1, Math.max(0, (scrollY - SLIDE_START) / (SLIDE_END - SLIDE_START)));
+
+    // A imagem encolhida tem altura = 100vh * 0.70
+    // Para sair pelo fundo: translateY final = 100vh - NAVBAR_BOTTOM
+    // Mas queremos que desça apenas até ao fundo do preto (= fundo do viewport)
+    // → translateY máximo = viewport height - (NAVBAR_BOTTOM + scaled height)
+    //   = vh - (90 + vh*0.70) = vh*0.30 - 90
+    // Simplificando: a imagem desce até o seu fundo tocar o fundo do viewport
+    // fundo da imagem = NAVBAR_BOTTOM + vh*scale + extraY
+    // queremos fundo = vh → extraY = vh - NAVBAR_BOTTOM - vh*scale = vh*(1-scale) - NAVBAR_BOTTOM
+
+    // translateY total:
+    // Fase 1: a imagem está centrada (scale a partir do centro) → precisamos de mover para NAVBAR_BOTTOM
+    //   Com scale(s) a partir do centro, o topo visual fica em: (1-s)/2 * vh
+    //   Queremos topo visual em NAVBAR_BOTTOM → translateY = NAVBAR_BOTTOM - (1-s)/2 * vh
+    // Fase 2: desce progressivamente até fundo do viewport
+
+    // Cálculo correcto com transformOrigin: 'center center' (default)
+    // topo visual = translateY + (1 - scale) / 2 * vh
+    // queremos topo visual = NAVBAR_BOTTOM
+    // → translateY = NAVBAR_BOTTOM - (1 - scale) / 2 * vh
+
+    // Para fase 2, queremos fundo visual = vh
+    // fundo visual = translateY + (1 + scale) / 2 * vh  (com origin center)
+    // → translateY_max = vh - (1 + SCALE_FINAL) / 2 * vh = vh * (1 - (1 + SCALE_FINAL) / 2)
+    //                  = vh * (1 - SCALE_FINAL) / 2
+
+    // Interpolamos entre translateY_fase1 e translateY_max
     const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
 
-    // Fase 1: primeiros 80px de scroll → shrink
-    const SHRINK_START = 0;
-    const SHRINK_END   = 80;
-    const shrinkProgress = Math.min(1, Math.max(0, (scrollY - SHRINK_START) / (SHRINK_END - SHRINK_START)));
+    const translateY_fase1 = NAVBAR_BOTTOM - (1 - scale) / 2 * vh;
+    const translateY_max   = vh * (1 - SCALE_FINAL) / 2; // fundo toca o fundo do viewport
 
-    const scale       = 1 - shrinkProgress * 0.30;          // 1 → 0.70
-    const SHIFT       = 90;                                   // px abaixo do topo após shrink
-    const translateY  = shrinkProgress * SHIFT;              // 0 → 90px (fase 1)
+    const translateY = t1 < 1
+        ? translateY_fase1
+        : translateY_fase1 + t2 * (translateY_max - translateY_fase1);
 
-    // Fase 2: após os 80px de shrink, a imagem desce até o final do hero
-    // O hero wrapper tem 180vh, a secção sticky tem 100vh
-    // Quando scrollY = heroHeight - vh, a secção sticky sai do viewport
-    const SLIDE_START = SHRINK_END;
-    const SLIDE_END   = heroHeight > 0 ? heroHeight - vh : vh * 0.8;
-    const slideRange  = Math.max(1, SLIDE_END - SLIDE_START);
-    const slideProgress = Math.min(1, Math.max(0, (scrollY - SLIDE_START) / slideRange));
-
-    // Na fase 2, a imagem já está em scale(0.70) e translateY(90px)
-    // Queremos que ela desça até sair pelo baixo: translateY máximo = vh (sai do ecrã)
-    const extraTranslate = slideProgress * (vh * 0.85);
-
-    const finalTranslateY = translateY + (shrinkProgress >= 1 ? extraTranslate : 0);
-    const isShrunken      = shrinkProgress > 0.05;
+    const isShrunken = t1 > 0.05;
+    const textOpacity = Math.max(0, 1 - t1 * 2.5);
 
     const imgStyle: React.CSSProperties = {
-        transform: `translateY(${finalTranslateY}px) scale(${scale})`,
-        transformOrigin: 'top center',
-        transition: scrollY < 5 ? 'transform 0.5s ease-in-out, border-radius 0.5s ease-in-out, box-shadow 0.5s ease-in-out' : 'none',
+        position: 'absolute',
+        inset: 0,
+        transform: `translateY(${translateY}px) scale(${scale})`,
+        transformOrigin: 'center center',
+        transition: scrollY < 3 ? 'transform 0.6s ease-in-out, border-radius 0.5s, box-shadow 0.5s' : 'none',
         borderRadius: isShrunken ? '18px' : '0px',
-        boxShadow: isShrunken ? '0 20px 60px rgba(0,0,0,0.55)' : 'none',
+        boxShadow: isShrunken ? '0 20px 60px rgba(0,0,0,0.6)' : 'none',
+        overflow: 'hidden',
         willChange: 'transform',
     };
-
-    const textOpacity = 1 - shrinkProgress * 2; // desaparece rápido
 
     return (
         <div ref={wrapperRef} className="hero" style={{ height: '180vh' }}>
@@ -95,8 +116,8 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                 className="sticky top-0 w-full h-screen bg-black flex items-center justify-center"
                 style={{ zIndex: 1 }}
             >
-                {/* Wrapper de imagens */}
-                <div className="absolute inset-0 overflow-hidden" style={imgStyle}>
+                {/* Wrapper de imagens com transform */}
+                <div style={imgStyle}>
                     {HERO_IMAGES.map((img, idx) => (
                         <div
                             key={idx}
@@ -109,13 +130,13 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                     <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/60" />
                 </div>
 
-                {/* Texto */}
+                {/* Texto hero */}
                 <div
                     className="relative z-10 text-center px-4 max-w-5xl mt-24"
                     style={{
-                        opacity: Math.max(0, textOpacity),
-                        pointerEvents: shrinkProgress > 0.1 ? 'none' : 'auto',
-                        transition: 'opacity 0.3s ease',
+                        opacity: textOpacity,
+                        pointerEvents: t1 > 0.1 ? 'none' : 'auto',
+                        transition: 'opacity 0.2s ease',
                     }}
                 >
                     <p className="text-white text-xs md:text-sm tracking-widest uppercase mb-8 font-light drop-shadow-md">
@@ -131,8 +152,8 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                 <div
                     className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white flex flex-col items-center gap-4 cursor-pointer hover:text-[#C4A484] transition-all duration-500 z-20"
                     style={{
-                        opacity: Math.max(0, (1 - shrinkProgress * 3) * 0.8),
-                        pointerEvents: shrinkProgress > 0.1 ? 'none' : 'auto',
+                        opacity: Math.max(0, (1 - t1 * 4) * 0.8),
+                        pointerEvents: t1 > 0.1 ? 'none' : 'auto',
                     }}
                     onClick={onReservar}
                 >
