@@ -23,7 +23,7 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
         return () => clearInterval(id);
     }, []);
 
-    // Scroll tracker — RAF para 60fps sem jank
+    // Scroll tracker — RAF para 60fps
     useEffect(() => {
         let ticking = false;
         const handle = () => {
@@ -39,70 +39,65 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
         return () => window.removeEventListener('scroll', handle);
     }, []);
 
-    // ── Parâmetros ────────────────────────────────────────────────────────────
-    // Navbar pill: top=12px, altura≈72px → fundo da navbar ≈ 84px
-    // Gap abaixo da navbar: 6px
-    // Topo da imagem encolhida: 90px
-    const NAVBAR_BOTTOM = 90;   // px — onde a imagem encolhida deve começar
-    const SCALE_FINAL   = 0.70; // escala final da imagem
+    // ── Lógica ────────────────────────────────────────────────────────────────
+    //
+    // Estado inicial (scrollY=0):
+    //   - imagem cobre 100% do ecrã, sem preto visível
+    //   - navbar transparente por cima
+    //
+    // Fase 1 (0 → 80px scroll): shrink
+    //   - imagem encolhe de scale(1) → scale(0.70)
+    //   - transformOrigin: 'top center' → ancora pelo topo
+    //   - o topo da imagem fica no topo do viewport (0px)
+    //   - depois deslocamos para baixo com translateY para ficar abaixo da navbar
+    //
+    // Fase 2 (80px → 160px scroll): slide down
+    //   - imagem desce até o fundo tocar o fundo do viewport (= fundo do preto)
+    //
+    // Para não ter faixa preta em cima no estado inicial:
+    //   - a section NÃO tem overflow:hidden
+    //   - a imagem começa com scale(1) e translateY(0) → cobre tudo
+    //   - o preto só aparece quando a imagem encolhe (é o bg da section)
 
-    // Fase 1: 0→80px scroll → shrink
+    const SCALE_FINAL   = 0.70;
+    const NAVBAR_GAP    = 90;   // px — topo da imagem encolhida (abaixo da navbar pill)
+
+    // Fase 1
     const SHRINK_END = 80;
     const t1 = Math.min(1, Math.max(0, scrollY / SHRINK_END));
+    const scale = 1 - t1 * (1 - SCALE_FINAL); // 1 → 0.70
 
-    // Escala actual: 1 → 0.70
-    const scale = 1 - t1 * (1 - SCALE_FINAL);
+    // Com transformOrigin 'top center', scale reduz a imagem pelo topo.
+    // O topo visual fica em translateY (não muda com scale quando origin=top).
+    // Queremos topo visual = NAVBAR_GAP quando t1=1.
+    const translateY_fase1 = t1 * NAVBAR_GAP; // 0 → 90px
 
-    // Fase 2: 80px→160px scroll → imagem desce do topo da navbar até ao fundo do viewport
-    // Quando t2=0: imagem está em top=NAVBAR_BOTTOM
-    // Quando t2=1: imagem está em top=100vh (saiu pelo fundo)
-    const SLIDE_START = SHRINK_END;
-    const SLIDE_END   = 160;
-    const t2 = Math.min(1, Math.max(0, (scrollY - SLIDE_START) / (SLIDE_END - SLIDE_START)));
+    // Fase 2: deslizar para baixo
+    // Fundo visual da imagem = translateY + scale * vh
+    // Queremos fundo visual = vh (toca o fundo do viewport)
+    // → translateY_max = vh - scale * vh = vh * (1 - SCALE_FINAL)
+    const SLIDE_END = 160;
+    const t2 = Math.min(1, Math.max(0, (scrollY - SHRINK_END) / (SLIDE_END - SHRINK_END)));
 
-    // A imagem encolhida tem altura = 100vh * 0.70
-    // Para sair pelo fundo: translateY final = 100vh - NAVBAR_BOTTOM
-    // Mas queremos que desça apenas até ao fundo do preto (= fundo do viewport)
-    // → translateY máximo = viewport height - (NAVBAR_BOTTOM + scaled height)
-    //   = vh - (90 + vh*0.70) = vh*0.30 - 90
-    // Simplificando: a imagem desce até o seu fundo tocar o fundo do viewport
-    // fundo da imagem = NAVBAR_BOTTOM + vh*scale + extraY
-    // queremos fundo = vh → extraY = vh - NAVBAR_BOTTOM - vh*scale = vh*(1-scale) - NAVBAR_BOTTOM
-
-    // translateY total:
-    // Fase 1: a imagem está centrada (scale a partir do centro) → precisamos de mover para NAVBAR_BOTTOM
-    //   Com scale(s) a partir do centro, o topo visual fica em: (1-s)/2 * vh
-    //   Queremos topo visual em NAVBAR_BOTTOM → translateY = NAVBAR_BOTTOM - (1-s)/2 * vh
-    // Fase 2: desce progressivamente até fundo do viewport
-
-    // Cálculo correcto com transformOrigin: 'center center' (default)
-    // topo visual = translateY + (1 - scale) / 2 * vh
-    // queremos topo visual = NAVBAR_BOTTOM
-    // → translateY = NAVBAR_BOTTOM - (1 - scale) / 2 * vh
-
-    // Para fase 2, queremos fundo visual = vh
-    // fundo visual = translateY + (1 + scale) / 2 * vh  (com origin center)
-    // → translateY_max = vh - (1 + SCALE_FINAL) / 2 * vh = vh * (1 - (1 + SCALE_FINAL) / 2)
-    //                  = vh * (1 - SCALE_FINAL) / 2
-
-    // Interpolamos entre translateY_fase1 e translateY_max
     const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
-
-    const translateY_fase1 = NAVBAR_BOTTOM - (1 - scale) / 2 * vh;
-    const translateY_max   = vh * (1 - SCALE_FINAL) / 2; // fundo toca o fundo do viewport
+    const translateY_max = vh * (1 - SCALE_FINAL); // ≈ 240px para vh=800
 
     const translateY = t1 < 1
         ? translateY_fase1
-        : translateY_fase1 + t2 * (translateY_max - translateY_fase1);
+        : NAVBAR_GAP + t2 * (translateY_max - NAVBAR_GAP);
 
-    const isShrunken = t1 > 0.05;
-    const textOpacity = Math.max(0, 1 - t1 * 2.5);
+    const isShrunken    = t1 > 0.05;
+    const textOpacity   = Math.max(0, 1 - t1 * 2.5);
 
     const imgStyle: React.CSSProperties = {
         position: 'absolute',
-        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         transform: `translateY(${translateY}px) scale(${scale})`,
-        transformOrigin: 'center center',
+        transformOrigin: 'top center',
+        // Só anima suavemente quando volta ao topo (scroll=0)
         transition: scrollY < 3 ? 'transform 0.6s ease-in-out, border-radius 0.5s, box-shadow 0.5s' : 'none',
         borderRadius: isShrunken ? '18px' : '0px',
         boxShadow: isShrunken ? '0 20px 60px rgba(0,0,0,0.6)' : 'none',
@@ -112,11 +107,15 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
 
     return (
         <div ref={wrapperRef} className="hero" style={{ height: '180vh' }}>
+            {/*
+              * bg-black: fundo preto que aparece quando a imagem encolhe
+              * SEM overflow:hidden → imagem cobre tudo no estado inicial
+              */}
             <section
                 className="sticky top-0 w-full h-screen bg-black flex items-center justify-center"
                 style={{ zIndex: 1 }}
             >
-                {/* Wrapper de imagens com transform */}
+                {/* Imagem com transform */}
                 <div style={imgStyle}>
                     {HERO_IMAGES.map((img, idx) => (
                         <div
