@@ -25,7 +25,7 @@ export default function Header({
 }: HeaderProps) {
     const [scrolled, setScrolled]             = useState(propScrolled || false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    // heroProgress: 0→1 as user scrolls during the hero shrink animation (home page only)
+    // 0 → 1: syncs with hero shrink animation (home page only)
     const [heroProgress, setHeroProgress]     = useState(0);
 
     const router   = useRouter();
@@ -35,12 +35,12 @@ export default function Header({
         const handle = () => {
             const y = window.scrollY;
 
-            // Pill navbar: appears after 50px of scroll
+            // Pill appears after 50px
             if (propScrolled === undefined) {
                 setScrolled(y > 50);
             }
 
-            // Only sync with hero animation on the home page
+            // Sync with hero animation only on home page
             if (pathname === '/') {
                 setHeroProgress(Math.min(1, Math.max(0, y / SHRINK_SCROLL)));
             } else {
@@ -78,43 +78,34 @@ export default function Header({
         router.push(path);
     };
 
-    // ── Dynamic values that sync with hero shrink animation ──────────────
-    // Pill expands left/right as image shrinks: 15% → 4%
-    const pillEdge = `${Math.max(4, 15 - heroProgress * 11)}%`;
-    // Inner horizontal padding grows: 20px → 48px
-    const pillPad  = `10px ${Math.round(20 + heroProgress * 28)}px`;
-    // Gap between all sibling items grows: 6px → 36px
-    const itemGap  = `${Math.round(6 + heroProgress * 30)}px`;
+    // ── Dynamic: only the gap between nav menu items grows ──────────────
+    // The pill SIZE stays fixed. Only the items inside spread apart.
+    const navItemGap = `${Math.round(6 + heroProgress * 22)}px`; // 6px → 28px
 
     return (
         <>
             <header
                 className="fixed z-50 transition-all duration-500 ease-in-out"
                 style={{
-                    opacity:       1,
-                    pointerEvents: 'auto',
-                    transform:     'translateY(0)',
-
                     ...(scrolled || mobileMenuOpen
                         ? {
-                              // ── ESTADO PILL (dinâmico) ─────────────────────────
+                              // ── PILL — fixed size, items spread inside ─────
                               top:                  '12px',
-                              left:                 pillEdge,
-                              right:                pillEdge,
+                              left:                 '15%',
+                              right:                '15%',
                               borderRadius:         '9999px',
                               background:           'rgba(30, 57, 50, 0.92)',
                               backdropFilter:       'blur(14px)',
                               WebkitBackdropFilter: 'blur(14px)',
                               border:               '1px solid rgba(255,255,255,0.12)',
                               boxShadow:            '0 8px 32px rgba(0,0,0,0.35)',
-                              padding:              pillPad,
+                              padding:              '10px 20px',
                               display:              'flex',
                               alignItems:           'center',
                               justifyContent:       'space-between',
-                              gap:                  itemGap,
                           }
                         : {
-                              // ── ESTADO NORMAL (transparente) ──────────────────
+                              // ── NORMAL (transparent) ───────────────────────
                               top:                  0,
                               left:                 0,
                               right:                0,
@@ -132,12 +123,12 @@ export default function Header({
                           }),
                 }}
             >
+
                 {/* ══════════════════════════════════════════════════════════
-                    ESTADO NORMAL — layout spread (transparente)
+                    NORMAL STATE — transparent, full width
                 ═════════════════════════════════════════════════════════ */}
                 {!scrolled && !mobileMenuOpen && (
                     <>
-                        {/* Esquerda: Nav desktop */}
                         <nav className="flex-1 hidden lg:block">
                             <ul className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-medium text-white">
                                 {navItems.map((item, idx) => (
@@ -156,7 +147,6 @@ export default function Header({
                             </ul>
                         </nav>
 
-                        {/* Hamburguer mobile */}
                         <div className="flex-1 lg:hidden">
                             <button
                                 onClick={() => setMobileMenuOpen(true)}
@@ -166,7 +156,6 @@ export default function Header({
                             </button>
                         </div>
 
-                        {/* Centro: Logo */}
                         <div
                             className="flex-shrink-0 mx-6 relative group cursor-pointer"
                             onClick={() => router.push("/")}
@@ -180,7 +169,6 @@ export default function Header({
                             </div>
                         </div>
 
-                        {/* Direita: Idioma | Login | Reservar */}
                         <div className="flex-1 flex justify-end items-center gap-1.5">
                             <button
                                 onClick={() => setLang(lang === "PT" ? "EN" : "PT")}
@@ -213,16 +201,19 @@ export default function Header({
                 )}
 
                 {/* ══════════════════════════════════════════════════════════
-                    ESTADO PILL (scrolled) — dinâmico: expande com hero
+                    PILL STATE — fixed size, nav items spread dynamically
                 ═════════════════════════════════════════════════════════ */}
                 {(scrolled || mobileMenuOpen) && (
                     <>
-                        {/* Nav items — desktop, gap dinâmico */}
-                        <nav className="hidden lg:flex items-center" style={{ gap: itemGap }}>
+                        {/* Nav — gap between items grows as image shrinks */}
+                        <nav
+                            className="hidden lg:flex items-center"
+                            style={{ gap: navItemGap }}
+                        >
                             {navItems.map((item, idx) => (
                                 <span
                                     key={idx}
-                                    className="text-[10px] uppercase tracking-widest font-medium text-white/80 hover:text-[#C4A484] transition-colors duration-300 cursor-pointer whitespace-nowrap px-2 py-1"
+                                    className="text-[10px] uppercase tracking-widest font-medium text-white/80 hover:text-[#C4A484] transition-colors duration-300 cursor-pointer whitespace-nowrap"
                                     onClick={() =>
                                         item.type === "scroll"
                                             ? scrollToOrNavigate(item.id!)
@@ -234,7 +225,7 @@ export default function Header({
                             ))}
                         </nav>
 
-                        {/* Hamburguer mobile */}
+                        {/* Mobile hamburger */}
                         <button
                             className="lg:hidden text-white hover:text-[#C4A484] transition-colors cursor-pointer"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -242,7 +233,7 @@ export default function Header({
                             <Menu size={20} />
                         </button>
 
-                        {/* Logo — centro */}
+                        {/* Logo — centre */}
                         <div
                             className="relative group cursor-pointer flex-shrink-0"
                             onClick={() => router.push("/")}
@@ -256,8 +247,8 @@ export default function Header({
                             </div>
                         </div>
 
-                        {/* Acções: idioma | login | reservar — gap dinâmico */}
-                        <div className="flex items-center" style={{ gap: itemGap }}>
+                        {/* Actions — fixed gap */}
+                        <div className="flex items-center gap-1.5">
                             <button
                                 onClick={() => setLang(lang === "PT" ? "EN" : "PT")}
                                 className="text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-[#C4A484] transition-colors cursor-pointer px-2 py-1"
@@ -288,7 +279,7 @@ export default function Header({
                 )}
             </header>
 
-            {/* ── Menu mobile drawer ────────────────────────────────────────── */}
+            {/* ── Mobile drawer ─────────────────────────────────────────────── */}
             <div
                 className={`fixed inset-0 z-40 bg-[#1E3932] transition-transform duration-500 lg:hidden ${
                     mobileMenuOpen ? "translate-y-0" : "-translate-y-full"

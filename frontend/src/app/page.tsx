@@ -174,6 +174,12 @@ export default function Home() {
 
             <HeroBanner t={t} onReservar={() => setShowBookingScreen(true)} />
 
+            {/*
+              * z-index: 2 so this block slides OVER the fixed hero (z-index: 1).
+              * Each section already has its own background so it covers the hero.
+              */}
+            <div style={{ position: 'relative', zIndex: 2 }}>
+
             <InstagramCarousel t={t} />
 
             <ImmersiveEditorialSection t={t} onReservar={() => setShowBookingScreen(true)} />
@@ -195,6 +201,8 @@ export default function Home() {
             <LocalizacaoSection t={t} siteConfigs={siteConfigs} />
 
             <Footer t={t} lang={lang} siteConfigs={siteConfigs} />
+
+            </div> {/* end z-index:2 content block */}
 
             {/* Immersive Booking Flow */}
             {showBookingScreen && (

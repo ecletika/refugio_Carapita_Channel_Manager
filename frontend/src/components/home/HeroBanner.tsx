@@ -12,19 +12,18 @@ const HERO_IMAGES = [
     "https://templarportugal.com/media/images/Castelo_e_Paao_dos_Condes_de_OurCm_iluminado.original.jpg"
 ];
 
-// Scroll range: image shrinks from 100% → 70% over this distance.
-// During this range the page below does NOT scroll yet (sticky wrapper absorbs it).
-// After this range, content below enters viewport naturally.
-export const SHRINK_SCROLL = 300;
+// Scroll distance over which the image shrinks.
+// Using position:fixed (not sticky) so overflow-x:hidden on parent doesn't break it.
+// Content after the hero only enters viewport once scrollY > SHRINK_SCROLL.
+export const SHRINK_SCROLL = 320;
 export const ANIM_TOTAL    = SHRINK_SCROLL;
 
-// Navbar pill bottom ≈ top(12) + height(66) + bottom(12) = 90px, + 4px gap
+// Navbar pill bottom (top 12 + height 66 + bottom 12 = 90) + 4px gap
 const NAVBAR_BOTTOM = 94;
 
 export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
     const [slide, setSlide]     = useState(0);
     const [scrollY, setScrollY] = useState(0);
-    const wrapperRef            = useRef<HTMLDivElement>(null);
 
     // Slideshow
     useEffect(() => {
@@ -48,11 +47,9 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
     // 0 → 1 as scroll goes 0 → SHRINK_SCROLL
     const p = Math.min(1, Math.max(0, scrollY / SHRINK_SCROLL));
 
-    // Image shrinks from 1.0 → 0.70 (30% smaller), anchored from top-center
+    // Image shrinks 30%, docks 4px below navbar
     const scale     = 1 - p * 0.30;
-    // Top descends from 0 → NAVBAR_BOTTOM so image docks below navbar
     const topOffset = p * NAVBAR_BOTTOM;
-    // Corners round as image becomes a card
     const radius    = p * 20;
 
     const imgStyle: React.CSSProperties = {
@@ -71,19 +68,27 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
             : 'none',
     };
 
-    // Text fades quickly at start of animation
-    const textOpacity = Math.max(0, 1 - p * 2.2);
+    const textOpacity = Math.max(0, 1 - p * 2.5);
 
     return (
-        // Wrapper taller than 100vh by SHRINK_SCROLL — sticky absorbs that scroll
-        // so page content below only enters view AFTER image has finished shrinking.
-        <div ref={wrapperRef} className="hero" style={{ height: `calc(100vh + ${SHRINK_SCROLL + 40}px)` }}>
+        <>
+            {/*
+             * Placeholder — creates the scrollable height that "absorbs" the
+             * animation scroll. The fixed hero below does NOT take up flow space,
+             * so this div is what makes the page tall enough.
+             * Content after HeroBanner only enters the viewport after scrollY > SHRINK_SCROLL.
+             */}
+            <div style={{ height: `calc(100vh + ${SHRINK_SCROLL}px)` }} aria-hidden="true" />
 
-            <section
-                className="sticky top-0 w-full h-screen flex items-center justify-center"
+            {/*
+             * Fixed hero — position:fixed is NOT broken by overflow-x:hidden on parent.
+             * z-index 1 → content sections (z-index 2) slide over the top of it.
+             */}
+            <div
+                className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center"
                 style={{ zIndex: 1, background: '#1E3932' }}
             >
-                {/* ── Hero image (shrinks & docks) ───────────────────── */}
+                {/* ── Shrinking image ───────────────────────────────────── */}
                 <div style={imgStyle}>
                     {HERO_IMAGES.map((img, idx) => (
                         <div
@@ -97,7 +102,7 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                     <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/60" />
                 </div>
 
-                {/* ── Hero text ─────────────────────────────────────── */}
+                {/* ── Hero text ─────────────────────────────────────────── */}
                 <div
                     className="relative z-10 text-center px-4 max-w-5xl mt-24"
                     style={{
@@ -115,7 +120,7 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                     </h2>
                 </div>
 
-                {/* ── Scroll indicator ──────────────────────────────── */}
+                {/* ── Scroll indicator ──────────────────────────────────── */}
                 <div
                     className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white flex flex-col items-center gap-4 cursor-pointer hover:text-[#C4A484] transition-all duration-500 z-20"
                     style={{
@@ -128,7 +133,7 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                     <span className="text-[10px] tracking-widest uppercase font-bold">{t('hero_ver_dispo')}</span>
                 </div>
 
-                {/* ── Slideshow dots ────────────────────────────────── */}
+                {/* ── Dots ──────────────────────────────────────────────── */}
                 <div
                     className="absolute bottom-8 right-8 flex gap-2 z-20"
                     style={{ opacity: Math.max(0, 1 - p * 3) }}
@@ -145,7 +150,7 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                         />
                     ))}
                 </div>
-            </section>
-        </div>
+            </div>
+        </>
     );
 }
