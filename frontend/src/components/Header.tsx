@@ -24,17 +24,31 @@ export default function Header({
 }: HeaderProps) {
     const [scrolled, setScrolled]             = useState(propScrolled || false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [pastHero, setPastHero]             = useState(false);
     const router = useRouter();
 
     useEffect(() => {
-        if (propScrolled === undefined) {
-            const handle = () => setScrolled(window.scrollY > 80);
-            window.addEventListener("scroll", handle, { passive: true });
-            handle();
-            return () => window.removeEventListener("scroll", handle);
-        } else {
-            setScrolled(propScrolled);
-        }
+        const handle = () => {
+            const y = window.scrollY;
+
+            // scrolled: pill navbar aparece após 80px
+            if (propScrolled === undefined) {
+                setScrolled(y > 80);
+            }
+
+            // pastHero: navbar some quando o hero acaba (180vh)
+            const heroEl = document.querySelector('.hero') as HTMLElement | null;
+            if (heroEl) {
+                const heroBottom = heroEl.offsetTop + heroEl.offsetHeight;
+                setPastHero(y >= heroBottom - window.innerHeight * 0.1);
+            }
+        };
+
+        if (propScrolled !== undefined) setScrolled(propScrolled);
+
+        window.addEventListener("scroll", handle, { passive: true });
+        handle();
+        return () => window.removeEventListener("scroll", handle);
     }, [propScrolled]);
 
     const t = (key: string) => dict[lang][key as keyof typeof dict["PT"]] || key;
@@ -60,19 +74,20 @@ export default function Header({
         router.push(path);
     };
 
+    // Navbar some quando passa do hero (exceto se menu mobile aberto)
+    const isHidden = pastHero && !mobileMenuOpen;
+
     return (
         <>
-            {/*
-             * ── NORMAL  : full-width, transparente
-             * ── SCROLLED: pill flutuante com 70% da largura (= hero encolhido)
-             *              left-[15%] right-[15%] → mesma largura do scale(0.70) centrado
-             *              Altura aumentada: py-4, logo w-12 h-12
-             *              Conteúdo centrado: justify-center gap-4
-             */}
             <header
                 className="fixed z-50 transition-all duration-500 ease-in-out"
-                style={
-                    scrolled || mobileMenuOpen
+                style={{
+                    // Ocultar quando passou do hero
+                    opacity: isHidden ? 0 : 1,
+                    pointerEvents: isHidden ? 'none' : 'auto',
+                    transform: isHidden ? 'translateY(-20px)' : 'translateY(0)',
+
+                    ...(scrolled || mobileMenuOpen
                         ? {
                               top: '12px',
                               left: '15%',
@@ -104,16 +119,16 @@ export default function Header({
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'space-between',
-                          }
-                }
+                          }),
+                }}
             >
 
                 {/* ── ESTADO NORMAL: Layout spread ─────────────────────────── */}
                 {!scrolled && !mobileMenuOpen && (
                     <>
-                        {/* Esquerda: Nav desktop */}
+                        {/* Esquerda: Nav desktop — mais afastado do centro */}
                         <nav className="flex-1 hidden lg:block">
-                            <ul className="flex gap-4 xl:gap-8 text-[10px] uppercase tracking-widest font-medium text-white">
+                            <ul className="flex gap-10 xl:gap-16 text-[10px] uppercase tracking-widest font-medium text-white">
                                 {navItems.map((item, idx) => (
                                     <li
                                         key={idx}
@@ -140,12 +155,12 @@ export default function Header({
                             </button>
                         </div>
 
-                        {/* Centro: Logo */}
+                        {/* Centro: Logo — maior */}
                         <div
-                            className="flex-shrink-0 mx-4 relative group cursor-pointer"
+                            className="flex-shrink-0 mx-6 relative group cursor-pointer"
                             onClick={() => router.push("/")}
                         >
-                            <div className="relative w-14 h-14 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-white/40 bg-white/10 backdrop-blur-sm p-0.5 shadow-2xl">
+                            <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-2 border-white/40 bg-white/10 backdrop-blur-sm p-0.5 shadow-2xl">
                                 <img
                                     src="/logo.jpg"
                                     alt="Refúgio Carapita"
@@ -154,8 +169,8 @@ export default function Header({
                             </div>
                         </div>
 
-                        {/* Direita: Idioma + Conta + Reservar */}
-                        <div className="flex-1 flex justify-end items-center gap-3 md:gap-5">
+                        {/* Direita: Idioma + Conta + Reservar — mais afastado do centro */}
+                        <div className="flex-1 flex justify-end items-center gap-6 md:gap-10">
                             <button
                                 onClick={() => setLang(lang === "PT" ? "EN" : "PT")}
                                 className="text-[10px] font-bold uppercase tracking-widest text-white hover:text-[#C4A484] transition-colors cursor-pointer"
@@ -214,7 +229,7 @@ export default function Header({
                             <Menu size={20} />
                         </button>
 
-                        {/* Logo (centrado pelo gap do flex) */}
+                        {/* Logo */}
                         <div
                             className="relative group cursor-pointer flex-shrink-0"
                             onClick={() => router.push("/")}

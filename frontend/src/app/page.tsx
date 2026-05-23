@@ -91,10 +91,9 @@ export default function Home() {
         }
 
         const handleScroll = () => {
-            if (window.scrollY > 50) setScrolled(true);
-            else setScrolled(false);
+            setScrolled(window.scrollY > 80);
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
 
         // Fetch Initial Data
         const fetchData = async () => {
