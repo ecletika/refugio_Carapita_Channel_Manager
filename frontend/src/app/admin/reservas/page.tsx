@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
-import { Calendar, Home, Info, Tag, X, Send, FileText, CheckCircle, AlertCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Home, Info, Tag, X, Send, FileText, CheckCircle, AlertCircle, Clock, ChevronDown, ChevronUp, Eye, ZoomIn, Download } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
 const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
@@ -69,6 +69,8 @@ export default function AdminReservas() {
   const [formSendResult, setFormSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [sendingForm, setSendingForm] = useState(false);
   const [expandedGuest, setExpandedGuest] = useState<number>(0);
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
+  const [lightboxLabel, setLightboxLabel] = useState('');
 
   const fetchReservas = async () => {
     const token = localStorage.getItem('token');
@@ -146,9 +148,15 @@ export default function AdminReservas() {
       });
       const data = await resp.json();
       if (data.status === 'success') {
-        setFormSendResult({ ok: true, msg: data.message || 'Formulário enviado com sucesso.' });
+        // email_enviado=false significa que o link foi gerado mas email falhou (aviso âmbar)
+        const emailOk = data.email_enviado !== false;
+        setFormSendResult({ ok: emailOk, msg: data.message || 'Formulário enviado com sucesso.' });
         if (data.data?.aima_form_token) {
           setReservas(prev => prev.map(res => res.id === aimaModal ? { ...res, aima_form_token: data.data.aima_form_token } : res));
+        }
+        // Também actualizar aimaData se disponível
+        if (data.data?.aima_form_token && aimaData) {
+          setAimaData(prev => prev ? { ...prev, reserva: { ...prev.reserva, aima_form_token: data.data.aima_form_token } } : prev);
         }
       } else {
         setFormSendResult({ ok: false, msg: data.error || 'Erro ao enviar formulário.' });
@@ -391,7 +399,7 @@ export default function AdminReservas() {
                           </button>
                         </div>
                         {formSendResult && (
-                          <p className={`mt-3 text-xs leading-relaxed ${formSendResult.ok ? 'text-emerald-700' : 'text-red-600'}`}>
+                          <p className={`mt-3 text-xs leading-relaxed ${formSendResult.ok ? 'text-emerald-700' : formSendResult.msg.includes('Link AIMA') ? 'text-amber-700' : 'text-red-600'}`}>
                             {formSendResult.msg}
                           </p>
                         )}
@@ -424,7 +432,11 @@ export default function AdminReservas() {
                               <p className="text-[10px] text-gray-400">{h.tipo_documento} · {h.numero_documento}</p>
                             </div>
                             {h.documento_imagem_signed && (
-                              <div className="w-10 h-7 border border-gray-200 overflow-hidden flex-shrink-0 rounded-sm">
+                              <div
+                                className="w-10 h-7 border border-[#C4A484] overflow-hidden flex-shrink-0 rounded-sm cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={e => { e.stopPropagation(); setLightboxImg(h.documento_imagem_signed!); setLightboxLabel(`${h.nome} ${h.sobrenome || ''} — Documento`); }}
+                                title="Ver documento"
+                              >
                                 <img src={h.documento_imagem_signed} alt="doc" className="w-full h-full object-cover" />
                               </div>
                             )}
@@ -447,12 +459,23 @@ export default function AdminReservas() {
                                 <DetailRow label="Cidade" value={h.cidade} />
                                 <DetailRow label="Morada" value={h.endereco1} />
                               </div>
-                              {h.documento_imagem_signed && (
+                              {h.documento_imagem_signed ? (
                                 <div className="mt-4">
                                   <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Documento Anexado</p>
-                                  <div className="border border-gray-200 overflow-hidden w-48">
+                                  <button
+                                    onClick={() => { setLightboxImg(h.documento_imagem_signed!); setLightboxLabel(`${h.nome} ${h.sobrenome || ''} — Documento`); }}
+                                    className="group relative border border-gray-200 hover:border-[#C4A484] overflow-hidden w-full max-w-xs block transition-colors cursor-pointer"
+                                  >
                                     <img src={h.documento_imagem_signed} alt="Documento de identificação" className="w-full object-contain" />
-                                  </div>
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                                      <ZoomIn size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
+                                    </div>
+                                  </button>
+                                  <p className="text-[9px] text-gray-400 mt-1 flex items-center gap-1"><ZoomIn size={9} /> Clique para ampliar</p>
+                                </div>
+                              ) : (
+                                <div className="mt-4 border border-dashed border-gray-100 py-4 text-center">
+                                  <p className="text-[10px] text-gray-300 uppercase tracking-widest">Sem documento anexado</p>
                                 </div>
                               )}
                             </div>
@@ -460,6 +483,45 @@ export default function AdminReservas() {
                         </div>
                       ))}
                     </div>
+                  </section>
+                )}
+
+                {/* Documentos de Identificação — gallery */}
+                {aimaData.hospedes.length > 0 && (
+                  <section>
+                    <h3 className="text-[10px] uppercase tracking-widest font-semibold text-[#C4A484] border-b border-gray-100 pb-2 mb-3 flex items-center gap-2">
+                      <Eye size={11} />
+                      Documentos de Identificação
+                    </h3>
+                    {aimaData.hospedes.some(h => h.documento_imagem_signed) ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {aimaData.hospedes.filter(h => h.documento_imagem_signed).map((h, i) => (
+                          <button
+                            key={h.id || i}
+                            onClick={() => { setLightboxImg(h.documento_imagem_signed!); setLightboxLabel(`${h.nome} ${h.sobrenome || ''} — Documento`); }}
+                            className="group relative border border-gray-200 overflow-hidden bg-gray-50 hover:border-[#C4A484] transition-colors cursor-pointer aspect-video flex items-center justify-center"
+                          >
+                            <img
+                              src={h.documento_imagem_signed}
+                              alt={`Documento ${h.nome}`}
+                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-colors flex items-center justify-center">
+                              <ZoomIn size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1.5">
+                              <p className="text-white text-[9px] uppercase tracking-wider truncate text-left">{h.nome} {h.sobrenome}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="border border-dashed border-gray-200 py-8 text-center">
+                        <FileText size={24} className="text-gray-200 mx-auto mb-2" />
+                        <p className="text-xs text-gray-400">Nenhum documento anexado</p>
+                        <p className="text-[10px] text-gray-300 mt-1 leading-relaxed px-4">Os hóspedes podem anexar a foto do documento ao preencher o formulário AIMA.</p>
+                      </div>
+                    )}
                   </section>
                 )}
 
@@ -525,6 +587,48 @@ export default function AdminReservas() {
                 <p className="text-[10px] text-gray-300 mt-1 uppercase tracking-widest">Verifique se o formulário foi enviado ao hóspede.</p>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Lightbox ──────────────────────────────────────── */}
+      {lightboxImg && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/92 flex items-center justify-center p-4"
+          onClick={() => setLightboxImg(null)}
+        >
+          <div className="relative w-full max-w-3xl" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-white/60 text-[10px] uppercase tracking-widest truncate pr-4">{lightboxLabel}</p>
+              <div className="flex gap-2 flex-shrink-0">
+                <a
+                  href={lightboxImg}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-[10px] uppercase tracking-widest transition-colors"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <Download size={11} /> Guardar
+                </a>
+                <button
+                  onClick={() => setLightboxImg(null)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-[10px] uppercase tracking-widest transition-colors cursor-pointer"
+                >
+                  <X size={11} /> Fechar
+                </button>
+              </div>
+            </div>
+            {/* Image */}
+            <div className="border border-white/15 overflow-hidden bg-black/40">
+              <img
+                src={lightboxImg}
+                alt={lightboxLabel}
+                className="w-full max-h-[80vh] object-contain"
+              />
+            </div>
+            <p className="text-white/30 text-[9px] uppercase tracking-widest text-center mt-3">Clique fora da imagem para fechar</p>
           </div>
         </div>
       )}

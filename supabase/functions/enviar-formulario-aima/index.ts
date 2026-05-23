@@ -204,25 +204,27 @@ Deno.serve(async (req: Request) => {
       buildEmailHospede(nomeHospede, codigoReserva, checkIn, checkOut, quartoNome, valorTotal, formularioUrl)
     );
 
-    if (!hospedeOk) {
-      return new Response(
-        JSON.stringify({ error: 'Nao foi possivel enviar o email ao hospede. Verifique os logs do Brevo.' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Enviar copia interna (opcional — nao falha se der erro)
+    if (hospedeOk) {
+      sendEmail(
+        EMAIL_CONTATO,
+        'Refugio Carapita',
+        `Copia AIMA enviado — Reserva ${codigoReserva}`,
+        buildEmailAdmin(nomeHospede, hospede.email, codigoReserva, checkIn, formularioUrl)
+      ).catch(e => console.error('Admin email failed (non-fatal):', e));
     }
 
-    // Enviar copia interna (opcional — nao falha se der erro)
-    sendEmail(
-      EMAIL_CONTATO,
-      'Refugio Carapita',
-      `Copia AIMA enviado — Reserva ${codigoReserva}`,
-      buildEmailAdmin(nomeHospede, hospede.email, codigoReserva, checkIn, formularioUrl)
-    ).catch(e => console.error('Admin email failed (non-fatal):', e));
+    // Retorna 200 mesmo que o email falhe — o token foi gerado e guardado
+    // O admin pode partilhar o link manualmente
+    const mensagem = hospedeOk
+      ? `Formulario AIMA enviado com sucesso para ${hospede.email}.`
+      : `Link AIMA gerado. Email nao enviado (problema com servidor de email) — partilhe o link manualmente com o hospede.`;
 
     return new Response(
       JSON.stringify({
         status: 'success',
-        message: `Formulario AIMA enviado com sucesso para ${hospede.email}.`,
+        email_enviado: hospedeOk,
+        message: mensagem,
         data: {
           reservaId: reserva.id,
           numero_reserva: reserva.numero_reserva,

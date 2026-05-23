@@ -74,7 +74,7 @@ function PagamentosContent() {
         return `${base}/pagamentos${cleanPath}`;
     };
 
-    const getToken = () => localStorage.getItem('token') || localStorage.getItem('guestToken');
+    const getToken = () => localStorage.getItem('guestToken') || localStorage.getItem('token');
 
     const showToast = (type: 'success' | 'error', msg: string) => {
         setToast({ type, msg });

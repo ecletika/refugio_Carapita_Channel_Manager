@@ -31,7 +31,8 @@ export default function PerfilHospede() {
     const router = useRouter();
 
     useEffect(() => {
-        const token = localStorage.getItem('token') || localStorage.getItem('guestToken');
+        // Portal do hóspede usa sempre guestToken; token é exclusivo do admin
+        const token = localStorage.getItem('guestToken') || localStorage.getItem('token');
         if (!token) {
             router.push('/login');
             return;
@@ -117,7 +118,7 @@ export default function PerfilHospede() {
     const saveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        const token = localStorage.getItem('token') || localStorage.getItem('guestToken');
+        const token = localStorage.getItem('guestToken') || localStorage.getItem('token');
         try {
             const payload = { ...hospede, dependentes };
             const resp = await fetch(`${EDGE_URL}/hospede-me`, {
@@ -144,7 +145,7 @@ export default function PerfilHospede() {
         if (!file) return;
 
         setUploadingLogo(true);
-        const token = localStorage.getItem('token') || localStorage.getItem('guestToken');
+        const token = localStorage.getItem('guestToken') || localStorage.getItem('token');
         const formData = new FormData();
         formData.append('foto', file);
 

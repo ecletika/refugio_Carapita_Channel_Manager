@@ -31,6 +31,7 @@ export default function NovaReservaManual() {
     const [quartos, setQuartos] = useState<Quarto[]>([]);
     const [extras, setExtras] = useState<Extra[]>([]);
     const [erro, setErro] = useState('');
+    const [erroValidacao, setErroValidacao] = useState('');
     const [reservaCriada, setReservaCriada] = useState<any>(null);
 
     const [form, setForm] = useState({
@@ -46,6 +47,14 @@ export default function NovaReservaManual() {
             telefone: '', pais: 'Portugal', numero_documento: '',
         },
     });
+
+    // ── guard: redireciona se não for admin ──────────────────────────────────
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.replace('/admin');
+        }
+    }, [router]);
 
     // ── carregar quartos e extras (APIs públicas — sem auth necessária) ────────
     useEffect(() => {
@@ -85,6 +94,24 @@ export default function NovaReservaManual() {
         if (step === 1) return form.hospede.nome.trim() && form.hospede.email.trim();
         if (step === 2) return form.quartoId && form.checkIn && form.checkOut && noites > 0;
         return true;
+    };
+
+    const handleNext = () => {
+        if (canProceed()) {
+            setErroValidacao('');
+            setErro('');
+            setStep(step + 1);
+        } else {
+            if (step === 1) setErroValidacao('Preencha o Nome e o Email do hóspede para continuar.');
+            if (step === 2) setErroValidacao('Selecione um alojamento e defina as datas de check-in e check-out.');
+        }
+    };
+
+    const handleBack = () => {
+        setErroValidacao('');
+        setErro('');
+        if (step === 1) router.push('/admin/reservas');
+        else setStep(step - 1);
     };
 
     // ── submissão ───────────────────────────────────────────────────────────
@@ -249,9 +276,11 @@ export default function NovaReservaManual() {
                                 const active = step === s.id;
                                 const done   = step > s.id;
                                 return (
-                                    <button key={s.id} onClick={() => done ? setStep(s.id) : undefined}
-                                        className={`flex-1 flex items-center justify-center gap-2 py-4 text-[10px] uppercase tracking-widest font-bold transition-all duration-300 cursor-pointer
-                                            ${active ? 'bg-[#1E3932] text-[#C4A484]' : done ? 'bg-[#FAF8F4] text-[#1E3932] hover:bg-[#1E3932]/5' : 'bg-white text-gray-300'}
+                                    <button key={s.id}
+                                        onClick={() => { if (done) { setErroValidacao(''); setErro(''); setStep(s.id); } }}
+                                        aria-current={active ? 'step' : undefined}
+                                        className={`flex-1 flex items-center justify-center gap-2 py-4 text-[10px] uppercase tracking-widest font-bold transition-all duration-300
+                                            ${active ? 'bg-[#1E3932] text-[#C4A484]' : done ? 'bg-[#FAF8F4] text-[#1E3932] hover:bg-[#1E3932]/5 cursor-pointer' : 'bg-white text-gray-300 cursor-default'}
                                             ${i > 0 ? 'border-l border-gray-200' : ''}`}>
                                         {done ? <CheckCircle2 size={14} className="text-[#C4A484]" /> : <Icon size={14} />}
                                         <span className="hidden sm:inline">{s.label}</span>
@@ -278,13 +307,19 @@ export default function NovaReservaManual() {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
-                                        <Field label="Nome *" value={form.hospede.nome} onChange={v => setH('nome', v)} placeholder="João" />
+                                        <Field label="Nome *" value={form.hospede.nome} onChange={v => { setH('nome', v); setErroValidacao(''); }} placeholder="João" />
                                         <Field label="Apelido" value={form.hospede.sobrenome} onChange={v => setH('sobrenome', v)} placeholder="Silva" />
-                                        <Field label="Email *" type="email" value={form.hospede.email} onChange={v => setH('email', v)} placeholder="joao@email.com" icon={<Mail size={13} />} />
+                                        <Field label="Email *" type="email" value={form.hospede.email} onChange={v => { setH('email', v); setErroValidacao(''); }} placeholder="joao@email.com" icon={<Mail size={13} />} />
                                         <Field label="Telefone" type="tel" value={form.hospede.telefone} onChange={v => setH('telefone', v)} placeholder="+351 912 345 678" icon={<Phone size={13} />} />
                                         <Field label="Nº Documento" value={form.hospede.numero_documento} onChange={v => setH('numero_documento', v)} placeholder="AB123456" icon={<Hash size={13} />} />
                                         <SelectField label="País" value={form.hospede.pais} onChange={v => setH('pais', v)} options={PAISES} icon={<MapPin size={13} />} />
                                     </div>
+                                    {erroValidacao && (
+                                        <div className="mt-6 flex items-start gap-3 bg-amber-50 border border-amber-100 p-4 text-amber-700 text-sm">
+                                            <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                                            {erroValidacao}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -315,16 +350,30 @@ export default function NovaReservaManual() {
                                         </div>
                                     )}
 
+                                    {erroValidacao && (
+                                        <div className="mb-6 flex items-start gap-3 bg-amber-50 border border-amber-100 p-4 text-amber-700 text-sm">
+                                            <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                                            {erroValidacao}
+                                        </div>
+                                    )}
+
                                     <div>
                                         <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-4">
                                             Selecionar Alojamento *
                                         </label>
                                         {loadingData ? (
-                                            <div className="text-center py-12 text-gray-300 text-sm">A carregar alojamentos...</div>
+                                            <div className="text-center py-12 text-gray-300 text-sm flex items-center justify-center gap-3">
+                                                <span className="w-4 h-4 border-2 border-gray-200 border-t-[#C4A484] rounded-full animate-spin" />
+                                                A carregar alojamentos...
+                                            </div>
+                                        ) : quartos.length === 0 ? (
+                                            <div className="text-center py-12 text-gray-300 text-sm border border-dashed border-gray-100">
+                                                Nenhum alojamento ativo encontrado.
+                                            </div>
                                         ) : (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 {quartos.map(q => (
-                                                    <button key={q.id} onClick={() => setForm(p => ({ ...p, quartoId: q.id }))}
+                                                    <button key={q.id} onClick={() => { setForm(p => ({ ...p, quartoId: q.id })); setErroValidacao(''); }}
                                                         className={`text-left p-6 border transition-all duration-200 cursor-pointer group
                                                             ${form.quartoId === q.id
                                                                 ? 'border-[#C4A484] bg-[#1E3932] text-white'
@@ -417,15 +466,17 @@ export default function NovaReservaManual() {
 
                             {/* Navegação */}
                             <div className="px-8 md:px-10 py-6 border-t border-gray-50 flex justify-between items-center bg-[#FAFAF9]">
-                                <button onClick={step === 1 ? () => router.push('/admin/reservas') : () => setStep(step - 1)}
-                                    className="flex items-center gap-2 text-gray-400 hover:text-[#1E3932] transition-colors text-[10px] uppercase tracking-widest font-bold cursor-pointer py-2">
+                                <button onClick={handleBack}
+                                    className="flex items-center gap-2 text-gray-400 hover:text-[#1E3932] transition-colors text-[10px] uppercase tracking-widest font-bold cursor-pointer py-3 px-2 min-h-[44px]">
                                     <ChevronLeft size={14} /> {step === 1 ? 'Cancelar' : 'Anterior'}
                                 </button>
 
                                 {step < 3 ? (
-                                    <button onClick={() => canProceed() && setStep(step + 1)}
-                                        className={`flex items-center gap-3 px-10 py-4 text-[10px] uppercase tracking-widest font-bold transition-all duration-300 cursor-pointer
-                                            ${canProceed() ? 'bg-[#1E3932] text-[#C4A484] hover:bg-[#C4A484] hover:text-white shadow-lg' : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}>
+                                    <button onClick={handleNext}
+                                        className={`flex items-center gap-3 px-10 py-4 text-[10px] uppercase tracking-widest font-bold transition-all duration-300
+                                            ${canProceed()
+                                                ? 'bg-[#1E3932] text-[#C4A484] hover:bg-[#C4A484] hover:text-white shadow-lg cursor-pointer'
+                                                : 'bg-gray-100 text-gray-400 cursor-pointer'}`}>
                                         Próximo <ChevronRight size={14} />
                                     </button>
                                 ) : (
@@ -527,7 +578,7 @@ function Field({ label, value, onChange, placeholder = '', type = 'text', icon }
                 {icon && <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300">{icon}</span>}
                 <input type={type} value={value} placeholder={placeholder}
                     onChange={e => onChange(e.target.value)}
-                    className={`w-full border-b border-gray-100 py-3 outline-none focus:border-[#C4A484] transition-colors text-sm text-[#1E3932] placeholder-gray-200 bg-transparent ${icon ? 'pl-5' : ''}`} />
+                    className={`w-full border-b border-gray-200 py-3 outline-none focus:border-[#C4A484] transition-colors text-sm text-[#1E3932] placeholder-gray-300 bg-transparent ${icon ? 'pl-5' : ''}`} />
             </div>
         </div>
     );
@@ -543,7 +594,7 @@ function SelectField({ label, value, onChange, options, labels, icon }: {
             <div className="relative">
                 {icon && <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300">{icon}</span>}
                 <select value={value} onChange={e => onChange(e.target.value)}
-                    className={`w-full border-b border-gray-100 py-3 outline-none focus:border-[#C4A484] transition-colors text-sm text-[#1E3932] bg-transparent appearance-none cursor-pointer ${icon ? 'pl-5' : ''}`}>
+                    className={`w-full border-b border-gray-200 py-3 outline-none focus:border-[#C4A484] transition-colors text-sm text-[#1E3932] bg-transparent appearance-none cursor-pointer ${icon ? 'pl-5' : ''}`}>
                     {options.map((o, i) => <option key={o} value={o}>{labels?.[i] ?? o}</option>)}
                 </select>
             </div>
