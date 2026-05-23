@@ -83,7 +83,13 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
              * so this div is what makes the page tall enough.
              * Content after HeroBanner only enters the viewport after scrollY > SHRINK_SCROLL.
              */}
-            <div style={{ height: `calc(100vh + ${SHRINK_SCROLL}px)` }} aria-hidden="true" />
+            {/*
+             * Placeholder height = 100vh + 160px (metade de SHRINK_SCROLL).
+             * O conteúdo branco começa a subir a scrollY=160px, ainda durante
+             * a fase 1 — assim cobre o espaço verde antes de a imagem terminar
+             * de encolher, sem gap visível.
+             */}
+            <div style={{ height: `calc(100vh + ${Math.round(SHRINK_SCROLL * 0.5)}px)` }} aria-hidden="true" />
 
             {/*
              * Fixed hero — position:fixed is NOT broken by overflow-x:hidden on parent.
