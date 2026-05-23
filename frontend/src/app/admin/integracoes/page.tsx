@@ -220,18 +220,18 @@ export default function IntegracoesOTA() {
         setIgMsg(null);
         try {
             const token = localStorage.getItem('token');
-            const resp = await fetch(`${EDGE_URL}/instagram-feed/refresh-token`, {
+            const resp = await fetch(`${EDGE_URL}/instagram-feed/set-feed-id`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ token: igToken.trim() })
+                body: JSON.stringify({ feedId: igToken.trim() })
             });
             const json = await resp.json();
             if (json.status === 'success') {
-                setIgMsg({ text: `✓ Token guardado! ${json.posts_count} publicações carregadas.`, ok: true });
+                setIgMsg({ text: `✓ Feed ID guardado! ${json.posts_count} publicações carregadas.`, ok: true });
                 setIgStatus({ count: json.posts_count, fetched_at: new Date().toISOString() });
                 setIgToken('');
             } else {
-                setIgMsg({ text: json.error || 'Erro ao guardar token', ok: false });
+                setIgMsg({ text: json.error || 'Erro ao guardar Feed ID', ok: false });
             }
         } catch {
             setIgMsg({ text: 'Erro de conexão', ok: false });
@@ -459,18 +459,18 @@ export default function IntegracoesOTA() {
                             </div>
                         )}
 
-                        {/* Token input */}
+                        {/* Feed ID input */}
                         <div className="space-y-2">
                             <label className="text-[10px] uppercase tracking-widest font-bold text-gray-600 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-[#E1306C] flex-shrink-0" />
-                                Instagram Long-Lived Access Token
+                                Behold.us — Feed ID
                             </label>
                             <div className="flex items-center gap-2 border-b border-gray-200 focus-within:border-[#C4A484] transition-colors">
                                 <input
                                     type={igTokenVisible ? 'text' : 'password'}
                                     value={igToken}
                                     onChange={e => setIgToken(e.target.value)}
-                                    placeholder="IGQVJWa3h4…"
+                                    placeholder="USRxxxxxxxxxxxxxxxx"
                                     style={{ fontSize: '16px' }}
                                     className="flex-1 py-2 text-xs outline-none bg-transparent text-gray-800 placeholder-gray-400 font-mono min-w-0"
                                 />
@@ -478,13 +478,13 @@ export default function IntegracoesOTA() {
                                     type="button"
                                     onClick={() => setIgTokenVisible(v => !v)}
                                     className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1"
-                                    aria-label={igTokenVisible ? 'Ocultar token' : 'Mostrar token'}
+                                    aria-label={igTokenVisible ? 'Ocultar' : 'Mostrar'}
                                 >
                                     {igTokenVisible ? <EyeOff size={14} /> : <Eye size={14} />}
                                 </button>
                             </div>
                             <p className="text-[11px] text-gray-400">
-                                Cole aqui o Long-Lived Access Token obtido no Meta Developers. Validade: 60 dias (renovação automática activada).
+                                Cole aqui o Feed ID obtido em <strong>behold.us</strong>. Sem Facebook. Sem tokens. Funciona diretamente com o Instagram.
                             </p>
                         </div>
 
@@ -498,33 +498,54 @@ export default function IntegracoesOTA() {
                             {igSaving ? <><RefreshCw size={12} className="animate-spin" /> A validar…</> : <><Instagram size={12} /> Guardar e Activar Feed</>}
                         </BtnPrimary>
 
-                        {/* Step-by-step guide */}
+                        {/* Step-by-step guide — Behold.us (sem Facebook) */}
                         <details className="group mt-2">
                             <summary className="text-[11px] text-[#C4A484] font-bold uppercase tracking-widest cursor-pointer hover:text-[#1E3932] transition-colors list-none flex items-center gap-2">
                                 <svg className="w-3 h-3 transition-transform group-open:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                                 </svg>
-                                Como obter o Access Token (passo a passo)
+                                Como obter o Feed ID no Behold.us (passo a passo — sem Facebook)
                             </summary>
                             <div className="mt-4 space-y-3 border-l-2 border-[#C4A484]/30 pl-4">
                                 {[
-                                    { n: '1', t: 'Conta Instagram Business', d: 'Certifique-se que a sua conta Instagram está configurada como "Conta Profissional" (Criador ou Empresa). Defina nos Definições → Conta → Mudar para conta profissional.' },
-                                    { n: '2', t: 'Criar App no Meta', d: 'Aceda a developers.facebook.com → Criar App → Escolha "Outros" → Tipo "Consumidor". Dê um nome (ex: Refugio Carapita Feed).' },
-                                    { n: '3', t: 'Adicionar Instagram Graph API', d: 'No painel da app, clique "Adicionar produto" → Instagram Graph API. Depois vá a "Configuração básica" e adicione a plataforma Web.' },
-                                    { n: '4', t: 'Gerar Short-Lived Token', d: 'Vá a Instagram Graph API → Gerar Token de Acesso → Autorize com a sua conta Instagram. Copia o token temporário (1 hora).' },
-                                    { n: '5', t: 'Converter para Long-Lived Token', d: 'Abra o browser e aceda a:\nhttps://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_id={APP_ID}&client_secret={APP_SECRET}&access_token={SHORT_LIVED_TOKEN}\nCopie o access_token da resposta JSON.' },
-                                    { n: '6', t: 'Colar aqui', d: 'Cole o Long-Lived Token no campo acima e clique "Guardar e Activar Feed". O sistema renova automaticamente antes de expirar.' },
+                                    {
+                                        n: '1', t: 'Criar conta gratuita',
+                                        d: 'Aceda a behold.us e clique em "Sign Up Free". O plano gratuito inclui 50 posts e 1 feed — mais do que suficiente.'
+                                    },
+                                    {
+                                        n: '2', t: 'Ligar o Instagram',
+                                        d: 'No dashboard, clique "Connect Instagram" → autorize com a conta @refugiocarapita. Não precisa de Facebook nem de conta Business.'
+                                    },
+                                    {
+                                        n: '3', t: 'Criar um Feed',
+                                        d: 'Clique "New Feed" → escolha a conta Instagram ligada → selecione "Posts" → guarde. O Behold cria o feed automaticamente.'
+                                    },
+                                    {
+                                        n: '4', t: 'Copiar o Feed ID',
+                                        d: 'Na lista de feeds, clique no feed criado → vá ao separador "Developer" ou "API". O Feed ID aparece no formato USRxxxxxxxxxxxxxxxxxx. Copie-o.'
+                                    },
+                                    {
+                                        n: '5', t: 'Colar aqui',
+                                        d: 'Cole o Feed ID no campo acima e clique "Guardar e Activar Feed". O carousel aparece de imediato no site com as últimas 10 publicações.'
+                                    },
                                 ].map(step => (
                                     <div key={step.n} className="flex gap-3">
-                                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1E3932] text-white text-[9px] font-bold flex items-center justify-center">
+                                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1E3932] text-white text-[9px] font-bold flex items-center justify-center mt-0.5">
                                             {step.n}
                                         </span>
                                         <div>
                                             <p className="text-[11px] font-bold text-[#1E3932] mb-0.5">{step.t}</p>
-                                            <p className="text-[11px] text-gray-500 leading-relaxed whitespace-pre-line">{step.d}</p>
+                                            <p className="text-[11px] text-gray-500 leading-relaxed">{step.d}</p>
                                         </div>
                                     </div>
                                 ))}
+                                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 px-3 py-2 mt-2">
+                                    <Info size={12} className="text-blue-500 flex-shrink-0" />
+                                    <p className="text-[11px] text-blue-700">
+                                        <strong>behold.us</strong> — acesso direto em{' '}
+                                        <a href="https://behold.so" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">behold.so</a>
+                                    </p>
+                                </div>
                             </div>
                         </details>
                     </div>
