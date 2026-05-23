@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import {
     User, CalendarDays, CreditCard, ChevronRight, ChevronLeft,
     CheckCircle2, Home, Phone, Mail, MapPin, Hash, StickyNote,
-    Sparkles, CircleDot, X, AlertCircle
+    Sparkles, CircleDot, X, AlertCircle, Tag, Percent
 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
@@ -33,6 +33,10 @@ export default function NovaReservaManual() {
     const [erro, setErro] = useState('');
     const [erroValidacao, setErroValidacao] = useState('');
     const [reservaCriada, setReservaCriada] = useState<any>(null);
+    const [cupom, setCupom] = useState<{ codigo: string; tipo_desconto: string; valor_desconto: number } | null>(null);
+    const [cupomInput, setCupomInput] = useState('');
+    const [cupomErro, setCupomErro] = useState('');
+    const [cupomLoading, setCupomLoading] = useState(false);
 
     const [form, setForm] = useState({
         quartoId: '',
@@ -69,7 +73,7 @@ export default function NovaReservaManual() {
     }, []);
 
     // ── cálculo de preço em tempo real ──────────────────────────────────────
-    const { noites, precoBase, precoExtras, total } = useMemo(() => {
+    const { noites, precoBase, precoExtras, desconto, total } = useMemo(() => {
         const q = quartos.find(q => q.id === form.quartoId);
         const noites = (form.checkIn && form.checkOut)
             ? Math.max(0, Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / 86400000))
@@ -77,8 +81,14 @@ export default function NovaReservaManual() {
         const precoBase = q ? Number(q.preco_base) * noites : 0;
         const selecionados = extras.filter(e => form.extrasIds.includes(e.id));
         const precoExtras = selecionados.reduce((s, e) => s + Number(e.preco), 0);
-        return { noites, precoBase, precoExtras, total: precoBase + precoExtras };
-    }, [form.quartoId, form.checkIn, form.checkOut, form.extrasIds, quartos, extras]);
+        const subtotal = precoBase + precoExtras;
+        const desconto = cupom
+            ? cupom.tipo_desconto === 'PERCENTUAL'
+                ? subtotal * (Number(cupom.valor_desconto) / 100)
+                : Math.min(Number(cupom.valor_desconto), subtotal)
+            : 0;
+        return { noites, precoBase, precoExtras, desconto, total: subtotal - desconto };
+    }, [form.quartoId, form.checkIn, form.checkOut, form.extrasIds, quartos, extras, cupom]);
 
     const setH = (field: string, val: string) =>
         setForm(p => ({ ...p, hospede: { ...p.hospede, [field]: val } }));
@@ -88,6 +98,27 @@ export default function NovaReservaManual() {
             ...p,
             extrasIds: p.extrasIds.includes(id) ? p.extrasIds.filter(x => x !== id) : [...p.extrasIds, id]
         }));
+
+    const aplicarCupom = async () => {
+        if (!cupomInput.trim()) return;
+        setCupomErro('');
+        setCupomLoading(true);
+        try {
+            const resp = await fetch(`${EDGE_URL}/cupom-validar/${encodeURIComponent(cupomInput.trim().toUpperCase())}`);
+            const data = await resp.json();
+            if (data.status === 'success' && data.data) {
+                setCupom(data.data);
+                setCupomErro('');
+            } else {
+                setCupomErro(data.error || 'Cupão inválido ou expirado.');
+                setCupom(null);
+            }
+        } catch {
+            setCupomErro('Erro ao validar cupão. Tente novamente.');
+        } finally {
+            setCupomLoading(false);
+        }
+    };
 
     // ── validações por step ─────────────────────────────────────────────────
     const canProceed = () => {
@@ -133,6 +164,7 @@ export default function NovaReservaManual() {
                 metodoPagamento: form.metodoPagamento,
                 requerimentosEspeciais: form.requerimentosEspeciais || null,
                 extrasIds: form.extrasIds.length > 0 ? form.extrasIds : [],
+                ...(cupom ? { cupomCodigo: cupom.codigo } : {}),
                 hospede: {
                     nome:             form.hospede.nome.trim(),
                     sobrenome:        form.hospede.sobrenome.trim() || '',
@@ -236,7 +268,7 @@ export default function NovaReservaManual() {
                                 className="flex-1 border border-[#1E3932] text-[#1E3932] py-3 text-[10px] uppercase tracking-widest hover:bg-[#1E3932] hover:text-white transition-colors duration-300 cursor-pointer">
                                 Ver Todas as Reservas
                             </button>
-                            <button onClick={() => { setReservaCriada(null); setStep(1); setForm({ quartoId:'', checkIn:'', checkOut:'', canalNome:'BALCÃO', metodoPagamento:'DINHEIRO', requerimentosEspeciais:'', extrasIds:[], hospede:{nome:'',sobrenome:'',email:'',telefone:'',pais:'Portugal',numero_documento:''} }); }}
+                            <button onClick={() => { setReservaCriada(null); setStep(1); setForm({ quartoId:'', checkIn:'', checkOut:'', canalNome:'BALCÃO', metodoPagamento:'DINHEIRO', requerimentosEspeciais:'', extrasIds:[], hospede:{nome:'',sobrenome:'',email:'',telefone:'',pais:'Portugal',numero_documento:''} }); setCupom(null); setCupomInput(''); setCupomErro(''); }}
                                 className="flex-1 bg-[#C4A484] text-white py-3 text-[10px] uppercase tracking-widest hover:bg-[#1E3932] transition-colors duration-300 cursor-pointer">
                                 Nova Reserva
                             </button>
@@ -444,6 +476,56 @@ export default function NovaReservaManual() {
                                         </div>
                                     )}
 
+                                    {/* Cupão de Desconto */}
+                                    <div className="mb-10">
+                                        <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold flex items-center gap-2 mb-4">
+                                            <Tag size={12} className="text-[#C4A484]" /> Cupão de Desconto
+                                        </label>
+                                        {cupom ? (
+                                            <div className="flex items-center justify-between bg-[#1E3932]/5 border border-[#C4A484]/40 px-4 py-3">
+                                                <div className="flex items-center gap-3">
+                                                    <Percent size={14} className="text-[#C4A484]" />
+                                                    <div>
+                                                        <span className="text-sm font-bold text-[#1E3932] font-mono">{cupom.codigo}</span>
+                                                        <span className="text-[10px] text-gray-400 ml-2 uppercase tracking-widest">
+                                                            {cupom.tipo_desconto === 'PERCENTUAL'
+                                                                ? `${cupom.valor_desconto}% de desconto`
+                                                                : `€${Number(cupom.valor_desconto).toFixed(2)} de desconto`}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <button onClick={() => { setCupom(null); setCupomInput(''); setCupomErro(''); }}
+                                                    className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer p-1">
+                                                    <X size={14} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={cupomInput}
+                                                    onChange={e => { setCupomInput(e.target.value.toUpperCase()); setCupomErro(''); }}
+                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); aplicarCupom(); } }}
+                                                    placeholder="Código do cupão"
+                                                    className="flex-1 border-b border-gray-200 py-3 outline-none focus:border-[#C4A484] transition-colors text-sm text-[#1E3932] placeholder-gray-300 bg-transparent uppercase tracking-widest"
+                                                />
+                                                <button
+                                                    onClick={aplicarCupom}
+                                                    disabled={cupomLoading || !cupomInput.trim()}
+                                                    className="px-6 py-2 bg-[#1E3932] text-[#C4A484] text-[10px] uppercase tracking-widest hover:bg-[#C4A484] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                                                    {cupomLoading
+                                                        ? <span className="w-3 h-3 border-2 border-[#C4A484]/30 border-t-[#C4A484] rounded-full animate-spin inline-block" />
+                                                        : 'Aplicar'}
+                                                </button>
+                                            </div>
+                                        )}
+                                        {cupomErro && (
+                                            <p className="mt-2 text-xs text-red-500 flex items-center gap-1.5">
+                                                <AlertCircle size={11} /> {cupomErro}
+                                            </p>
+                                        )}
+                                    </div>
+
                                     <div>
                                         <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold flex items-center gap-2 mb-2">
                                             <StickyNote size={12} /> Notas Internas
@@ -531,6 +613,14 @@ export default function NovaReservaManual() {
                                             <div className="flex justify-between text-white/50 text-xs">
                                                 <span>Extras</span>
                                                 <span>€{precoExtras.toFixed(2)}</span>
+                                            </div>
+                                        )}
+                                        {desconto > 0 && (
+                                            <div className="flex justify-between text-green-400 text-xs">
+                                                <span className="flex items-center gap-1">
+                                                    <Tag size={10} /> {cupom?.codigo}
+                                                </span>
+                                                <span>-€{desconto.toFixed(2)}</span>
                                             </div>
                                         )}
                                         <div className="flex justify-between items-baseline pt-3 border-t border-white/10">
