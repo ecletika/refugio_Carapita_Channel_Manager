@@ -191,6 +191,22 @@ h6 {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Instagram / carrocel marquee infinito */
+@keyframes instagram-marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.instagram-marquee {
+  animation: instagram-marquee 45s linear infinite;
+  width: max-content;
+}
+.instagram-marquee-paused {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .instagram-marquee { animation: none; }
+}
+
 /* Estilos de Impressão — Fatura */
 @media print {
   body * { visibility: hidden; }

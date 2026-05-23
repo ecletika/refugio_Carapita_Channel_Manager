@@ -114,8 +114,8 @@ export const dictionaries = {
         editorial_cta: 'Viver a Experiência',
         editorial_marquee_label: 'Ourém · Portugal · Natureza · Exclusividade',
 
-        instagram_tag: 'Siga-nos',
-        instagram_title: 'Momentos do Refúgio',
+        instagram_tag: 'Programação',
+        instagram_title: 'Eventos da Região de Ourém',
         instagram_seguir: 'Seguir no Instagram',
 
         contact_tag: 'Contactos',
@@ -247,8 +247,8 @@ export const dictionaries = {
         editorial_cta: 'Live the Experience',
         editorial_marquee_label: 'Ourém · Portugal · Nature · Exclusivity',
 
-        instagram_tag: 'Follow us',
-        instagram_title: 'Moments from the Refuge',
+        instagram_tag: 'Programme',
+        instagram_title: 'Events in the Ourém Region',
         instagram_seguir: 'Follow on Instagram',
 
         contact_tag: 'Contacts',
