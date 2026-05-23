@@ -107,6 +107,7 @@ export default function IntegracoesOTA() {
     const [igSaving, setIgSaving]         = useState(false);
     const [igMsg, setIgMsg]               = useState<{ text: string; ok: boolean } | null>(null);
     const [igStatus, setIgStatus]         = useState<{ count: number; fetched_at: string } | null>(null);
+    const [igCurrentFeedId, setIgCurrentFeedId] = useState<string | null>(null);
 
     const fetchQuartos = async () => {
         setLoading(true);
@@ -145,13 +146,30 @@ export default function IntegracoesOTA() {
 
     useEffect(() => {
         fetchQuartos();
-        // Check current Instagram cache status
+        // Check current Instagram cache status + load saved Feed ID
         (async () => {
             try {
+                // Load cached posts count
                 const res = await fetch(`${EDGE_URL}/instagram-feed`);
                 const json = await res.json();
                 if (json.data?.length) {
                     setIgStatus({ count: json.data.length, fetched_at: json.data[0]?.timestamp || '' });
+                }
+            } catch { /* silently ignore */ }
+
+            try {
+                // Load saved Feed ID from admin configs
+                const token = localStorage.getItem('token');
+                const configRes = await fetch(`${EDGE_URL}/admin-site/configuracoes`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const configJson = await configRes.json();
+                if (configJson.status === 'success') {
+                    const feedId = configJson.data?.behold_feed_id;
+                    if (feedId) {
+                        setIgCurrentFeedId(feedId);
+                        setIgToken(feedId);
+                    }
                 }
             } catch { /* silently ignore */ }
         })();
@@ -229,7 +247,8 @@ export default function IntegracoesOTA() {
             if (json.status === 'success') {
                 setIgMsg({ text: `✓ Feed ID guardado! ${json.posts_count} publicações carregadas.`, ok: true });
                 setIgStatus({ count: json.posts_count, fetched_at: new Date().toISOString() });
-                setIgToken('');
+                setIgCurrentFeedId(igToken.trim());
+                // Não limpa o campo — mantém o ID visível
             } else {
                 setIgMsg({ text: json.error || 'Erro ao guardar Feed ID', ok: false });
             }
@@ -447,14 +466,19 @@ export default function IntegracoesOTA() {
                             <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-4 py-3">
                                 <Check size={14} className="text-emerald-600 flex-shrink-0" />
                                 <span className="text-[12px] text-emerald-700">
-                                    Feed activo — {igStatus.count} publicações carregadas. O token renova automaticamente a cada 50 dias.
+                                    Feed activo via Behold.us — {igStatus.count} publicações em cache.
+                                    {igCurrentFeedId && (
+                                        <span className="ml-1 font-mono text-emerald-600 opacity-70">
+                                            (ID: …{igCurrentFeedId.slice(-8)})
+                                        </span>
+                                    )}
                                 </span>
                             </div>
                         ) : (
                             <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 px-4 py-3">
                                 <AlertCircle size={14} className="text-amber-600 flex-shrink-0" />
                                 <span className="text-[12px] text-amber-700">
-                                    Ainda não configurado. Cole o Access Token do Instagram abaixo para ativar o feed.
+                                    Ainda não configurado. Cole o Feed ID do Behold.us abaixo para ativar o carrocel de Instagram.
                                 </span>
                             </div>
                         )}
