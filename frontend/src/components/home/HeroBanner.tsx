@@ -13,118 +13,67 @@ const HERO_IMAGES = [
 ];
 
 export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
-    const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+    const [slide, setSlide]       = useState(0);
+    const [scrolled, setScrolled] = useState(false);
 
-    // ── Carousel automático ───────────────────────────────────────────────────
+    // Carousel automático
     useEffect(() => {
-        const id = setInterval(
-            () => setCurrentHeroIndex(p => (p + 1) % HERO_IMAGES.length),
-            5000
-        );
+        const id = setInterval(() => setSlide(p => (p + 1) % HERO_IMAGES.length), 5000);
         return () => clearInterval(id);
     }, []);
 
-    // ── Scroll shrink — script exacto testado e confirmado ────────────────────
-    // Usa document.querySelector com os mesmos seletores do script vanilla:
-    //   .hero .absolute.inset-0  →  wrapper das imagens
-    //   .hero .relative.z-10     →  conteúdo do hero (texto)
+    // Detecta scroll — threshold 80 px
     useEffect(() => {
-        const slidesWrapper = document.querySelector('.hero .absolute.inset-0') as HTMLElement | null;
-        const heroContent   = document.querySelector('.hero .relative.z-10')   as HTMLElement | null;
-
-        if (!slidesWrapper) return;
-
-        const SCALE_START   = 1.0;
-        const SCALE_END     = 0.80;
-        const TRANSLATE_END = 60;
-        const SCROLL_RANGE  = 500;
-
-        slidesWrapper.style.transformOrigin = 'center top';
-        slidesWrapper.style.willChange      = 'transform';
-        if (heroContent) heroContent.style.willChange = 'transform, opacity';
-
-        let ticking = false;
-
-        function clamp(v: number, a: number, b: number) {
-            return Math.min(Math.max(v, a), b);
-        }
-        function lerp(s: number, e: number, t: number) {
-            return s + (e - s) * clamp(t, 0, 1);
-        }
-
-        function update() {
-            const p  = clamp(window.scrollY / SCROLL_RANGE, 0, 1);
-            const sc = lerp(SCALE_START, SCALE_END, p);
-            const ty = lerp(0, TRANSLATE_END, p);
-
-            slidesWrapper.style.transform =
-                'scale(' + sc + ') translateY(' + ty + 'px)';
-
-            if (heroContent) {
-                heroContent.style.opacity   = String(clamp(1 - p * 1.8, 0, 1));
-                heroContent.style.transform = 'translateY(' + (ty * 0.4) + 'px)';
-            }
-
-            ticking = false;
-        }
-
-        function onScroll() {
-            if (!ticking) {
-                requestAnimationFrame(update);
-                ticking = true;
-            }
-        }
-
-        window.addEventListener('scroll', onScroll, { passive: true });
-        update(); // estado inicial correto
-
-        return () => {
-            window.removeEventListener('scroll', onScroll);
-            slidesWrapper.style.transform      = '';
-            slidesWrapper.style.transformOrigin = '';
-            slidesWrapper.style.willChange      = '';
-            if (heroContent) {
-                heroContent.style.opacity   = '';
-                heroContent.style.transform = '';
-                heroContent.style.willChange = '';
-            }
-        };
+        const handle = () => setScrolled(window.scrollY > 80);
+        window.addEventListener('scroll', handle, { passive: true });
+        handle(); // estado inicial
+        return () => window.removeEventListener('scroll', handle);
     }, []);
 
     return (
         /*
-         * ESTRUTURA OBRIGATÓRIA — os seletores do script dependem disto:
-         *   div.hero                          ← âncora dos seletores
-         *     section.sticky.top-0.h-screen   ← container fixo
-         *       div.absolute.inset-0          ← ← ← ANIMADO (slides + overlay)
-         *       div.relative.z-10             ← ← ← ANIMADO (texto)
-         *
-         * O section NÃO tem overflow-hidden para o scale não ser cortado.
-         * A altura de 180vh cria o "espaço de scroll" enquanto o section fica sticky.
+         * 180 vh = 100 vh (hero visível) + 80 vh (espaço de scroll para o pin).
+         * O section sticky permanece colado ao topo enquanto o utilizador
+         * percorre esse espaço extra, exactamente como GSAP ScrollTrigger pin.
          */
         <div className="hero" style={{ height: '180vh' }}>
             <section
-                className="sticky top-0 w-full h-screen flex items-center justify-center bg-black"
+                className="sticky top-0 w-full h-screen bg-black flex items-center justify-center"
                 style={{ zIndex: 1 }}
             >
 
-                {/* ── Wrapper das imagens (ANIMADO pelo script) ── */}
-                <div className="absolute inset-0">
+                {/* ── Wrapper das imagens ─────────────────────────────────────
+                 *  Normal  : inset-0, sem escala, sem cantos
+                 *  Scrolled: começa a 74 px do topo (navbar 68 px + gap 6 px),
+                 *            escala a 70 %, cantos redondos, sombra
+                 *  transition-all → CSS anima top, scale, border-radius
+                 * ─────────────────────────────────────────────────────────── */}
+                <div
+                    className={`absolute overflow-hidden transition-all duration-500 ease-in-out ${
+                        scrolled
+                            ? 'top-[74px] bottom-0 left-0 right-0 rounded-2xl scale-[0.70] origin-top shadow-2xl'
+                            : 'inset-0 rounded-none scale-100'
+                    }`}
+                >
                     {HERO_IMAGES.map((img, idx) => (
                         <div
                             key={idx}
                             className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
-                                idx === currentHeroIndex ? 'opacity-100' : 'opacity-0'
+                                idx === slide ? 'opacity-100' : 'opacity-0'
                             }`}
                             style={{ backgroundImage: `url("${img}")` }}
                         />
                     ))}
-                    {/* Overlay escuro */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/55" />
+                    {/* Overlay escuro para legibilidade do texto */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/60" />
                 </div>
 
-                {/* ── Conteúdo / Texto (ANIMADO pelo script) ── */}
-                <div className="relative z-10 text-center px-4 max-w-5xl mt-24 pointer-events-none">
+                {/* ── Conteúdo / Texto ─────────────────────────────────────── */}
+                <div
+                    className={`relative z-10 text-center px-4 max-w-5xl transition-all duration-500 ${
+                        scrolled ? 'opacity-0 pointer-events-none' : 'opacity-100 mt-24'
+                    }`}
+                >
                     <p className="text-white text-xs md:text-sm tracking-widest uppercase mb-8 font-light drop-shadow-md">
                         {t('hero_subtitle')}
                     </p>
@@ -134,25 +83,27 @@ export default function HeroBanner({ t, onReservar }: HeroBannerProps) {
                     </h2>
                 </div>
 
-                {/* ── Indicador de scroll (não é animado) ── */}
+                {/* ── Indicador de scroll ───────────────────────────────────── */}
                 <div
-                    className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white flex flex-col items-center gap-4 opacity-80 cursor-pointer hover:text-[#C4A484] hover:opacity-100 transition-colors z-20 pointer-events-auto"
+                    className={`absolute bottom-12 left-1/2 -translate-x-1/2 text-white flex flex-col items-center gap-4 cursor-pointer hover:text-[#C4A484] transition-all duration-500 z-20 ${
+                        scrolled ? 'opacity-0 pointer-events-none' : 'opacity-80 hover:opacity-100'
+                    }`}
                     onClick={onReservar}
                 >
                     <div className="w-[1px] h-20 bg-gradient-to-b from-white to-transparent" />
                     <span className="text-[10px] tracking-widest uppercase font-bold">{t('hero_ver_dispo')}</span>
                 </div>
 
-                {/* ── Dots do carrossel ── */}
+                {/* ── Dots do carrossel ─────────────────────────────────────── */}
                 <div className="absolute bottom-8 right-8 flex gap-2 z-20">
                     {HERO_IMAGES.map((_, idx) => (
                         <button
                             key={idx}
                             type="button"
                             aria-label={`Slide ${idx + 1}`}
-                            onClick={() => setCurrentHeroIndex(idx)}
+                            onClick={() => setSlide(idx)}
                             className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                                idx === currentHeroIndex
+                                idx === slide
                                     ? 'bg-[#C4A484] w-5'
                                     : 'bg-white/40 w-1.5 hover:bg-white/70'
                             }`}
