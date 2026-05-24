@@ -3,7 +3,7 @@ import React from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
     BarChart2, Calendar, Home, TrendingUp, ArrowRight, Sparkles,
-    RefreshCw, MapPin, Settings, MessageSquare
+    RefreshCw, MapPin, Settings, MessageSquare, Users
 } from 'lucide-react';
 
 export default function AdminSidebar() {
@@ -19,6 +19,7 @@ export default function AdminSidebar() {
         { icon: Sparkles,       label: 'Cupons',       short: 'Cupons',  path: '/admin/cupons' },
         { icon: BarChart2,      label: 'Relatórios',   short: 'Relat.',  path: '/admin/relatorios' },
         { icon: MapPin,         label: 'Passeios',     short: 'Passeis', path: '/admin/passeios' },
+        { icon: Users,          label: 'Hóspedes',     short: 'Hósp.',   path: '/admin/hospedes' },
         { icon: MessageSquare,  label: 'Mensagens',    short: 'Msg',     path: '/admin/mensagens' },
         { icon: Settings,       label: 'Contactos',    short: 'Config',  path: '/admin/configuracoes' },
     ];
