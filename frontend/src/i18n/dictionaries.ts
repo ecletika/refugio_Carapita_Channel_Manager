@@ -104,7 +104,7 @@ export const dictionaries = {
         booking_politica_garantia_texto: 'O depósito, não é reembolsável, no valor integral da estadia, incluindo taxa, será cobrado 02 dias antes da chegada.',
         form_info_contacto: 'Informação de Contacto',
         form_faturacao: 'Endereço de Faturação',
-        form_requerimentos_desc: 'Pode adicionar aqui informações como idade das crianças, pedidos de restaurante, dietas especiais ou animais de estimação.',
+        form_requerimentos_desc: 'Indique aqui qualquer pedido especial para a sua estadia, explicando o motivo e os detalhes necessários. Por exemplo: pedido de check-in antecipado, hora prevista de chegada, ocasião especial, necessidades para crianças ou sugestões de turismo na região.',
 
         editorial_coord: "39°36'N · 8°40'W · Ourém, Portugal",
         editorial_tag: 'O Refúgio',

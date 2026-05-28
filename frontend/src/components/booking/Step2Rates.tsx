@@ -63,7 +63,7 @@ export default function Step2Rates({
                 <div className="bg-[#1A2E26] border border-[#C9A84C]/20 p-6 rounded-[20px] flex justify-between items-center shadow-lg hover:border-[#C9A84C]/50 transition-colors cursor-pointer group" onClick={() => setBookingStep('selection')}>
                     <div className="flex flex-col">
                         <span className="font-serif text-[#C9A84C] text-[20px] mb-1">Ocupação</span>
-                        <span className="font-sans text-[12px] uppercase tracking-widest text-[#8A9E96]">{adultos} Adulto{adultos !== 1 && 's'}{criancas > 0 ? ` • ${criancas} Criança${criancas !== 1 && 's'}` : ''}</span>
+                        <span className="font-sans text-[12px] uppercase tracking-widest text-[#8A9E96]">{adultos} Adulto{adultos !== 1 ? 's' : ''}{criancas > 0 ? ` • ${criancas} Criança${criancas !== 1 ? 's' : ''}` : ''}</span>
                     </div>
                     <button className="text-[#8A9E96] group-hover:text-[#C9A84C] transition-colors font-sans text-[10px] uppercase tracking-widest border border-white/10 px-4 py-2 rounded-full">
                         Editar
