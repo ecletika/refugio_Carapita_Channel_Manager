@@ -35,7 +35,10 @@ export default function AdminPasseios() {
 
     const fetchPasseios = async () => {
         try {
-            const resp = await fetch(`${EDGE_URL}/admin-site/passeios`);
+            const token = localStorage.getItem('token');
+            const resp = await fetch(`${EDGE_URL}/admin-site/passeios`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const json = await resp.json();
             if (json.status === 'success') {
                 setPasseios(json.data);
