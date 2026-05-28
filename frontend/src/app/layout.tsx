@@ -5,10 +5,6 @@ import SplashLoader from "../components/SplashLoader";
 export const metadata: Metadata = {
     title: "Refúgio Carapita - Alojamento Local",
     description: "Reserve agora no Refúgio Carapita em Ourém, PT.",
-    icons: {
-        icon: '/logo.jpg',
-        apple: '/logo.jpg',
-    },
 };
 
 export default function RootLayout({
@@ -18,6 +14,12 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="pt-PT">
+            <head>
+                {/* Favicon — funciona em todos os browsers modernos */}
+                <link rel="icon"             type="image/jpeg" href="/logo.jpg" />
+                <link rel="shortcut icon"    type="image/jpeg" href="/logo.jpg" />
+                <link rel="apple-touch-icon"                   href="/logo.jpg" />
+            </head>
             <body>
                 <SplashLoader />
                 {children}
