@@ -15,6 +15,7 @@ interface Reserva {
   numero_reserva?: string;
   aima_dados_completos?: boolean;
   aima_form_token?: string;
+  ba_enviado?: boolean;
   quarto: { nome: string };
   hospede: { nome: string; email: string; telefone: string };
   canal: { nome_canal: string };
@@ -296,7 +297,11 @@ export default function AdminReservas() {
                     <span className="text-[10px] text-carapita-muted uppercase tracking-widest font-medium">{res.canal.nome_canal}</span>
                   </div>
                   {/* AIMA badge */}
-                  {res.aima_dados_completos ? (
+                  {res.ba_enviado ? (
+                    <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest font-bold text-blue-700 bg-blue-50 border border-blue-300 px-2 py-1 w-fit">
+                      <CheckCircle size={10} /> BA Enviado
+                    </div>
+                  ) : res.aima_dados_completos ? (
                     <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 w-fit">
                       <CheckCircle size={10} /> AIMA Preenchido
                     </div>
@@ -335,12 +340,23 @@ export default function AdminReservas() {
                   <button onClick={() => updateStatus(res.id, 'checkout')} className="w-full py-2 bg-purple-600 text-white text-[9px] uppercase tracking-widest font-bold hover:bg-purple-700 transition-colors cursor-pointer">Check-out</button>
                 )}
                 {showAimaButton(res) && (
-                  <button
-                    onClick={() => openAimaModal(res.id)}
-                    className={`w-full py-2 text-[9px] uppercase tracking-widest font-bold transition-colors cursor-pointer ${res.aima_dados_completos ? 'bg-[#1E3932] text-[#C4A484] hover:bg-[#C4A484] hover:text-white' : 'border border-gray-200 text-gray-500 hover:bg-gray-50'}`}
-                  >
-                    {res.aima_dados_completos ? 'Enviar AIMA' : 'Ver AIMA'}
-                  </button>
+                  res.ba_enviado ? (
+                    // BA já enviado — botão neutro "Ver Reserva AIMA"
+                    <button
+                      onClick={() => openAimaModal(res.id)}
+                      className="w-full py-2 text-[9px] uppercase tracking-widest font-bold border border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <CheckCircle size={10} /> Ver Reserva
+                    </button>
+                  ) : (
+                    // BA ainda não enviado
+                    <button
+                      onClick={() => openAimaModal(res.id)}
+                      className={`w-full py-2 text-[9px] uppercase tracking-widest font-bold transition-colors cursor-pointer ${res.aima_dados_completos ? 'bg-[#1E3932] text-[#C4A484] hover:bg-[#C4A484] hover:text-white' : 'border border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                    >
+                      {res.aima_dados_completos ? 'Enviar AIMA' : 'Ver AIMA'}
+                    </button>
+                  )
                 )}
                 {res.status !== 'CANCELADA' && res.status !== 'CHECK_OUT' && (
                   <button onClick={() => updateStatus(res.id, 'cancelar')} className="w-full py-2 border border-red-200 text-red-500 text-[9px] uppercase tracking-widest hover:bg-red-50 transition-colors cursor-pointer">Cancelar</button>
