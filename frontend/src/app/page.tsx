@@ -181,10 +181,7 @@ export default function Home() {
 
             <InstagramCarousel t={t} />
 
-            <EssenciaSection
-                t={t}
-                scrollTo={(id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })}
-            />
+            <EssenciaSection t={t} />
 
             <AlojamentoGallery 
                 t={t} galleryRooms={galleryRooms} parseFotos={parseFotos}
