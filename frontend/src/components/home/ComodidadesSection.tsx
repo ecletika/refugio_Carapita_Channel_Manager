@@ -45,9 +45,9 @@ export default function ComodidadesSection({ t }: ComodidadesSectionProps) {
                 </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
                 {comodidades.map((item, idx) => (
-                    <div key={idx} className="group p-10 bg-white/5 border border-white/5 hover:border-carapita-gold/30 transition-all duration-700 rounded-[2rem] flex flex-col items-center text-center">
+                    <div key={idx} className="group p-7 bg-white/5 border border-white/5 hover:border-carapita-gold/30 transition-all duration-700 rounded-[2rem] flex flex-col items-center text-center">
                         <div className="mb-6 text-carapita-gold group-hover:scale-110 transition-transform duration-500">
                             {item.icon}
                         </div>
