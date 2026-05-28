@@ -89,17 +89,20 @@ export default function Header({
                 style={{
                     ...(scrolled || mobileMenuOpen
                         ? {
-                              // ── PILL — fixed size, items spread inside ─────
+                              // ── PILL — centered, max-width 1100px ──────────
                               top:                  '12px',
-                              left:                 '15%',
-                              right:                '15%',
+                              left:                 '50%',
+                              right:                'auto',
+                              transform:            'translateX(-50%)',
+                              width:                '90%',
+                              maxWidth:             '1100px',
                               borderRadius:         '9999px',
                               background:           'rgba(30, 57, 50, 0.92)',
                               backdropFilter:       'blur(14px)',
                               WebkitBackdropFilter: 'blur(14px)',
                               border:               '1px solid rgba(255,255,255,0.12)',
                               boxShadow:            '0 8px 32px rgba(0,0,0,0.35)',
-                              padding:              '10px 20px',
+                              padding:              '10px 30px',
                               display:              'flex',
                               alignItems:           'center',
                               justifyContent:       'space-between',
