@@ -16,6 +16,8 @@ interface Quarto {
     descricao: string;
     capacidade: number;
     preco_base: number;
+    tarifa_semana?: number;
+    tarifa_fds?: number;
     fotos: string;
     comodidades: string;
     video_url?: string;
@@ -132,7 +134,7 @@ export default function AdminQuartos() {
     useEffect(() => { fetchQuartos(); fetchComodidades(); }, []);
 
     const openEdit = (q?: Partial<Quarto>) => {
-        const quarto = q || { nome: '', tipo: 'Quarto', descricao: '', capacidade: 2, preco_base: 100, ativo: true, minima_estadia_padrao: 2 };
+        const quarto = q || { nome: '', tipo: 'Quarto', descricao: '', capacidade: 2, preco_base: 100, tarifa_semana: 100, tarifa_fds: 120, ativo: true, minima_estadia_padrao: 2 };
         setEditQuarto(quarto);
         setFotosEdit(parseFotos(quarto.fotos));
         setComodidadesEdit(parseComodidades(quarto.comodidades));
@@ -241,6 +243,7 @@ export default function AdminQuartos() {
                 body: JSON.stringify({
                     nome: editQuarto?.nome, tipo: editQuarto?.tipo, descricao: editQuarto?.descricao,
                     capacidade: editQuarto?.capacidade, precoBase: editQuarto?.preco_base,
+                    tarifaSemana: editQuarto?.tarifa_semana, tarifaFds: editQuarto?.tarifa_fds,
                     fotos: serializeFotos(fotosEdit), comodidades: JSON.stringify(comodidadesEdit),
                     ativo: editQuarto?.ativo, videoUrl: editQuarto?.video_url,
                     icalUrl: editQuarto?.ical_url, minimaEstadiaPadrao: editQuarto?.minima_estadia_padrao
@@ -459,6 +462,33 @@ export default function AdminQuartos() {
                                             onChange={e => setEditQuarto({ ...editQuarto, minima_estadia_padrao: parseInt(e.target.value) })}
                                             className="w-full border-b border-gray-200 focus:border-[#C4A484] pb-2 outline-none text-sm bg-transparent text-[#1E3932]" />
                                     </ModalField>
+                                </div>
+
+                                {/* ── Tarifas base diferenciadas ── */}
+                                <div className="p-4 bg-[#1E3932]/5 border border-[#1E3932]/10 rounded-sm space-y-3">
+                                    <p className="text-[9px] uppercase tracking-widest text-[#1E3932] font-bold flex items-center gap-2">
+                                        <Euro size={11} className="text-[#C4A484]" />
+                                        Tarifas Base por Dia da Semana
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] uppercase tracking-widest text-gray-600 font-bold block">Semana (€/noite) *</label>
+                                            <input type="number" required min="0" step="0.01"
+                                                value={editQuarto.tarifa_semana ?? editQuarto.preco_base ?? 0}
+                                                onChange={e => setEditQuarto({ ...editQuarto, tarifa_semana: parseFloat(e.target.value) || 0 })}
+                                                className="w-full border-b border-gray-200 focus:border-[#C4A484] pb-2 outline-none text-sm bg-transparent text-[#1E3932]" />
+                                            <span className="text-[9px] text-gray-400 block">Seg · Ter · Qua · Qui</span>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] uppercase tracking-widest text-gray-600 font-bold block">Fim de Semana (€/noite) *</label>
+                                            <input type="number" required min="0" step="0.01"
+                                                value={editQuarto.tarifa_fds ?? editQuarto.preco_base ?? 0}
+                                                onChange={e => setEditQuarto({ ...editQuarto, tarifa_fds: parseFloat(e.target.value) || 0 })}
+                                                className="w-full border-b border-gray-200 focus:border-[#C4A484] pb-2 outline-none text-sm bg-transparent text-[#1E3932]" />
+                                            <span className="text-[9px] text-gray-400 block">Sex · Sáb · Dom</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-[9px] text-gray-400 italic">Usadas como referência nos preços por época (% automática).</p>
                                 </div>
 
                                 {/* Ativo toggle */}
