@@ -11,7 +11,6 @@ import AlojamentoGallery from '@/components/home/AlojamentoGallery';
 import PasseiosSection from '@/components/home/PasseiosSection';
 import ComodidadesSection from '@/components/home/ComodidadesSection';
 import LocalizacaoSection from '@/components/home/LocalizacaoSection';
-import ImmersiveEditorialSection from '@/components/home/ImmersiveEditorialSection';
 import InstagramCarousel from '@/components/home/InstagramCarousel';
 import BookingImmersive from '@/components/booking/BookingImmersive';
 import { X } from 'lucide-react';
@@ -182,9 +181,7 @@ export default function Home() {
 
             <InstagramCarousel t={t} />
 
-            <ImmersiveEditorialSection t={t} onReservar={() => setShowBookingScreen(true)} />
-
-            <EssenciaSection t={t} />
+<EssenciaSection t={t} />
 
             <AlojamentoGallery 
                 t={t} galleryRooms={galleryRooms} parseFotos={parseFotos}
