@@ -19,7 +19,7 @@ interface TarifaSazonal {
     id: string; quarto_id: string;
     quarto?: { nome: string }; Quarto?: { nome: string };
     data_inicio: string; data_fim: string;
-    preco_noite: number; motivo: string;
+    preco_noite: number; preco_noite_fds?: number; motivo: string;
     politica_cancelamento: string; minima_estadia: number;
 }
 interface Bloqueio {
@@ -47,6 +47,18 @@ function getBaseRate(quartos: Quarto[], quartoId: string, dataInicio: string): n
     if (fds) return Number(q.tarifa_fds  ?? q.preco_base) || 0;
     return          Number(q.tarifa_semana ?? q.preco_base) || 0;
 }
+/** Devolve sempre a tarifa base de Semana (independente de data) */
+function getSemanaBase(quartos: Quarto[], quartoId: string): number {
+    const q = quartos.find(x => x.id === quartoId);
+    if (!q) return 0;
+    return Number(q.tarifa_semana ?? q.preco_base) || 0;
+}
+/** Devolve sempre a tarifa base de FDS (independente de data) */
+function getFdsBase(quartos: Quarto[], quartoId: string): number {
+    const q = quartos.find(x => x.id === quartoId);
+    if (!q) return 0;
+    return Number(q.tarifa_fds ?? q.preco_base) || 0;
+}
 
 /** € → % (2 casas decimais, sem loop) */
 function euroToPercent(euro: number, base: number): number {
@@ -69,10 +81,11 @@ export default function AdminTarifasBloqueios() {
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState<{ tipo: 'ok' | 'err'; msg: string } | null>(null);
 
-    /* form nova tarifa — inclui campo auxiliar `percentagem` (não vai para a BD) */
+    /* form nova tarifa — campos auxiliares percentagem/* não vão para a BD */
     const [novaTarifa, setNovaTarifa] = useState({
         quarto_id: '', data_inicio: '', data_fim: '',
-        preco_noite: 0, percentagem: 0,
+        preco_noite: 0, percentagem: 0,           // Semana
+        preco_noite_fds: 0, percentagem_fds: 0,   // FDS (0 = igual à semana)
         motivo: '', politica_cancelamento: 'FLEXIVEL', minima_estadia: 2,
     });
     const [editandoTarifaId, setEditandoTarifaId] = useState<string | null>(null);
@@ -111,33 +124,48 @@ export default function AdminTarifasBloqueios() {
 
     useEffect(() => { fetchData(); }, []);
 
-    /* ── Recalcular % quando muda quarto ou data_inicio ────────── */
+    /* ── Recalcular % quando muda quarto ────────────────────────── */
     useEffect(() => {
-        if (!novaTarifa.quarto_id || !novaTarifa.data_inicio) return;
-        const base = getBaseRate(quartos, novaTarifa.quarto_id, novaTarifa.data_inicio);
-        if (base > 0 && novaTarifa.preco_noite > 0) {
-            const pct = euroToPercent(novaTarifa.preco_noite, base);
-            setNovaTarifa(prev => ({ ...prev, percentagem: pct }));
-        }
+        if (!novaTarifa.quarto_id) return;
+        const baseSem = getSemanaBase(quartos, novaTarifa.quarto_id);
+        const baseFds = getFdsBase(quartos, novaTarifa.quarto_id);
+        setNovaTarifa(prev => ({
+            ...prev,
+            percentagem:     baseSem > 0 && prev.preco_noite     > 0 ? euroToPercent(prev.preco_noite,     baseSem) : prev.percentagem,
+            percentagem_fds: baseFds > 0 && prev.preco_noite_fds > 0 ? euroToPercent(prev.preco_noite_fds, baseFds) : prev.percentagem_fds,
+        }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [novaTarifa.quarto_id, novaTarifa.data_inicio, quartos]);
+    }, [novaTarifa.quarto_id, quartos]);
 
     /* ── Handlers de preço ─────────────────────────────────────── */
 
-    /** Utilizador alterou o campo € → recalcula % */
+    /** Semana € → recalcula % semana */
     const handlePrecoChange = (raw: string) => {
         const euro = Math.max(0, parseFloat(raw) || 0);
-        const base = getBaseRate(quartos, novaTarifa.quarto_id, novaTarifa.data_inicio);
+        const base = getSemanaBase(quartos, novaTarifa.quarto_id);
         const pct  = euroToPercent(euro, base);
         setNovaTarifa(prev => ({ ...prev, preco_noite: euro, percentagem: pct }));
     };
-
-    /** Utilizador alterou o campo % → recalcula € */
+    /** Semana % → recalcula € semana */
     const handlePercentagemChange = (raw: string) => {
         const pct  = Math.max(0, parseFloat(raw) || 0);
-        const base = getBaseRate(quartos, novaTarifa.quarto_id, novaTarifa.data_inicio);
+        const base = getSemanaBase(quartos, novaTarifa.quarto_id);
         const euro = percentToEuro(pct, base);
         setNovaTarifa(prev => ({ ...prev, percentagem: pct, preco_noite: euro }));
+    };
+    /** FDS € → recalcula % FDS */
+    const handlePrecoFdsChange = (raw: string) => {
+        const euro = Math.max(0, parseFloat(raw) || 0);
+        const base = getFdsBase(quartos, novaTarifa.quarto_id);
+        const pct  = euroToPercent(euro, base);
+        setNovaTarifa(prev => ({ ...prev, preco_noite_fds: euro, percentagem_fds: pct }));
+    };
+    /** FDS % → recalcula € FDS */
+    const handlePercentagemFdsChange = (raw: string) => {
+        const pct  = Math.max(0, parseFloat(raw) || 0);
+        const base = getFdsBase(quartos, novaTarifa.quarto_id);
+        const euro = percentToEuro(pct, base);
+        setNovaTarifa(prev => ({ ...prev, percentagem_fds: pct, preco_noite_fds: euro }));
     };
 
     /* ── Tarifa CRUD ───────────────────────────────────────────── */
@@ -146,9 +174,14 @@ export default function AdminTarifasBloqueios() {
         setSavingTarifa(true);
         const token = localStorage.getItem('token');
         try {
-            // `percentagem` é apenas UI — não enviamos para a BD
-            const { percentagem: _pct, ...payload } = novaTarifa;
-            const finalPayload = editandoTarifaId ? { ...payload, id: editandoTarifaId } : payload;
+            // campos auxiliares percentagem/* são apenas UI — não vão para a BD
+            const { percentagem: _pct, percentagem_fds: _pctFds, ...payload } = novaTarifa;
+            // preco_noite_fds = 0 → null (não diferenciado)
+            const cleanPayload = {
+                ...payload,
+                preco_noite_fds: payload.preco_noite_fds > 0 ? payload.preco_noite_fds : null,
+            };
+            const finalPayload = editandoTarifaId ? { ...cleanPayload, id: editandoTarifaId } : cleanPayload;
             const resp = await fetch(`${EDGE_URL}/admin-tarifas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -172,14 +205,19 @@ export default function AdminTarifasBloqueios() {
     const handleEditarTarifa = (t: TarifaSazonal) => {
         setEditandoTarifaId(t.id);
         const dataInicio = t.data_inicio.split('T')[0];
-        const base = getBaseRate(quartos, t.quarto_id, dataInicio);
-        const pct  = euroToPercent(Number(t.preco_noite), base);
+        const baseSem = getSemanaBase(quartos, t.quarto_id);
+        const baseFds = getFdsBase(quartos, t.quarto_id);
+        const pct    = euroToPercent(Number(t.preco_noite), baseSem);
+        const fdVal  = Number(t.preco_noite_fds ?? 0);
+        const pctFds = fdVal > 0 ? euroToPercent(fdVal, baseFds) : 0;
         setNovaTarifa({
             quarto_id: t.quarto_id,
             data_inicio: dataInicio,
             data_fim: t.data_fim.split('T')[0],
             preco_noite: Number(t.preco_noite),
             percentagem: pct,
+            preco_noite_fds: fdVal,
+            percentagem_fds: pctFds,
             motivo: t.motivo || '',
             politica_cancelamento: t.politica_cancelamento || 'FLEXIVEL',
             minima_estadia: t.minima_estadia || 2,
@@ -204,6 +242,7 @@ export default function AdminTarifasBloqueios() {
         setNovaTarifa({
             quarto_id: '', data_inicio: '', data_fim: '',
             preco_noite: 0, percentagem: 0,
+            preco_noite_fds: 0, percentagem_fds: 0,
             motivo: '', politica_cancelamento: 'FLEXIVEL', minima_estadia: 2,
         });
     };
@@ -256,17 +295,22 @@ export default function AdminTarifasBloqueios() {
     };
 
     /* Quarto seleccionado no form */
-    const quartoSelecionado = quartos.find(q => q.id === novaTarifa.quarto_id);
-    const baseSelecionada   = getBaseRate(quartos, novaTarifa.quarto_id, novaTarifa.data_inicio);
-    const tipoBase          = (novaTarifa.quarto_id && novaTarifa.data_inicio)
-        ? (isFimDeSemana(novaTarifa.data_inicio) ? 'Fim de Semana' : 'Semana')
-        : null;
+    const quartoSelecionado  = quartos.find(q => q.id === novaTarifa.quarto_id);
+    const baseSemanaSelected = getSemanaBase(quartos, novaTarifa.quarto_id);
+    const baseFdsSelected    = getFdsBase(quartos, novaTarifa.quarto_id);
 
-    /* % da tarifa na lista (calculada on-the-fly) */
+    /* % da tarifa na lista (Semana, calculada on-the-fly) */
     const pctDaTarifa = (t: TarifaSazonal) => {
-        const base = getBaseRate(quartos, t.quarto_id, t.data_inicio.split('T')[0]);
+        const base = getSemanaBase(quartos, t.quarto_id);
         if (!base) return null;
         return euroToPercent(Number(t.preco_noite), base);
+    };
+    /* % FDS na lista */
+    const pctFdsDaTarifa = (t: TarifaSazonal) => {
+        if (!t.preco_noite_fds) return null;
+        const base = getFdsBase(quartos, t.quarto_id);
+        if (!base) return null;
+        return euroToPercent(Number(t.preco_noite_fds), base);
     };
 
     if (loading) return (
@@ -418,70 +462,116 @@ export default function AdminTarifasBloqueios() {
                                     </div>
                                 </div>
 
-                                {/* ── Preço + Percentagem (sincronizados) ── */}
-                                <div className="border border-gray-100 bg-gray-50/50 p-4 space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                                            Valor por Noite
-                                        </span>
-                                        {tipoBase && baseSelecionada > 0 && (
-                                            <span className={`text-[9px] px-2 py-0.5 font-bold uppercase tracking-widest
-                                                ${tipoBase === 'Fim de Semana'
-                                                    ? 'bg-[#C4A484]/20 text-[#C4A484]'
-                                                    : 'bg-[#1E3932]/10 text-[#1E3932]'}`}>
-                                                Base {tipoBase}: €{baseSelecionada.toFixed(2)}
+                                {/* ── Preço + Percentagem: SEMANA + FDS ── */}
+                                <div className="border border-gray-100 bg-gray-50/50 p-4 space-y-5">
+                                    <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold block">
+                                        Valor por Noite
+                                    </span>
+
+                                    {/* ─ Semana ─ */}
+                                    <div className="border-l-2 border-[#1E3932]/25 pl-3 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[9px] uppercase tracking-widest text-[#1E3932]/70 font-bold">
+                                                ● Semana · Seg–Qui
                                             </span>
+                                            {baseSemanaSelected > 0 && (
+                                                <span className="text-[9px] bg-[#1E3932]/5 text-[#1E3932] px-2 py-0.5 font-bold uppercase tracking-widest">
+                                                    Base: €{baseSemanaSelected.toFixed(2)}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-1.5">Valor (€) *</label>
+                                                <div className="flex items-center gap-2 border-b border-gray-200 focus-within:border-[#C4A484] transition-colors pb-1">
+                                                    <Euro size={13} className="text-[#C4A484] shrink-0" />
+                                                    <input type="number" required min="0" step="0.01"
+                                                        value={novaTarifa.preco_noite || ''}
+                                                        onChange={e => handlePrecoChange(e.target.value)}
+                                                        className="w-full py-2 outline-none text-sm bg-transparent text-[#1E3932]"
+                                                        placeholder="0.00" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-1.5">% da base</label>
+                                                <div className="flex items-center gap-2 border-b border-gray-200 focus-within:border-[#C4A484] transition-colors pb-1">
+                                                    <Percent size={13} className="text-[#C4A484] shrink-0" />
+                                                    <input type="number" min="0" step="0.01"
+                                                        value={novaTarifa.percentagem || ''}
+                                                        onChange={e => handlePercentagemChange(e.target.value)}
+                                                        disabled={!baseSemanaSelected}
+                                                        className="w-full py-2 outline-none text-sm bg-transparent text-[#1E3932] disabled:opacity-40 disabled:cursor-not-allowed"
+                                                        placeholder="100" />
+                                                </div>
+                                                {!baseSemanaSelected && novaTarifa.quarto_id && (
+                                                    <p className="text-[9px] text-amber-500 mt-1">Configure tarifas base no alojamento.</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {novaTarifa.preco_noite > 0 && baseSemanaSelected > 0 && (
+                                            <div className={`text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5
+                                                ${novaTarifa.percentagem > 100 ? 'text-green-600' : novaTarifa.percentagem < 100 ? 'text-amber-600' : 'text-gray-400'}`}>
+                                                {novaTarifa.percentagem > 100
+                                                    ? `▲ +${(novaTarifa.percentagem - 100).toFixed(2)}% acima da base`
+                                                    : novaTarifa.percentagem < 100
+                                                    ? `▼ −${(100 - novaTarifa.percentagem).toFixed(2)}% abaixo da base`
+                                                    : '= Igual à tarifa base'}
+                                            </div>
                                         )}
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {/* € */}
-                                        <div>
-                                            <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-2">
-                                                Valor (€) *
-                                            </label>
-                                            <div className="flex items-center gap-2 border-b border-gray-200 focus-within:border-[#C4A484] transition-colors pb-1">
-                                                <Euro size={13} className="text-[#C4A484] shrink-0" />
-                                                <input type="number" required min="0" step="0.01"
-                                                    value={novaTarifa.preco_noite || ''}
-                                                    onChange={e => handlePrecoChange(e.target.value)}
-                                                    className="w-full py-2 outline-none text-sm bg-transparent text-[#1E3932]"
-                                                    placeholder="0.00" />
-                                            </div>
-                                        </div>
-
-                                        {/* % */}
-                                        <div>
-                                            <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-2">
-                                                Percentagem (%)
-                                            </label>
-                                            <div className="flex items-center gap-2 border-b border-gray-200 focus-within:border-[#C4A484] transition-colors pb-1">
-                                                <Percent size={13} className="text-[#C4A484] shrink-0" />
-                                                <input type="number" min="0" step="0.01"
-                                                    value={novaTarifa.percentagem || ''}
-                                                    onChange={e => handlePercentagemChange(e.target.value)}
-                                                    disabled={!baseSelecionada}
-                                                    className="w-full py-2 outline-none text-sm bg-transparent text-[#1E3932] disabled:opacity-40 disabled:cursor-not-allowed"
-                                                    placeholder="0.00" />
-                                            </div>
-                                            {!baseSelecionada && novaTarifa.quarto_id && (
-                                                <p className="text-[9px] text-amber-500 mt-1">Configure tarifas base no alojamento.</p>
+                                    {/* ─ Fim de Semana ─ */}
+                                    <div className="border-l-2 border-[#C4A484]/50 pl-3 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[9px] uppercase tracking-widest text-[#C4A484] font-bold">
+                                                ★ Fim de Semana · Sex–Dom
+                                            </span>
+                                            {baseFdsSelected > 0 && (
+                                                <span className="text-[9px] bg-[#C4A484]/10 text-[#1E3932] px-2 py-0.5 font-bold uppercase tracking-widest">
+                                                    Base: €{baseFdsSelected.toFixed(2)}
+                                                </span>
                                             )}
                                         </div>
-                                    </div>
-
-                                    {/* indicador visual */}
-                                    {novaTarifa.preco_noite > 0 && baseSelecionada > 0 && (
-                                        <div className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5
-                                            ${novaTarifa.percentagem > 100 ? 'text-green-600' :
-                                              novaTarifa.percentagem < 100 ? 'text-amber-600' : 'text-gray-400'}`}>
-                                            {novaTarifa.percentagem > 100
-                                                ? `▲ +${(novaTarifa.percentagem - 100).toFixed(2)}% acima da base`
-                                                : novaTarifa.percentagem < 100
-                                                ? `▼ −${(100 - novaTarifa.percentagem).toFixed(2)}% abaixo da base`
-                                                : '= Igual à tarifa base'}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-1.5">Valor (€)</label>
+                                                <div className="flex items-center gap-2 border-b border-gray-200 focus-within:border-[#C4A484] transition-colors pb-1">
+                                                    <Euro size={13} className="text-[#C4A484] shrink-0" />
+                                                    <input type="number" min="0" step="0.01"
+                                                        value={novaTarifa.preco_noite_fds || ''}
+                                                        onChange={e => handlePrecoFdsChange(e.target.value)}
+                                                        className="w-full py-2 outline-none text-sm bg-transparent text-[#1E3932]"
+                                                        placeholder="Vazio = igual à semana" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-1.5">% base FDS</label>
+                                                <div className="flex items-center gap-2 border-b border-gray-200 focus-within:border-[#C4A484] transition-colors pb-1">
+                                                    <Percent size={13} className="text-[#C4A484] shrink-0" />
+                                                    <input type="number" min="0" step="0.01"
+                                                        value={novaTarifa.percentagem_fds || ''}
+                                                        onChange={e => handlePercentagemFdsChange(e.target.value)}
+                                                        disabled={!baseFdsSelected}
+                                                        className="w-full py-2 outline-none text-sm bg-transparent text-[#1E3932] disabled:opacity-40 disabled:cursor-not-allowed"
+                                                        placeholder="Opcional" />
+                                                </div>
+                                            </div>
                                         </div>
-                                    )}
+                                        {novaTarifa.preco_noite_fds > 0 && baseFdsSelected > 0 ? (
+                                            <div className={`text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5
+                                                ${novaTarifa.percentagem_fds > 100 ? 'text-green-600' : novaTarifa.percentagem_fds < 100 ? 'text-amber-600' : 'text-gray-400'}`}>
+                                                {novaTarifa.percentagem_fds > 100
+                                                    ? `▲ +${(novaTarifa.percentagem_fds - 100).toFixed(2)}% acima da base FDS`
+                                                    : novaTarifa.percentagem_fds < 100
+                                                    ? `▼ −${(100 - novaTarifa.percentagem_fds).toFixed(2)}% abaixo da base FDS`
+                                                    : '= Igual à tarifa base FDS'}
+                                            </div>
+                                        ) : (
+                                            <p className="text-[9px] text-gray-400 italic">
+                                                Deixe vazio para aplicar o mesmo preço da semana ao FDS.
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Identificador */}
@@ -557,7 +647,8 @@ export default function AdminTarifasBloqueios() {
                             ) : (
                                 <div className="space-y-3">
                                     {tarifas.map(t => {
-                                        const pct = pctDaTarifa(t);
+                                        const pct    = pctDaTarifa(t);
+                                        const pctFds = pctFdsDaTarifa(t);
                                         return (
                                             <div key={t.id}
                                                 className="bg-white border border-gray-100 hover:border-[#C4A484]/30 transition-all duration-200 group">
@@ -591,22 +682,44 @@ export default function AdminTarifasBloqueios() {
                                                             </div>
                                                         </div>
 
-                                                        {/* Preço + % */}
-                                                        <div className="shrink-0 text-right pr-2 space-y-1">
-                                                            <div className="flex items-baseline gap-0.5 justify-end">
-                                                                <span className="text-sm text-[#C4A484] font-serif">€</span>
-                                                                <span className="text-2xl font-serif text-[#1E3932] leading-none">
-                                                                    {Number(t.preco_noite).toFixed(0)}
-                                                                </span>
-                                                                <span className="text-[9px] text-gray-300 ml-0.5">/noite</span>
-                                                            </div>
-                                                            {pct !== null && (
-                                                                <div className={`text-[9px] font-bold uppercase tracking-widest text-right
-                                                                    ${pct > 100 ? 'text-green-500' : pct < 100 ? 'text-amber-500' : 'text-gray-400'}`}>
-                                                                    {pct > 100 ? `+${(pct - 100).toFixed(1)}%` :
-                                                                     pct < 100 ? `−${(100 - pct).toFixed(1)}%` : '= Base'}
+                                                        {/* Semana + FDS */}
+                                                        <div className="shrink-0 text-right pr-2 space-y-1.5">
+                                                            {/* Semana */}
+                                                            <div>
+                                                                <div className="flex items-baseline gap-0.5 justify-end">
+                                                                    <span className="text-sm text-[#C4A484] font-serif">€</span>
+                                                                    <span className="text-2xl font-serif text-[#1E3932] leading-none">
+                                                                        {Number(t.preco_noite).toFixed(0)}
+                                                                    </span>
+                                                                    <span className="text-[9px] text-gray-300 ml-0.5">/noite</span>
                                                                 </div>
-                                                            )}
+                                                                {pct !== null && (
+                                                                    <div className={`text-[9px] font-bold uppercase tracking-widest text-right
+                                                                        ${pct > 100 ? 'text-green-500' : pct < 100 ? 'text-amber-500' : 'text-gray-400'}`}>
+                                                                        {pct > 100 ? `+${(pct - 100).toFixed(1)}%` :
+                                                                         pct < 100 ? `−${(100 - pct).toFixed(1)}%` : '= Base'}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            {/* FDS (só quando definido) */}
+                                                            {t.preco_noite_fds ? (
+                                                                <div className="border-t border-[#C4A484]/20 pt-1.5">
+                                                                    <div className="flex items-baseline gap-0.5 justify-end">
+                                                                        <span className="text-[8px] text-[#C4A484] font-bold uppercase mr-0.5">★fds</span>
+                                                                        <span className="text-[#C4A484] font-serif">€</span>
+                                                                        <span className="text-lg font-serif text-[#C4A484] leading-none">
+                                                                            {Number(t.preco_noite_fds).toFixed(0)}
+                                                                        </span>
+                                                                    </div>
+                                                                    {pctFds !== null && (
+                                                                        <div className={`text-[9px] font-bold uppercase tracking-widest text-right
+                                                                            ${pctFds > 100 ? 'text-green-500' : pctFds < 100 ? 'text-amber-500' : 'text-gray-400'}`}>
+                                                                            {pctFds > 100 ? `+${(pctFds - 100).toFixed(1)}%` :
+                                                                             pctFds < 100 ? `−${(100 - pctFds).toFixed(1)}%` : '= Base'}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ) : null}
                                                         </div>
 
                                                         <div className="flex gap-1.5 shrink-0">
