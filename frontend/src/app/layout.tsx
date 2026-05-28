@@ -5,6 +5,10 @@ import SplashLoader from "../components/SplashLoader";
 export const metadata: Metadata = {
     title: "Refúgio Carapita - Alojamento Local",
     description: "Reserve agora no Refúgio Carapita em Ourém, PT.",
+    icons: {
+        icon: '/logo.jpg',
+        apple: '/logo.jpg',
+    },
 };
 
 export default function RootLayout({

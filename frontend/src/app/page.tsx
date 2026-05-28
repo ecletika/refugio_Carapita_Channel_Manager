@@ -91,6 +91,12 @@ export default function Home() {
             setIsGuestLoggedIn(!!localStorage.getItem('guestToken'));
         }
 
+        // Abrir booking automaticamente se vier de outra página
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('book') === 'true') {
+            setShowBookingScreen(true);
+        }
+
         const handleScroll = () => {
             setScrolled(window.scrollY > 80);
         };
