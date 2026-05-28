@@ -71,6 +71,10 @@ export default function AdminReservas() {
   const [expandedGuest, setExpandedGuest] = useState<number>(0);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   const [lightboxLabel, setLightboxLabel] = useState('');
+  // Reenvio com confirmação explícita
+  const [confirmarReenvio, setConfirmarReenvio] = useState(false);
+  const [baEnviado, setBaEnviado] = useState(false);
+  const [baEnviadoEm, setBaEnviadoEm] = useState<string | null>(null);
 
   const fetchReservas = async () => {
     const token = localStorage.getItem('token');
@@ -104,6 +108,9 @@ export default function AdminReservas() {
     setSendResult(null);
     setFormSendResult(null);
     setExpandedGuest(0);
+    setConfirmarReenvio(false);
+    setBaEnviado(false);
+    setBaEnviadoEm(null);
     setAimaLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -111,25 +118,43 @@ export default function AdminReservas() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await resp.json();
-      if (data.status === 'success') setAimaData(data);
-      else setAimaData(null);
+      if (data.status === 'success') {
+        setAimaData(data);
+        setBaEnviado(data.ba_enviado === true);
+        setBaEnviadoEm(data.ba_enviado_em || null);
+      } else setAimaData(null);
     } catch { setAimaData(null); }
     finally { setAimaLoading(false); }
   }, []);
 
-  const sendToAima = async () => {
+  const sendToAima = async (forcarEnvio = false) => {
     if (!aimaModal) return;
     setSending(true);
     setSendResult(null);
     try {
       const token = localStorage.getItem('token');
       const resp = await fetch(`${EDGE_URL}/enviar-aima/${aimaModal}`, {
-        method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ forcarEnvio }),
       });
       const data = await resp.json();
-      setSendResult({ ok: data.status === 'success', msg: data.message || data.error || 'Erro desconhecido' });
-      if (data.status === 'success') {
-        setTimeout(() => openAimaModal(aimaModal), 800);
+      if (data.ja_enviado) {
+        // Bloqueado pelo guard do backend — pede confirmação
+        const enviadoEm = data.enviado_em
+          ? new Date(data.enviado_em).toLocaleString('pt-PT')
+          : '—';
+        setSendResult({
+          ok: false,
+          msg: `⚠️ Este boletim já foi enviado com sucesso em ${enviadoEm}. Clique em "Reenviar mesmo assim" apenas se tiver a certeza.`,
+        });
+        setConfirmarReenvio(true);
+      } else {
+        setSendResult({ ok: data.status === 'success', msg: data.message || data.error || 'Erro desconhecido' });
+        if (data.status === 'success') {
+          setConfirmarReenvio(false);
+          setTimeout(() => openAimaModal(aimaModal), 800);
+        }
       }
     } catch { setSendResult({ ok: false, msg: 'Erro de comunicação com o servidor.' }); }
     finally { setSending(false); }
@@ -168,7 +193,7 @@ export default function AdminReservas() {
     }
   };
 
-  const closeModal = () => { setAimaModal(null); setAimaData(null); setSendResult(null); setFormSendResult(null); };
+  const closeModal = () => { setAimaModal(null); setAimaData(null); setSendResult(null); setFormSendResult(null); setConfirmarReenvio(false); setBaEnviado(false); setBaEnviadoEm(null); };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -353,6 +378,22 @@ export default function AdminReservas() {
               </div>
             ) : aimaData ? (
               <div className="p-8 space-y-6">
+
+                {/* Status BA enviado — aviso em destaque */}
+                {baEnviado && (
+                  <div className="flex items-center gap-3 p-4 border bg-blue-50 border-blue-300">
+                    <CheckCircle size={18} className="text-blue-600 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold uppercase tracking-widest text-blue-700">Boletim AIMA já enviado</p>
+                      {baEnviadoEm && (
+                        <p className="text-[11px] text-blue-500 mt-0.5">
+                          Entregue em {new Date(baEnviadoEm).toLocaleString('pt-PT')}
+                        </p>
+                      )}
+                    </div>
+                    <span className="flex-shrink-0 text-[9px] uppercase tracking-widest font-bold bg-blue-600 text-white px-2 py-1 rounded">BA Enviado</span>
+                  </div>
+                )}
 
                 {/* Status AIMA */}
                 <div className={`flex items-center gap-3 p-4 border ${aimaData.reserva.aima_dados_completos ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
@@ -557,27 +598,66 @@ export default function AdminReservas() {
                 )}
 
                 {/* Footer actions */}
-                <div className="flex gap-3 pt-2 border-t border-gray-100">
-                  <button onClick={closeModal} className="flex-1 py-3 border border-gray-200 text-gray-500 text-[10px] uppercase tracking-widest hover:bg-gray-50 transition-colors cursor-pointer">
-                    Fechar
-                  </button>
-                  <button
-                    onClick={sendToAima}
-                    disabled={sending || !aimaData.reserva.aima_dados_completos}
-                    className={`flex-1 py-3 text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer ${aimaData.reserva.aima_dados_completos ? 'bg-[#1E3932] text-[#C4A484] hover:bg-[#C4A484] hover:text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'} disabled:opacity-60`}
-                  >
-                    {sending ? (
+                <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
+
+                  {/* Confirmação de reenvio */}
+                  {confirmarReenvio && (
+                    <div className="flex items-start gap-3 px-4 py-3 bg-orange-50 border border-orange-300">
+                      <AlertCircle size={16} className="text-orange-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-orange-700 mb-1">Atenção — Boletim já enviado</p>
+                        <p className="text-[11px] text-orange-600 leading-relaxed">Se reenviar, irá criar um registo duplicado na AIMA. Só proceda se tiver a certeza que é necessário corrigir dados.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button onClick={closeModal} className="flex-1 py-3 border border-gray-200 text-gray-500 text-[10px] uppercase tracking-widest hover:bg-gray-50 transition-colors cursor-pointer">
+                      Fechar
+                    </button>
+
+                    {confirmarReenvio ? (
+                      // Dois botões: cancelar confirmação | reenviar mesmo assim
                       <>
-                        <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-                        A enviar para AIMA...
+                        <button
+                          onClick={() => { setConfirmarReenvio(false); setSendResult(null); }}
+                          className="flex-1 py-3 border border-gray-300 text-gray-600 text-[10px] uppercase tracking-widest hover:bg-gray-50 transition-colors cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={() => sendToAima(true)}
+                          disabled={sending}
+                          className="flex-1 py-3 bg-orange-600 text-white text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-60"
+                        >
+                          {sending
+                            ? <><div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" /> A reenviar...</>
+                            : <><AlertCircle size={12} /> Reenviar mesmo assim</>}
+                        </button>
                       </>
                     ) : (
-                      <>
-                        <Send size={12} />
-                        Enviar para AIMA
-                      </>
+                      // Botão normal de envio
+                      <button
+                        onClick={() => sendToAima(false)}
+                        disabled={sending || !aimaData.reserva.aima_dados_completos}
+                        className={`flex-1 py-3 text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer
+                          ${baEnviado
+                            ? 'bg-blue-700 text-white hover:bg-blue-800'
+                            : aimaData.reserva.aima_dados_completos
+                              ? 'bg-[#1E3932] text-[#C4A484] hover:bg-[#C4A484] hover:text-white'
+                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'}
+                          disabled:opacity-60`}
+                      >
+                        {sending ? (
+                          <><div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" /> A enviar para AIMA...</>
+                        ) : baEnviado ? (
+                          <><Send size={12} /> Reenviar para AIMA</>
+                        ) : (
+                          <><Send size={12} /> Enviar para AIMA</>
+                        )}
+                      </button>
                     )}
-                  </button>
+                  </div>
                 </div>
               </div>
             ) : (
