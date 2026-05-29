@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Favicon
+Allow: /logo.jpg
+Allow: /site.webmanifest
+
+Sitemap: https://refugiocarapita.pt/sitemap.xml
