@@ -216,6 +216,18 @@ export default function AdminReservas() {
     ? `${PUBLIC_SITE_URL}/aima?token=${aimaToken}`
     : '';
 
+  // Validação pré-envio: dados obrigatórios do SIBA por hóspede (documento, tipo, nascimento)
+  const dadosEmFalta = (aimaData?.hospedes || []).map((h, i) => {
+    const nome = `${h.nome || ''} ${h.sobrenome || ''}`.trim() || `Hóspede ${i + 1}`;
+    const faltam: string[] = [];
+    const doc = (h.numero_documento || '').trim();
+    if (!doc || /^0+$/.test(doc)) faltam.push('nº documento');
+    if (!h.data_nascimento) faltam.push('data de nascimento');
+    if (!h.tipo_documento) faltam.push('tipo de documento');
+    return { nome, faltam };
+  }).filter(x => x.faltam.length > 0);
+  const temDadosEmFalta = dadosEmFalta.length > 0;
+
   if (loading) return (
     <div className="min-h-screen bg-[#F9F8F6] flex items-center justify-center">
       <div className="text-center">
@@ -627,6 +639,25 @@ export default function AdminReservas() {
                     </div>
                   )}
 
+                  {temDadosEmFalta && (
+                    <div className="mb-4 border border-amber-300 bg-amber-50 p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertCircle size={14} className="text-amber-600" />
+                        <p className="text-xs font-bold uppercase tracking-widest text-amber-700">Dados em falta — não é possível enviar à AIMA</p>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {dadosEmFalta.map((d, i) => (
+                          <li key={i} className="text-[12px] text-amber-800 leading-relaxed">
+                            <strong>{d.nome}:</strong> falta {d.faltam.join(', ')}
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-[11px] text-amber-700 mt-3 leading-relaxed">
+                        Preencha os dados em falta na página <strong>Hóspedes</strong> (aba Docs) ou peça ao hóspede para completar o formulário, e volte a tentar.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="flex gap-3">
                     <button onClick={closeModal} className="flex-1 py-3 border border-gray-200 text-gray-500 text-[10px] uppercase tracking-widest hover:bg-gray-50 transition-colors cursor-pointer">
                       Fechar
@@ -655,11 +686,11 @@ export default function AdminReservas() {
                       // Botão normal de envio
                       <button
                         onClick={() => sendToAima(false)}
-                        disabled={sending || !aimaData.reserva.aima_dados_completos}
+                        disabled={sending || !aimaData.reserva.aima_dados_completos || temDadosEmFalta}
                         className={`flex-1 py-3 text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer
                           ${baEnviado
                             ? 'bg-blue-700 text-white hover:bg-blue-800'
-                            : aimaData.reserva.aima_dados_completos
+                            : (aimaData.reserva.aima_dados_completos && !temDadosEmFalta)
                               ? 'bg-[#1E3932] text-[#C4A484] hover:bg-[#C4A484] hover:text-white'
                               : 'bg-gray-100 text-gray-400 cursor-not-allowed'}
                           disabled:opacity-60`}

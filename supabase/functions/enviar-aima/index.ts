@@ -61,8 +61,10 @@ function countryCode(name: string): string {
 }
 function tipoDoc(tipo: string): string {
   const t = (tipo || '').toUpperCase();
-  if (t.includes('PASSAPORTE')) return 'P';
-  if (t.includes('BI') || t.includes('IDENTIDADE') || t.includes('CIDAD')) return 'I';
+  // Códigos aceites pelo SIBA: P = Passaporte, B = Bilhete de Identidade / Cartão de
+  // Cidadão, O = Outro. (O código 'I' NÃO é reconhecido → erro Codigo_Retorno 15.)
+  if (t.includes('PASSAPORTE') || t.includes('PASSPORT')) return 'P';
+  if (t.includes('BI') || t.includes('IDENTIDADE') || t.includes('IDENTITY') || t.includes('CIDAD') || t.includes('CITIZEN')) return 'B';
   return 'O';
 }
 function sanitizeName(s: string, max = 40) {
@@ -92,10 +94,16 @@ function buildXML(hospedes: Record<string, string>[], reserva: Record<string, st
     `<Email_Contacto>${xmlEscape((cfg.emailContato || 'contacto@refugiocarapita.pt').substring(0, 140))}</Email_Contacto>`,
   ].join('');
 
+  // Local_Residencia_Origem é OBRIGATÓRIO no schema do SIBA. Se um hóspede não tiver
+  // cidade preenchida, usamos a do agregado (1.º hóspede com cidade) e, em último caso, o
+  // país — nunca deixamos o elemento em falta (senão o SIBA rejeita com Codigo_Retorno 75).
+  const cidadeAgregado = hospedes.map(h => (h.cidade || '').trim()).find(c => c) || '';
+
   const boletins = hospedes.map(h => {
     const pais = countryCode(h.nacionalidade || h.pais || 'Portugal');
     const emissor = h.pais_emissor_documento ? countryCode(h.pais_emissor_documento) : pais;
     const doc = (h.numero_documento || '00000000').replace(/[^0-9A-Z]/ig, '').substring(0, 16);
+    const localResidencia = ((h.cidade || '').trim()) || cidadeAgregado || (h.pais || '').trim() || 'DESCONHECIDO';
     return [
       `<Boletim_Alojamento>`,
       `<Apelido>${xmlEscape(sanitizeName(h.sobrenome || h.nome))}</Apelido>`,
@@ -109,7 +117,7 @@ function buildXML(hospedes: Record<string, string>[], reserva: Record<string, st
       `<Data_Entrada>${fmtDate(reserva.data_check_in)}</Data_Entrada>`,
       reserva.data_check_out ? `<Data_Saida>${fmtDate(reserva.data_check_out)}</Data_Saida>` : '',
       `<Pais_Residencia_Origem>${pais}</Pais_Residencia_Origem>`,
-      h.cidade ? `<Local_Residencia_Origem>${xmlEscape(h.cidade.substring(0, 30))}</Local_Residencia_Origem>` : '',
+      `<Local_Residencia_Origem>${xmlEscape(localResidencia.substring(0, 30))}</Local_Residencia_Origem>`,
       `</Boletim_Alojamento>`,
     ].join('');
   }).join('');
@@ -202,8 +210,25 @@ Deno.serve(async (req: Request) => {
       const { data: aimaHospedes } = await supabase.from('AimaHospede').select('*').eq('reserva_id', reservaId).order('ordem');
       let hospedes: Record<string, string>[] = (aimaHospedes || []) as unknown as Record<string, string>[];
       if (hospedes.length === 0 && reserva.Hospede) hospedes = [reserva.Hospede as unknown as Record<string, string>];
-      if (hospedes.length === 0 || !hospedes[0].numero_documento)
+      if (hospedes.length === 0)
         return new Response(JSON.stringify({ error: 'Dados dos hospedes incompletos. O formulario AIMA ainda nao foi preenchido.' }), { status: 422, headers: cors });
+
+      // Validação preventiva: o SIBA exige, para CADA hóspede, documento e data de
+      // nascimento válidos. Verificamos aqui e devolvemos uma mensagem clara ao painel,
+      // em vez de enviar um boletim inválido e receber um erro críptico do SIBA.
+      const problemas: string[] = [];
+      hospedes.forEach((h, i) => {
+        const nomeH = `${h.nome || ''} ${h.sobrenome || ''}`.trim() || `Hóspede ${i + 1}`;
+        const doc = (h.numero_documento || '').replace(/[^0-9A-Za-z]/g, '');
+        if (!doc || /^0+$/.test(doc)) problemas.push(`${nomeH}: falta o número do documento`);
+        if (!h.data_nascimento) problemas.push(`${nomeH}: falta a data de nascimento`);
+        if (!h.tipo_documento) problemas.push(`${nomeH}: falta o tipo de documento`);
+      });
+      if (problemas.length > 0)
+        return new Response(JSON.stringify({
+          error: 'Não é possível enviar à AIMA — há dados obrigatórios em falta:\n• ' + problemas.join('\n• ') +
+                 '\n\nPeça ao hóspede para completar o formulário ou preencha os dados em falta antes de reenviar.'
+        }), { status: 422, headers: cors });
 
       const { data: configs } = await supabase.from('Configuracao').select('chave, valor');
       const cfg: Record<string, string> = {};

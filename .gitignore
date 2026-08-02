@@ -1,5 +1,7 @@
 node_modules
 .env
+*.env
+refugio_Carapita_Channel_Manager.env
 .next
 build
 dist

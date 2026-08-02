@@ -106,6 +106,8 @@ export default function HospedesPage() {
     const [modalData, setModalData] = useState<ModalData | null>(null);
     const [modalLoading, setModalLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<'perfil' | 'documentos' | 'reservas'>('perfil');
+    const [savingAimaId, setSavingAimaId] = useState<string | null>(null);
+    const [aimaSaveMsg, setAimaSaveMsg] = useState<{ id: string; ok: boolean; text: string } | null>(null);
 
     // Delete
     const [deleteTarget, setDeleteTarget] = useState<HospedeRow | null>(null);
@@ -160,6 +162,35 @@ export default function HospedesPage() {
             if (json.status === 'success') setModalData(json.data);
         } catch (e) { console.error(e); }
         finally { setModalLoading(false); }
+    };
+
+    /* ── Editar / gravar dados AIMA de um hóspede ─────────────────────── */
+    const updateAimaField = (aimaId: string, field: keyof AimaHospede, value: string) => {
+        setModalData(prev => prev ? {
+            ...prev,
+            aimaHospedes: prev.aimaHospedes.map(a => a.id === aimaId ? { ...a, [field]: value } : a),
+        } : prev);
+    };
+
+    const saveAimaGuest = async (aima: AimaHospede) => {
+        setSavingAimaId(aima.id);
+        setAimaSaveMsg(null);
+        try {
+            const res = await fetch(`${EDGE_URL}/admin-site/aima-hospede/${aima.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                    nome: aima.nome ?? '', sobrenome: aima.sobrenome ?? '',
+                    email: aima.email ?? '', telefone: aima.telefone ?? '',
+                    tipo_documento: aima.tipo_documento ?? '', numero_documento: aima.numero_documento ?? '',
+                    data_nascimento: aima.data_nascimento ?? '', nacionalidade: aima.nacionalidade ?? '',
+                }),
+            });
+            const json = await res.json();
+            if (json.status === 'success') setAimaSaveMsg({ id: aima.id, ok: true, text: 'Dados guardados com sucesso.' });
+            else setAimaSaveMsg({ id: aima.id, ok: false, text: json.error || 'Erro ao guardar.' });
+        } catch { setAimaSaveMsg({ id: aima.id, ok: false, text: 'Erro de ligação.' }); }
+        finally { setSavingAimaId(null); }
     };
 
     /* ── GDPR Delete ──────────────────────────────────────────────────── */
@@ -513,26 +544,37 @@ export default function HospedesPage() {
                                             </div>
                                         ) : (
                                             <div className="flex flex-col gap-5">
-                                                {modalData.aimaHospedes.map((aima, i) => (
+                                                {modalData.aimaHospedes.map((aima, i) => {
+                                                    const missingDoc = !((aima.numero_documento || '').trim()) || /^0+$/.test((aima.numero_documento || '').trim());
+                                                    const missingNasc = !aima.data_nascimento;
+                                                    const missingTipo = !aima.tipo_documento;
+                                                    const incompleto = missingDoc || missingNasc || missingTipo;
+                                                    return (
                                                     <div key={aima.id} className="bg-white/3 border border-white/5 rounded-xl p-4">
                                                         <div className="flex items-center gap-2 mb-3">
                                                             <span className="text-[10px] uppercase tracking-widest text-[#C4A484] font-semibold">
                                                                 Hóspede #{(aima.ordem ?? i) + 1}
                                                             </span>
-                                                            {aima.reserva_id && (
-                                                                <span className="text-[10px] text-white/25 truncate">
-                                                                    · {aima.reserva_id.slice(0, 8)}…
-                                                                </span>
-                                                            )}
+                                                            {incompleto
+                                                                ? <span className="text-[9px] uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded">Dados em falta</span>
+                                                                : <span className="text-[9px] uppercase tracking-widest text-emerald-400 bg-emerald-400/10 border border-emerald-400/30 px-2 py-0.5 rounded">Completo</span>}
                                                         </div>
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4">
-                                                            <InfoField icon={<User size={13} />}     label="Nome"         value={`${aima.nome || ''} ${aima.sobrenome || ''}`.trim() || undefined} />
-                                                            <InfoField icon={<Mail size={13} />}     label="E-mail"       value={aima.email} />
-                                                            <InfoField icon={<Phone size={13} />}    label="Telefone"     value={aima.telefone} />
-                                                            <InfoField icon={<Calendar size={13} />} label="Nascimento"   value={aima.data_nascimento} />
-                                                            <InfoField icon={<Globe size={13} />}    label="Nacionalidade" value={aima.nacionalidade} />
-                                                            <InfoField icon={<FileText size={13} />} label="Tipo Doc."    value={aima.tipo_documento} />
-                                                            <InfoField icon={<FileText size={13} />} label="Nº Documento" value={aima.numero_documento} />
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
+                                                            <EditField label="Nome" value={aima.nome} onChange={v => updateAimaField(aima.id, 'nome', v)} />
+                                                            <EditField label="Apelido" value={aima.sobrenome} onChange={v => updateAimaField(aima.id, 'sobrenome', v)} />
+                                                            <EditSelect label="Tipo de Documento *" value={aima.tipo_documento || ''} missing={missingTipo} onChange={v => updateAimaField(aima.id, 'tipo_documento', v)} options={['Bilhete de Identidade', 'Cartão de Cidadão', 'Passaporte', 'Título de Residência', 'Outro']} />
+                                                            <EditField label="Nº Documento *" value={aima.numero_documento} missing={missingDoc} onChange={v => updateAimaField(aima.id, 'numero_documento', v)} />
+                                                            <EditField label="Data de Nascimento *" type="date" value={aima.data_nascimento} missing={missingNasc} onChange={v => updateAimaField(aima.id, 'data_nascimento', v)} />
+                                                            <EditField label="Nacionalidade" value={aima.nacionalidade} onChange={v => updateAimaField(aima.id, 'nacionalidade', v)} />
+                                                        </div>
+                                                        <div className="flex items-center gap-3 mb-4">
+                                                            <button onClick={() => saveAimaGuest(aima)} disabled={savingAimaId === aima.id}
+                                                                className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold bg-[#C4A484] text-[#1E3932] px-4 py-2 rounded-lg hover:bg-white transition-colors disabled:opacity-50 cursor-pointer">
+                                                                {savingAimaId === aima.id ? 'A guardar...' : 'Guardar dados'}
+                                                            </button>
+                                                            {aimaSaveMsg?.id === aima.id && (
+                                                                <span className={`text-[11px] ${aimaSaveMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>{aimaSaveMsg.text}</span>
+                                                            )}
                                                         </div>
                                                         {aima.documento_imagem_url ? (
                                                             <a href={aima.documento_imagem_url} target="_blank" rel="noreferrer">
@@ -548,7 +590,8 @@ export default function HospedesPage() {
                                                             </div>
                                                         )}
                                                     </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         )
                                     )}
@@ -653,6 +696,41 @@ export default function HospedesPage() {
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+/* ─── EditField / EditSelect (edição de dados AIMA) ──────────────────────── */
+function EditField({ label, value, onChange, type = 'text', missing = false }: {
+    label: string; value?: string | null; onChange: (v: string) => void; type?: string; missing?: boolean;
+}) {
+    return (
+        <div className="flex flex-col gap-1">
+            <label className={`text-[10px] uppercase tracking-widest ${missing ? 'text-amber-400' : 'text-white/25'}`}>{label}</label>
+            <input
+                type={type}
+                value={value || ''}
+                onChange={e => onChange(e.target.value)}
+                className={`bg-white/5 border rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#C4A484]/60 ${missing ? 'border-amber-400/50' : 'border-white/10'}`}
+            />
+        </div>
+    );
+}
+
+function EditSelect({ label, value, onChange, options, missing = false }: {
+    label: string; value: string; onChange: (v: string) => void; options: string[]; missing?: boolean;
+}) {
+    return (
+        <div className="flex flex-col gap-1">
+            <label className={`text-[10px] uppercase tracking-widest ${missing ? 'text-amber-400' : 'text-white/25'}`}>{label}</label>
+            <select
+                value={value}
+                onChange={e => onChange(e.target.value)}
+                className={`bg-white/5 border rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#C4A484]/60 cursor-pointer ${missing ? 'border-amber-400/50' : 'border-white/10'}`}
+            >
+                <option value="" className="bg-[#1a2e27]">— selecionar —</option>
+                {options.map(o => <option key={o} value={o} className="bg-[#1a2e27]">{o}</option>)}
+            </select>
         </div>
     );
 }

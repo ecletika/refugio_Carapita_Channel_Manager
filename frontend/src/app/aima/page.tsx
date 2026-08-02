@@ -67,6 +67,7 @@ const TR = {
     submitError: 'Erro ao enviar os dados. Tente novamente.',
     connError: 'Erro de comunicação. Verifique a sua ligação.',
     imageRequired: (n: number) => `O Hóspede ${n} ainda não tem fotografia do documento. A imagem é obrigatória para comunicação à AIMA (Integração, Migração e Asilo).`,
+    fieldsMissing: (n: number, campos: string) => `Hóspede ${n}: preencha ${campos}. Todos os hóspedes precisam destes dados para a comunicação à AIMA.`,
     loading: 'A carregar...',
   },
   EN: {
@@ -107,6 +108,7 @@ const TR = {
     submitError: 'Error submitting data. Please try again.',
     connError: 'Communication error. Please check your connection.',
     imageRequired: (n: number) => `Guest ${n} does not yet have a document photo. An image is required for AIMA (Integration, Migration and Asylum) submission.`,
+    fieldsMissing: (n: number, campos: string) => `Guest ${n}: please fill in ${campos}. All guests need this data for AIMA submission.`,
     loading: 'Loading...',
   },
 };
@@ -258,6 +260,24 @@ function AimaFormInner() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro('');
+
+    // ── Campos obrigatórios para TODOS os hóspedes (exigência da AIMA) ───────
+    for (let i = 0; i < hospedes.length; i++) {
+      const h = hospedes[i];
+      const faltam: string[] = [];
+      if (!h.nome.trim()) faltam.push(t.firstName);
+      if (!h.sobrenome.trim()) faltam.push(t.lastName);
+      if (!h.data_nascimento) faltam.push(t.dob);
+      if (!h.numero_documento.trim()) faltam.push(t.docNumber);
+      if (faltam.length > 0) {
+        setErro(t.fieldsMissing(i + 1, faltam.join(', ')));
+        setActiveIdx(i);
+        setTimeout(() => {
+          document.querySelectorAll('[data-guest-accordion]')[i]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+        return;
+      }
+    }
 
     // ── Imagem obrigatória para TODOS os hóspedes ───────────────────────────
     for (let i = 0; i < hospedes.length; i++) {
@@ -545,11 +565,11 @@ function GuestAccordion({
           <section>
             <SectionTitle>{t.personalData}</SectionTitle>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label={idx === 0 ? `${t.firstName} *` : t.firstName} value={hospede.nome} onChange={v => onChange('nome', v)} placeholder="—" required={idx === 0} />
-              <Field label={idx === 0 ? `${t.lastName} *` : t.lastName} value={hospede.sobrenome} onChange={v => onChange('sobrenome', v)} placeholder="—" required={idx === 0} />
+              <Field label={`${t.firstName} *`} value={hospede.nome} onChange={v => onChange('nome', v)} placeholder="—" required />
+              <Field label={`${t.lastName} *`} value={hospede.sobrenome} onChange={v => onChange('sobrenome', v)} placeholder="—" required />
               <Field label={idx === 0 ? `${t.email} *` : t.email} type="email" value={hospede.email} onChange={v => onChange('email', v)} placeholder="—" required={idx === 0} />
               <Field label={t.phone} type="tel" value={hospede.telefone} onChange={v => onChange('telefone', v)} placeholder="+351 900 000 000" />
-              <Field label={idx === 0 ? `${t.dob} *` : t.dob} type="date" value={hospede.data_nascimento} onChange={v => onChange('data_nascimento', v)} required={idx === 0} />
+              <Field label={`${t.dob} *`} type="date" value={hospede.data_nascimento} onChange={v => onChange('data_nascimento', v)} required />
               <Field label={t.pob} value={hospede.local_nascimento} onChange={v => onChange('local_nascimento', v)} placeholder="—" />
               <SelectField label={t.nationality} value={hospede.nacionalidade} onChange={v => onChange('nacionalidade', v)} options={PAISES} />
             </div>
@@ -560,7 +580,7 @@ function GuestAccordion({
             <SectionTitle>{t.identDoc}</SectionTitle>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <SelectField label={t.docType} value={hospede.tipo_documento} onChange={v => onChange('tipo_documento', v)} options={tiposDoc} />
-              <Field label={idx === 0 ? `${t.docNumber} *` : t.docNumber} value={hospede.numero_documento} onChange={v => onChange('numero_documento', v)} placeholder="Ex: AB123456" required={idx === 0} />
+              <Field label={`${t.docNumber} *`} value={hospede.numero_documento} onChange={v => onChange('numero_documento', v)} placeholder="Ex: AB123456" required />
               <SelectField label={t.docCountry} value={hospede.pais_emissor_documento} onChange={v => onChange('pais_emissor_documento', v)} options={PAISES} />
             </div>
 
