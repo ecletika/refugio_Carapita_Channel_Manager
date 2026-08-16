@@ -59,6 +59,7 @@ export default function BookingImmersive({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFetchingProfile, setIsFetchingProfile] = useState(false);
     const [cupomAplicado, setCupomAplicado] = useState<any>(null);
+    const [cupomRemovidoAviso, setCupomRemovidoAviso] = useState('');
     const [visibleAdditionalGuests, setVisibleAdditionalGuests] = useState(0);
     const [isGuestsDrawerOpen, setIsGuestsDrawerOpen] = useState(false);
     const [isPromoDrawerOpen, setIsPromoDrawerOpen] = useState(false);
@@ -90,6 +91,34 @@ export default function BookingImmersive({
     });
 
     const hospedes = adultos + criancas;
+
+    // Revalidar o cupão sempre que a data de check-in mudar.
+    // Sem isto, um hóspede que aplicasse o cupão ANTES de escolher as datas (altura em
+    // que ainda não há check-in para validar) podia depois escolher datas fora do
+    // período do cupão e continuar a ver o desconto no ecrã — o servidor recusava-o
+    // ao gravar, mas o cliente já tinha visto um preço que não era o real.
+    useEffect(() => {
+        if (!cupomAplicado?.codigo || !checkIn) return;
+        let cancelado = false;
+        fetch(`${EDGE_URL}/cupom-validar/${encodeURIComponent(cupomAplicado.codigo)}?checkIn=${encodeURIComponent(checkIn)}`)
+            .then(r => r.json())
+            .then(d => {
+                if (cancelado) return;
+                if (d.status === 'success' && d.data) {
+                    // Manter sincronizado com o que a API devolve (tipo/valor do desconto)
+                    setCupomAplicado({
+                        codigo: d.data.codigo,
+                        tipo_desconto: d.data.tipo_desconto,
+                        valor_desconto: d.data.valor_desconto,
+                    });
+                } else {
+                    setCupomAplicado(null);
+                    setCupomRemovidoAviso(d.error || 'O código promocional não é válido para estas datas.');
+                }
+            })
+            .catch(() => { /* falha de rede: manter o cupão, o servidor revalida ao gravar */ });
+        return () => { cancelado = true; };
+    }, [checkIn, cupomAplicado?.codigo]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const calculateRoomTotal = (q: any) => {
         if (!checkIn || !checkOut || !q) return Number(q?.preco_base || 0);
@@ -306,6 +335,19 @@ export default function BookingImmersive({
 
     return (
         <div className="fixed inset-0 z-[100] bg-carapita-green overflow-y-auto scrollbar-hide py-2 md:py-10">
+            {/* Aviso: cupão removido por deixar de ser válido para as datas escolhidas */}
+            {cupomRemovidoAviso && (
+                <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[300] max-w-md w-[92%] bg-amber-900/95 border border-amber-500/50 text-amber-50 px-5 py-4 rounded-xl shadow-2xl flex items-start gap-3">
+                    <span className="text-sm leading-relaxed flex-1">{cupomRemovidoAviso}</span>
+                    <button
+                        onClick={() => setCupomRemovidoAviso('')}
+                        className="shrink-0 text-amber-200 hover:text-white transition-colors"
+                        aria-label="Fechar aviso"
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
             <div className="max-w-[1400px] mx-auto px-4 md:px-8 mb-4 md:mb-10">
                 <div className="flex items-center justify-between border-b border-white/10 pb-3 md:pb-6">
                     <div className="flex items-center gap-6 overflow-x-auto no-scrollbar py-2">
