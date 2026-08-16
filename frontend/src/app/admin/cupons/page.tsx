@@ -23,9 +23,14 @@ export default function CuponsAdmin() {
         fetchCupons();
     }, []);
 
+    const authHeaders = (): Record<string, string> => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+        return token ? { Authorization: `Bearer ${token}` } : {};
+    };
+
     const fetchCupons = async () => {
         try {
-            const res = await fetch(`${EDGE_URL}/admin-cupons`);
+            const res = await fetch(`${EDGE_URL}/admin-cupons`, { headers: authHeaders() });
             const json = await res.json();
             if (json.status === 'success') {
                 setCupons(json.data);
@@ -50,7 +55,7 @@ export default function CuponsAdmin() {
 
             const res = await fetch(`${EDGE_URL}/admin-cupons`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...authHeaders() },
                 body: JSON.stringify(payload)
             });
 
@@ -72,7 +77,7 @@ export default function CuponsAdmin() {
     const handleExcluir = async (id: string) => {
         if (!confirm('Tem certeza que deseja excluir este cupão?')) return;
         try {
-            const res = await fetch(`${EDGE_URL}/admin-cupons/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${EDGE_URL}/admin-cupons/${id}`, { method: 'DELETE', headers: authHeaders() });
             if (res.ok) {
                 setCupons(cupons.filter(c => c.id !== id));
             }
