@@ -9,8 +9,10 @@ const cors = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
-const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY') || '';
-const WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
+// .trim() porque um espaco ou quebra de linha colado junto com o valor faz a
+// verificacao de assinatura falhar com "No signatures found matching...".
+const STRIPE_KEY = (Deno.env.get('STRIPE_SECRET_KEY') || '').trim();
+const WEBHOOK_SECRET = (Deno.env.get('STRIPE_WEBHOOK_SECRET') || '').trim();
 const JWT_SECRET = new TextEncoder().encode(Deno.env.get('JWT_SECRET') || 'super-secret-key-carapita-2024');
 const FRONTEND_URL = (Deno.env.get('FRONTEND_URL') || 'https://refugiocarapita.pt').replace(/\/$/, '');
 const BREVO_KEY = Deno.env.get('BREVO_API_KEY') || '';
@@ -86,7 +88,12 @@ Deno.serve(async (req: Request) => {
     try {
       event = await stripe.webhooks.constructEventAsync(body, sig, WEBHOOK_SECRET, undefined, cryptoProvider);
     } catch (err) {
-      console.error('Webhook assinatura inválida:', (err as Error).message);
+      // Diagnostico: prefixo do secret configurado vs o que o Stripe assinou, para
+      // se perceber num relance se o valor no Supabase e o do endpoint certo.
+      console.error(
+        `Webhook assinatura invalida. secret_configurado_prefixo=${WEBHOOK_SECRET.slice(0, 8)}` +
+        ` len=${WEBHOOK_SECRET.length} | erro=${(err as Error).message}`
+      );
       return json({ error: `Webhook Error: ${(err as Error).message}` }, 400);
     }
 
