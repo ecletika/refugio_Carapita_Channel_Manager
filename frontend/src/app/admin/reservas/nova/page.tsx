@@ -145,7 +145,8 @@ export default function NovaReservaManual() {
         setCupomErro('');
         setCupomLoading(true);
         try {
-            const resp = await fetch(`${EDGE_URL}/cupom-validar/${encodeURIComponent(cupomInput.trim().toUpperCase())}`);
+            const qs = form.checkIn ? `?checkIn=${encodeURIComponent(form.checkIn)}` : '';
+            const resp = await fetch(`${EDGE_URL}/cupom-validar/${encodeURIComponent(cupomInput.trim().toUpperCase())}${qs}`);
             const data = await resp.json();
             if (data.status === 'success' && data.data) {
                 setCupom(data.data);

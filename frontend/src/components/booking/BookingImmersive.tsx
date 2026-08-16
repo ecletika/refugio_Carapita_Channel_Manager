@@ -402,11 +402,12 @@ export default function BookingImmersive({
                 setGuests={setGuests} 
             />
             
-            <PromoCodeDrawer 
-                isOpen={isPromoDrawerOpen} 
-                onClose={() => setIsPromoDrawerOpen(false)} 
-                setCupomAplicado={setCupomAplicado} 
-                lang={lang} 
+            <PromoCodeDrawer
+                isOpen={isPromoDrawerOpen}
+                onClose={() => setIsPromoDrawerOpen(false)}
+                setCupomAplicado={setCupomAplicado}
+                lang={lang}
+                checkIn={checkIn}
             />
         </div>
     );

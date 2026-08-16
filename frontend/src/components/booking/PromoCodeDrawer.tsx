@@ -8,13 +8,16 @@ interface PromoCodeDrawerProps {
     onClose: () => void;
     setCupomAplicado: (val: any) => void;
     lang: string;
+    /** Data de check-in: o cupão só é válido para estadias dentro da sua validade */
+    checkIn?: string | null;
 }
 
 export default function PromoCodeDrawer({
     isOpen,
     onClose,
     setCupomAplicado,
-    lang
+    lang,
+    checkIn
 }: PromoCodeDrawerProps) {
     const [promoCodeInput, setPromoCodeInput] = React.useState("");
     const [promoStatus, setPromoStatus] = React.useState<"normal" | "loading" | "success" | "error">("normal");
@@ -28,7 +31,8 @@ export default function PromoCodeDrawer({
         setPromoErro("");
 
         try {
-            const resp = await fetch(`${EDGE_URL}/cupom-validar/${encodeURIComponent(promoCodeInput.trim().toUpperCase())}`);
+            const qs = checkIn ? `?checkIn=${encodeURIComponent(checkIn)}` : '';
+            const resp = await fetch(`${EDGE_URL}/cupom-validar/${encodeURIComponent(promoCodeInput.trim().toUpperCase())}${qs}`);
             const data = await resp.json();
 
             if (data.status === 'success' && data.data) {
