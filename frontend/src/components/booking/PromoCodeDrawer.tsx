@@ -1,6 +1,8 @@
 import React from 'react';
 import { X, Check } from 'lucide-react';
 
+const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
+
 interface PromoCodeDrawerProps {
     isOpen: boolean;
     onClose: () => void;
@@ -16,23 +18,37 @@ export default function PromoCodeDrawer({
 }: PromoCodeDrawerProps) {
     const [promoCodeInput, setPromoCodeInput] = React.useState("");
     const [promoStatus, setPromoStatus] = React.useState<"normal" | "loading" | "success" | "error">("normal");
+    const [promoErro, setPromoErro] = React.useState("");
 
     if (!isOpen) return null;
 
-    const handleConfirm = () => {
-        if (!promoCodeInput) return;
+    const handleConfirm = async () => {
+        if (!promoCodeInput.trim()) return;
         setPromoStatus("loading");
-        
-        setTimeout(() => {
-            if (promoCodeInput.length > 2) { 
-                setPromoStatus("success"); 
-                setCupomAplicado({codigo: promoCodeInput, tipo_desconto: 'PERCENTUAL', valor_desconto: 10});
-                setTimeout(() => onClose(), 800) 
-            } else { 
-                setPromoStatus("error"); 
-                setTimeout(() => setPromoStatus("normal"), 2000); 
+        setPromoErro("");
+
+        try {
+            const resp = await fetch(`${EDGE_URL}/cupom-validar/${encodeURIComponent(promoCodeInput.trim().toUpperCase())}`);
+            const data = await resp.json();
+
+            if (data.status === 'success' && data.data) {
+                setPromoStatus("success");
+                setCupomAplicado({
+                    codigo: data.data.codigo,
+                    tipo_desconto: data.data.tipo_desconto,
+                    valor_desconto: data.data.valor_desconto,
+                });
+                setTimeout(() => onClose(), 800);
+            } else {
+                setPromoStatus("error");
+                setPromoErro(data.error || 'Código inválido ou expirado.');
+                setTimeout(() => setPromoStatus("normal"), 2500);
             }
-        }, 600);
+        } catch {
+            setPromoStatus("error");
+            setPromoErro('Erro de ligação. Tente novamente.');
+            setTimeout(() => setPromoStatus("normal"), 2500);
+        }
     };
 
     return (
@@ -50,15 +66,19 @@ export default function PromoCodeDrawer({
                 </div>
 
                 <div className="flex flex-col flex-1">
-                    <input 
-                        type="text" 
-                        placeholder="Insira o seu código" 
+                    <input
+                        type="text"
+                        placeholder="Insira o seu código"
                         value={promoCodeInput}
-                        onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
-                        className="w-full border border-[#C9A84C] bg-transparent text-white rounded-[12px] p-[14px] px-[20px] font-sans text-[14px] focus:outline-none focus:ring-[#C9A84C] uppercase tracking-widest placeholder:text-white/40 mb-auto mt-4"
+                        onChange={(e) => { setPromoCodeInput(e.target.value.toUpperCase()); setPromoErro(""); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleConfirm(); } }}
+                        className="w-full border border-[#C9A84C] bg-transparent text-white rounded-[12px] p-[14px] px-[20px] font-sans text-[14px] focus:outline-none focus:ring-[#C9A84C] uppercase tracking-widest placeholder:text-white/40 mt-4"
                     />
+                    {promoErro && (
+                        <p className="text-red-400 text-[12px] mt-3">{promoErro}</p>
+                    )}
 
-                    <button 
+                    <button
                         disabled={promoStatus === 'loading'}
                         onClick={handleConfirm} 
                         className={`w-full p-[18px] font-sans text-[13px] font-bold tracking-[0.2em] uppercase border-none rounded-[14px] cursor-pointer transition-all mt-auto
