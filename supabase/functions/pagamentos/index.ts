@@ -18,6 +18,7 @@ const FRONTEND_URL = (Deno.env.get('FRONTEND_URL') || 'https://refugiocarapita.p
 const BREVO_KEY = Deno.env.get('BREVO_API_KEY') || '';
 const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'reservas@refugiocarapita.com';
 const EMAIL_FROM_NAME = Deno.env.get('EMAIL_FROM_NAME') || 'Refúgio Carapita';
+const EMAIL_CONTATO = Deno.env.get('EMAIL_CONTATO') || 'contacto@refugiocarapita.pt';
 
 // Deno: usar cliente fetch e provider de crypto assíncrono (webhooks)
 const stripe = new Stripe(STRIPE_KEY, {
@@ -32,33 +33,132 @@ function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 }
 
-async function sendEmail(to: string, subject: string, html: string) {
-  if (!BREVO_KEY || !to) return;
+async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+  // Nao falhar em silencio: se faltar a chave ou o Brevo recusar, tem de ficar no log,
+  // senao um pagamento e confirmado sem o hospede receber aviso e ninguem da conta.
+  if (!BREVO_KEY) { console.error(`[EMAIL] NAO ENVIADO (BREVO_API_KEY em falta) -> ${to}`); return false; }
+  if (!to) { console.error('[EMAIL] NAO ENVIADO (destinatario vazio)'); return false; }
   try {
-    await fetch('https://api.brevo.com/v3/smtp/email', {
+    const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: { 'api-key': BREVO_KEY, 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ sender: { name: EMAIL_FROM_NAME, email: EMAIL_FROM }, to: [{ email: to }], subject, htmlContent: html }),
     });
-  } catch (e) { console.error('Brevo email falhou:', e); }
+    if (!resp.ok) {
+      console.error(`[EMAIL] ERRO Brevo ${resp.status} -> ${to}: ${await resp.text()}`);
+      return false;
+    }
+    console.log(`[EMAIL] enviado -> ${to} | ${subject}`);
+    return true;
+  } catch (e) {
+    console.error(`[EMAIL] EXCEPTION -> ${to}: ${(e as Error).message}`);
+    return false;
+  }
+}
+
+const fmtData = (d: string | null) => d
+  ? new Date(d).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  : '—';
+
+/** Prazo do 2.º pagamento: 10 dias antes do check-in (regra do alojamento). */
+function prazoPagamentoFinal(dataCheckIn: string): string {
+  const d = new Date(dataCheckIn);
+  d.setDate(d.getDate() - 10);
+  return d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
 function emailPago(reserva: any, tipo: 'inicial' | 'final'): string {
   const nome = reserva?.Hospede?.nome || 'Hóspede';
   const quarto = reserva?.Quarto?.nome || 'Alojamento';
-  const titulo = tipo === 'final' ? 'Reserva 100% Confirmada 🎊' : 'Pagamento Recebido ✅';
-  const msg = tipo === 'final'
-    ? 'A sua reserva está totalmente paga. Estamos à sua espera no Refúgio Carapita!'
-    : 'Recebemos o seu pagamento inicial (50%). A sua reserva está confirmada!';
+  const total = Number(reserva?.valor_total || 0);
+  const metade = total / 2;
+  const numero = reserva?.numero_reserva || String(reserva?.id || '').substring(0, 8).toUpperCase();
+
+  const titulo = tipo === 'final' ? 'Reserva Totalmente Paga' : 'Pagamento Recebido';
+  const subtitulo = tipo === 'final' ? 'Confirmação Final' : 'Confirmação de Pagamento';
+
+  const caixaReserva = `
+    <div style="background:#fff;border:1px solid #E8E0D5;padding:20px 24px;margin:24px 0;">
+      <table width="100%" cellpadding="6" cellspacing="0" style="font-size:13px;">
+        <tr><td style="color:#888;width:42%;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Alojamento</td><td style="color:#1E3932;font-weight:bold;">${quarto}</td></tr>
+        <tr><td style="color:#888;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Check-in</td><td style="color:#1E3932;font-weight:bold;">${fmtData(reserva?.data_check_in)}</td></tr>
+        <tr><td style="color:#888;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Check-out</td><td style="color:#1E3932;font-weight:bold;">${fmtData(reserva?.data_check_out)}</td></tr>
+        <tr><td style="color:#888;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Valor Total</td><td style="color:#1E3932;font-weight:bold;">&euro;${total.toFixed(2)}</td></tr>
+        <tr><td style="color:#888;text-transform:uppercase;letter-spacing:1px;font-size:11px;">N.&ordm; Reserva</td><td style="color:#C4A484;font-weight:bold;font-family:monospace;">${numero}</td></tr>
+      </table>
+    </div>`;
+
+  const corpo = tipo === 'final'
+    ? `
+      <p style="color:#444;line-height:1.8;">
+        Recebemos o pagamento dos restantes <strong>&euro;${metade.toFixed(2)}</strong>.
+        A sua reserva está agora <strong>totalmente paga</strong> — não há mais nada a liquidar.
+      </p>
+      ${caixaReserva}
+      <div style="background:#F0F7F2;border-left:3px solid #2E7D57;padding:16px 20px;margin:24px 0;font-size:13px;line-height:1.9;color:#2E5540;">
+        Está tudo tratado. Estamos ansiosos por recebê-lo(a) no Refúgio Carapita!
+      </div>`
+    : `
+      <p style="color:#444;line-height:1.8;">
+        Recebemos o seu pagamento de <strong>&euro;${metade.toFixed(2)}</strong> (50% do valor total).
+        <strong>A sua reserva está confirmada e ativa.</strong>
+      </p>
+      ${caixaReserva}
+      <div style="background:#FFFBF0;border-left:3px solid #C4A484;padding:16px 20px;margin:24px 0;font-size:13px;line-height:1.9;color:#444;">
+        <p style="margin:0 0 8px;"><strong>Falta o pagamento final</strong></p>
+        <p style="margin:0;">
+          Os restantes <strong>50% (&euro;${metade.toFixed(2)})</strong> deverão ser liquidados até
+          <strong>${prazoPagamentoFinal(reserva?.data_check_in)}</strong> (10 dias antes do check-in).
+        </p>
+        <p style="margin:8px 0 0;">
+          A sua reserva mantém-se ativa até essa data. Pode efetuar o pagamento a qualquer momento
+          na sua área reservada.
+        </p>
+      </div>
+      <div style="text-align:center;margin:28px 0;">
+        <a href="https://refugiocarapita.pt/perfil?tab=pagamentos&reserva=${reserva?.id}"
+           style="display:inline-block;background:#1E3932;color:#C4A484;text-decoration:none;padding:14px 40px;font-size:11px;letter-spacing:3px;text-transform:uppercase;border:1px solid #C4A484;font-family:sans-serif;">
+          Área de Pagamentos
+        </a>
+      </div>`;
+
   return `<div style="font-family:Georgia,serif;color:#1E3932;max-width:620px;margin:auto;border:1px solid #D4C5A9;background:#FAF8F4;">
     <div style="background:#1E3932;padding:28px 40px;text-align:center;">
       <h1 style="margin:0;color:#C4A484;font-size:22px;letter-spacing:6px;text-transform:uppercase;">Refúgio Carapita</h1>
+      <p style="margin:6px 0 0;color:rgba(255,255,255,0.6);font-size:11px;letter-spacing:3px;text-transform:uppercase;">${subtitulo}</p>
     </div>
     <div style="padding:32px 40px;">
-      <h2 style="color:#1E3932;font-size:18px;">${titulo}</h2>
+      <h2 style="color:#1E3932;font-size:18px;margin-top:0;">${titulo}</h2>
       <p style="font-size:15px;">Olá, <strong>${nome}</strong>,</p>
-      <p style="color:#444;line-height:1.8;">${msg}</p>
-      <p style="color:#444;"><strong>Alojamento:</strong> ${quarto}</p>
+      ${corpo}
+    </div>
+    <div style="padding:24px 40px;background:#1E3932;text-align:center;">
+      <p style="margin:0;color:rgba(255,255,255,0.5);font-size:10px;letter-spacing:2px;text-transform:uppercase;">
+        O Refúgio Carapita não envia dados de pagamento por email nem por links externos.
+      </p>
+    </div>
+  </div>`;
+}
+
+/** Aviso interno para o alojamento saber que entrou um pagamento. */
+function emailAdminPago(reserva: any, tipo: 'inicial' | 'final'): string {
+  const total = Number(reserva?.valor_total || 0);
+  const numero = reserva?.numero_reserva || String(reserva?.id || '').substring(0, 8).toUpperCase();
+  const nome = `${reserva?.Hospede?.nome || ''} ${reserva?.Hospede?.sobrenome || ''}`.trim();
+  return `<div style="font-family:Georgia,serif;color:#1E3932;max-width:620px;margin:auto;border:1px solid #D4C5A9;background:#FAF8F4;">
+    <div style="background:#1E3932;padding:24px 40px;text-align:center;">
+      <h1 style="margin:0;color:#C4A484;font-size:20px;letter-spacing:5px;text-transform:uppercase;">Refúgio Carapita</h1>
+      <p style="margin:6px 0 0;color:rgba(255,255,255,0.6);font-size:11px;letter-spacing:3px;text-transform:uppercase;">Pagamento Recebido</p>
+    </div>
+    <div style="padding:28px 40px;">
+      <p style="font-size:15px;margin-top:0;">Entrou o pagamento <strong>${tipo === 'final' ? 'final (50% restantes)' : 'inicial (50%)'}</strong>.</p>
+      <table width="100%" cellpadding="6" cellspacing="0" style="font-size:13px;border:1px solid #E8E0D5;">
+        <tr><td style="color:#888;width:38%;text-transform:uppercase;font-size:11px;">N.&ordm; Reserva</td><td style="color:#C4A484;font-weight:bold;font-family:monospace;">${numero}</td></tr>
+        <tr><td style="color:#888;text-transform:uppercase;font-size:11px;">Hóspede</td><td style="color:#1E3932;font-weight:bold;">${nome}</td></tr>
+        <tr><td style="color:#888;text-transform:uppercase;font-size:11px;">Valor recebido</td><td style="color:#1E3932;font-weight:bold;">&euro;${(total / 2).toFixed(2)}</td></tr>
+        <tr><td style="color:#888;text-transform:uppercase;font-size:11px;">Valor total</td><td style="color:#1E3932;">&euro;${total.toFixed(2)}</td></tr>
+        <tr><td style="color:#888;text-transform:uppercase;font-size:11px;">Check-in</td><td style="color:#1E3932;">${fmtData(reserva?.data_check_in)}</td></tr>
+      </table>
     </div>
   </div>`;
 }
@@ -109,14 +209,26 @@ Deno.serve(async (req: Request) => {
             const { data: reserva } = await sb.from('Reserva')
               .update({ pagamento_inicial_em: agora, status: 'CONFIRMADA', atualizado_em: agora })
               .eq('id', reservaId).select('*, Hospede(*), Quarto(*)').single();
-            if (reserva?.Hospede?.email) await sendEmail(reserva.Hospede.email, 'Pagamento confirmado — Refúgio Carapita', emailPago(reserva, 'inicial'));
             console.log(`Pagamento inicial confirmado: reserva ${reservaId}`);
+            const num = reserva?.numero_reserva || reservaId;
+            await Promise.all([
+              reserva?.Hospede?.email
+                ? sendEmail(reserva.Hospede.email, `Pagamento recebido — Reserva ${num} confirmada`, emailPago(reserva, 'inicial'))
+                : Promise.resolve(false),
+              sendEmail(EMAIL_CONTATO, `Pagamento inicial recebido — Reserva ${num}`, emailAdminPago(reserva, 'inicial')),
+            ]);
           } else if (tipo === 'final') {
             const { data: reserva } = await sb.from('Reserva')
               .update({ pagamento_total_em: agora, atualizado_em: agora })
               .eq('id', reservaId).select('*, Hospede(*), Quarto(*)').single();
-            if (reserva?.Hospede?.email) await sendEmail(reserva.Hospede.email, 'Reserva 100% paga — Refúgio Carapita', emailPago(reserva, 'final'));
             console.log(`Pagamento final confirmado: reserva ${reservaId}`);
+            const num = reserva?.numero_reserva || reservaId;
+            await Promise.all([
+              reserva?.Hospede?.email
+                ? sendEmail(reserva.Hospede.email, `Reserva ${num} totalmente paga — Refúgio Carapita`, emailPago(reserva, 'final'))
+                : Promise.resolve(false),
+              sendEmail(EMAIL_CONTATO, `Pagamento final recebido — Reserva ${num}`, emailAdminPago(reserva, 'final')),
+            ]);
           }
         } catch (e) {
           console.error('Erro ao processar webhook:', (e as Error).message);
