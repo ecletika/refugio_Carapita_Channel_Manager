@@ -39,6 +39,8 @@ export default function NovaReservaManual() {
     const [cupomInput, setCupomInput] = useState('');
     const [cupomErro, setCupomErro] = useState('');
     const [cupomLoading, setCupomLoading] = useState(false);
+    // Precos reais por noite (tarifas sazonais + fim-de-semana), iguais aos do site
+    const [calendarioPrecos, setCalendarioPrecos] = useState<{ data: string; preco: number }[]>([]);
 
     const [form, setForm] = useState({
         quartoId: '',
@@ -85,6 +87,19 @@ export default function NovaReservaManual() {
 
     useEffect(() => { fetchData(); }, []);
 
+    // ── carregar os preços reais por noite do quarto/datas escolhidos ────────
+    // Sem isto o total mostrado usava preco_base e ignorava tarifas sazonais e
+    // fins-de-semana, divergindo do valor que o servidor grava na reserva.
+    useEffect(() => {
+        if (!form.quartoId || !form.checkIn || !form.checkOut) { setCalendarioPrecos([]); return; }
+        let cancelado = false;
+        fetch(`${EDGE_URL}/tarifas-calendario?quartoId=${form.quartoId}&inicio=${form.checkIn}&fim=${form.checkOut}`)
+            .then(r => r.json())
+            .then(d => { if (!cancelado && d.status === 'success') setCalendarioPrecos(d.data || []); })
+            .catch(() => { if (!cancelado) setCalendarioPrecos([]); });
+        return () => { cancelado = true; };
+    }, [form.quartoId, form.checkIn, form.checkOut]);
+
     // ── cálculo de preço em tempo real ──────────────────────────────────────
     const { noites, precoBase, precoExtras, desconto, total } = useMemo(() => {
         const q = quartos.find(q => q.id === form.quartoId);
@@ -93,7 +108,18 @@ export default function NovaReservaManual() {
                 (new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / 86400000
             ))
             : 0;
-        const precoBase = q ? Number(q.preco_base) * noites : 0;
+        // Somar noite a noite usando o preço real de cada data (fallback: preco_base)
+        let precoBase = 0;
+        if (q && form.checkIn && form.checkOut) {
+            const d = new Date(`${form.checkIn}T00:00:00.000Z`);
+            const fim = new Date(`${form.checkOut}T00:00:00.000Z`);
+            while (d < fim) {
+                const ymd = d.toISOString().split('T')[0];
+                const dia = calendarioPrecos.find(p => p.data === ymd);
+                precoBase += dia ? Number(dia.preco) : Number(q.preco_base);
+                d.setUTCDate(d.getUTCDate() + 1);
+            }
+        }
         const selecionados = extras.filter(e => form.extrasIds.includes(e.id));
         const precoExtras = selecionados.reduce((s, e) => s + Number(e.preco), 0);
         const subtotal = precoBase + precoExtras;
@@ -103,7 +129,7 @@ export default function NovaReservaManual() {
                 : Math.min(Number(cupom.valor_desconto), subtotal)
             : 0;
         return { noites, precoBase, precoExtras, desconto, total: subtotal - desconto };
-    }, [form.quartoId, form.checkIn, form.checkOut, form.extrasIds, quartos, extras, cupom]);
+    }, [form.quartoId, form.checkIn, form.checkOut, form.extrasIds, quartos, extras, cupom, calendarioPrecos]);
 
     const setH = (field: string, val: string) =>
         setForm(p => ({ ...p, hospede: { ...p.hospede, [field]: val } }));
