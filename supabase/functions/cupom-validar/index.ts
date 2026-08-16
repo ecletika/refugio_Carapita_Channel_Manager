@@ -12,6 +12,30 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
+/** Offset (minutos) de um fuso numa data concreta — respeita horario de verao. */
+function offsetMinutos(date: Date, tz: string): number {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+  const p = dtf.formatToParts(date);
+  const get = (t: string) => Number(p.find((x) => x.type === t)!.value);
+  const asUTC = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
+  return (asUTC - date.getTime()) / 60000;
+}
+
+/**
+ * Instante em que um cupao com validade `YYYY-MM-DD` deixa de ser valido:
+ * fim desse dia em hora de Portugal. Ex: validade 29/08 -> valido todo o dia 29,
+ * expirado a partir das 00:00 do dia 30 (hora de Lisboa, nao UTC).
+ */
+function fimDoDiaLisboa(dataISO: string): Date {
+  const aprox = new Date(`${dataISO}T23:59:59.999Z`);
+  const off = offsetMinutos(aprox, 'Europe/Lisbon');
+  return new Date(aprox.getTime() - off * 60000);
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -50,11 +74,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Validade inclusiva: um cupao com validade 29/08 e valido ate ao FIM do dia 29/08.
-    // Tem de ser identico ao check em `reservas-criar`, senao um cupao aceite no site
-    // podia ser recusado (ou vice-versa) no momento de gravar a reserva.
+    // Validade inclusiva em hora de Portugal: validade 29/08 = valido todo o dia 29,
+    // expirado a partir das 00:00 do dia 30. Tem de ser identico ao check em
+    // `reservas-criar`, senao um cupao aceite no site podia ser recusado ao gravar.
     if (cupom.data_validade) {
-      const fimDoDia = new Date(`${String(cupom.data_validade).split('T')[0]}T23:59:59.999Z`);
+      const fimDoDia = fimDoDiaLisboa(String(cupom.data_validade).split('T')[0]);
       if (fimDoDia < new Date()) {
         return new Response(JSON.stringify({ status: 'error', error: 'Este cupom ja expirou.' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }

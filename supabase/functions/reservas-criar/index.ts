@@ -73,6 +73,30 @@ async function sendBrevo(to: string, toName: string, subject: string, html: stri
   }
 }
 
+/** Offset (minutos) de um fuso numa data concreta — respeita horario de verao. */
+function offsetMinutos(date: Date, tz: string): number {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+  const p = dtf.formatToParts(date);
+  const get = (t: string) => Number(p.find((x) => x.type === t)!.value);
+  const asUTC = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
+  return (asUTC - date.getTime()) / 60000;
+}
+
+/**
+ * Instante em que um cupao com validade `YYYY-MM-DD` deixa de ser valido:
+ * fim desse dia em hora de Portugal. Ex: validade 29/08 -> valido todo o dia 29,
+ * expirado a partir das 00:00 do dia 30 (hora de Lisboa, nao UTC).
+ */
+function fimDoDiaLisboa(dataISO: string): Date {
+  const aprox = new Date(`${dataISO}T23:59:59.999Z`);
+  const off = offsetMinutos(aprox, 'Europe/Lisbon');
+  return new Date(aprox.getTime() - off * 60000);
+}
+
 /** Sexta(5), Sabado(6) ou Domingo(0) contam como fim de semana — igual a tarifas-calendario */
 function isFimDeSemana(date: Date): boolean {
   const dow = date.getUTCDay();
@@ -189,11 +213,11 @@ Deno.serve(async (req: Request) => {
 
     let cupomValido: any = null;
     if (cupomDB && cupomDB.ativo) {
-      // Validade inclusiva: um cupao com validade 29/08 e valido ate ao FIM do dia 29/08
+      // Validade inclusiva em hora de Portugal: validade 29/08 = valido todo o dia 29,
+      // expirado a partir das 00:00 do dia 30. Identico ao check em `cupom-validar`.
       let validadeOk = true;
       if (cupomDB.data_validade) {
-        const fimDoDia = new Date(`${String(cupomDB.data_validade).split('T')[0]}T23:59:59.999Z`);
-        validadeOk = fimDoDia >= new Date();
+        validadeOk = fimDoDiaLisboa(String(cupomDB.data_validade).split('T')[0]) >= new Date();
       }
       const usosOk = !cupomDB.limite_usos || cupomDB.usos_atuais < cupomDB.limite_usos;
       if (validadeOk && usosOk) {
