@@ -88,16 +88,29 @@ Deno.serve(async (req) => {
     // 2) PERIODO DA ESTADIA (data_limite_estadia). Se nao estiver definido, usa a
     //    data_validade — assim um cupao antigo nao pode ser usado para uma estadia
     //    em outubro ou no ano seguinte. O check-in vem em ?checkIn=YYYY-MM-DD.
-    const limiteEstadia = cupom.data_limite_estadia || cupom.data_validade;
-    if (limiteEstadia) {
-      const limiteYMD = String(limiteEstadia).split('T')[0];
-      const checkIn = url.searchParams.get('checkIn');
-      if (checkIn && checkIn > limiteYMD) {
-        const [a, m, dia] = limiteYMD.split('-');
-        return new Response(JSON.stringify({
-          status: 'error',
-          error: `Este cupom so e valido para estadias com inicio ate ${dia}/${m}/${a}.`,
-        }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    //    - data_inicio_estadia: primeira data de check-in abrangida (NULL = sem minimo)
+    //    - data_limite_estadia: ultima data de check-in abrangida (NULL = usa data_validade)
+    const checkIn = url.searchParams.get('checkIn');
+    const fmtPT = (ymd: string) => { const [a, m, d] = ymd.split('-'); return `${d}/${m}/${a}`; };
+    const inicioYMD = cupom.data_inicio_estadia ? String(cupom.data_inicio_estadia).split('T')[0] : null;
+    const limiteRaw = cupom.data_limite_estadia || cupom.data_validade;
+    const limiteYMD = limiteRaw ? String(limiteRaw).split('T')[0] : null;
+
+    if (checkIn && (inicioYMD || limiteYMD)) {
+      const foraDoPeriodo =
+        (inicioYMD && checkIn < inicioYMD) || (limiteYMD && checkIn > limiteYMD);
+      if (foraDoPeriodo) {
+        let msg: string;
+        if (inicioYMD && limiteYMD) {
+          msg = `Este cupom so e valido para estadias entre ${fmtPT(inicioYMD)} e ${fmtPT(limiteYMD)}.`;
+        } else if (inicioYMD) {
+          msg = `Este cupom so e valido para estadias a partir de ${fmtPT(inicioYMD)}.`;
+        } else {
+          msg = `Este cupom so e valido para estadias com inicio ate ${fmtPT(limiteYMD!)}.`;
+        }
+        return new Response(JSON.stringify({ status: 'error', error: msg }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
     }
 

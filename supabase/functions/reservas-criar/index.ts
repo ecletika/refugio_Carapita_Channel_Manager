@@ -222,9 +222,14 @@ Deno.serve(async (req: Request) => {
       if (cupomDB.data_validade) {
         validadeOk = fimDoDiaLisboa(String(cupomDB.data_validade).split('T')[0]) >= new Date();
       }
-      const limiteEstadia = cupomDB.data_limite_estadia || cupomDB.data_validade;
-      if (validadeOk && limiteEstadia) {
-        validadeOk = String(checkIn).split('T')[0] <= String(limiteEstadia).split('T')[0];
+      //  3) periodo da estadia: data_inicio_estadia <= check-in <= data_limite_estadia
+      if (validadeOk) {
+        const cin = String(checkIn).split('T')[0];
+        const inicioYMD = cupomDB.data_inicio_estadia ? String(cupomDB.data_inicio_estadia).split('T')[0] : null;
+        const limiteRaw = cupomDB.data_limite_estadia || cupomDB.data_validade;
+        const limiteYMD = limiteRaw ? String(limiteRaw).split('T')[0] : null;
+        if (inicioYMD && cin < inicioYMD) validadeOk = false;
+        if (limiteYMD && cin > limiteYMD) validadeOk = false;
       }
       const usosOk = !cupomDB.limite_usos || cupomDB.usos_atuais < cupomDB.limite_usos;
       if (validadeOk && usosOk) {

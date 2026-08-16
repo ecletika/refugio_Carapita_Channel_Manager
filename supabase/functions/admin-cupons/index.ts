@@ -39,15 +39,17 @@ Deno.serve(async (req) => {
     }
 
     if (req.method === 'POST') {
-      const { codigo, tipo_desconto, valor_desconto, limite_usos, data_validade, data_limite_estadia } = await req.json();
+      const { codigo, tipo_desconto, valor_desconto, limite_usos, data_validade, data_inicio_estadia, data_limite_estadia } = await req.json();
       const novoCupom = {
         codigo: codigo.toUpperCase(),
         tipo_desconto: tipo_desconto || 'PERCENTUAL',
         valor_desconto,
         limite_usos: limite_usos ? parseInt(limite_usos) : null,
         // data_validade       = prazo para RESERVAR
+        // data_inicio_estadia = primeira data de CHECK-IN abrangida (NULL = sem minimo)
         // data_limite_estadia = ultima data de CHECK-IN abrangida (NULL = usa data_validade)
         data_validade: data_validade || null,
+        data_inicio_estadia: data_inicio_estadia || null,
         data_limite_estadia: data_limite_estadia || null,
         ativo: true
       };

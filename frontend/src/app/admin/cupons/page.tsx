@@ -16,8 +16,9 @@ export default function CuponsAdmin() {
         tipo_desconto: 'PERCENTUAL',
         valor_desconto: '',
         limite_usos: '',
-        data_validade: '',        // prazo para RESERVAR
-        data_limite_estadia: ''   // última data de CHECK-IN abrangida
+        data_validade: '',         // prazo para RESERVAR
+        data_inicio_estadia: '',   // primeira data de CHECK-IN abrangida
+        data_limite_estadia: ''    // última data de CHECK-IN abrangida
     });
 
     useEffect(() => {
@@ -52,6 +53,7 @@ export default function CuponsAdmin() {
                 valor_desconto: Number(form.valor_desconto),
                 limite_usos: form.limite_usos ? Number(form.limite_usos) : null,
                 data_validade: form.data_validade || null,
+                data_inicio_estadia: form.data_inicio_estadia || null,
                 data_limite_estadia: form.data_limite_estadia || null
             };
 
@@ -65,7 +67,7 @@ export default function CuponsAdmin() {
             if (json.status === 'success') {
                 await fetchCupons();
                 setShowModal(false);
-                setForm({ codigo: '', tipo_desconto: 'PERCENTUAL', valor_desconto: '', limite_usos: '', data_validade: '', data_limite_estadia: '' });
+                setForm({ codigo: '', tipo_desconto: 'PERCENTUAL', valor_desconto: '', limite_usos: '', data_validade: '', data_inicio_estadia: '', data_limite_estadia: '' });
                 alert('Cupão criado com sucesso!');
             } else {
                 alert('Erro: ' + json.error);
@@ -140,11 +142,13 @@ export default function CuponsAdmin() {
                                                 <span className="font-medium text-gray-900 ml-2">{new Date(cupom.data_validade).toLocaleDateString('pt-PT')}</span>
                                             </div>
                                         )}
-                                        {(cupom.data_limite_estadia || cupom.data_validade) && (
+                                        {(cupom.data_inicio_estadia || cupom.data_limite_estadia || cupom.data_validade) && (
                                             <div className="flex justify-between">
-                                                <span className="text-gray-400">Estadia até:</span>
-                                                <span className="font-medium text-gray-900 ml-2">
-                                                    {new Date(cupom.data_limite_estadia || cupom.data_validade).toLocaleDateString('pt-PT')}
+                                                <span className="text-gray-400">Estadia:</span>
+                                                <span className="font-medium text-gray-900 ml-2 text-right">
+                                                    {cupom.data_inicio_estadia
+                                                        ? `${new Date(cupom.data_inicio_estadia).toLocaleDateString('pt-PT')} — ${new Date(cupom.data_limite_estadia || cupom.data_validade).toLocaleDateString('pt-PT')}`
+                                                        : `até ${new Date(cupom.data_limite_estadia || cupom.data_validade).toLocaleDateString('pt-PT')}`}
                                                 </span>
                                             </div>
                                         )}
@@ -242,15 +246,30 @@ export default function CuponsAdmin() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Estadia até (Opcional)</label>
-                                    <input
-                                        type="date"
-                                        className="w-full border border-gray-200 p-3 rounded text-sm focus:border-carapita-gold outline-none"
-                                        value={form.data_limite_estadia}
-                                        onChange={e => setForm({ ...form, data_limite_estadia: e.target.value })}
-                                    />
+                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Período da Estadia (Opcional)</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <span className="block text-[10px] text-gray-400 uppercase tracking-wider mb-1">De</span>
+                                            <input
+                                                type="date"
+                                                className="w-full border border-gray-200 p-3 rounded text-sm focus:border-carapita-gold outline-none"
+                                                value={form.data_inicio_estadia}
+                                                onChange={e => setForm({ ...form, data_inicio_estadia: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <span className="block text-[10px] text-gray-400 uppercase tracking-wider mb-1">Até</span>
+                                            <input
+                                                type="date"
+                                                className="w-full border border-gray-200 p-3 rounded text-sm focus:border-carapita-gold outline-none"
+                                                value={form.data_limite_estadia}
+                                                onChange={e => setForm({ ...form, data_limite_estadia: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
                                     <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
-                                        Última data de <strong>check-in</strong> abrangida pelo cupão. Em branco = usa a data de
+                                        Intervalo de datas de <strong>check-in</strong> abrangidas pelo cupão.
+                                        &quot;De&quot; em branco = sem limite inicial. &quot;Até&quot; em branco = usa a data de
                                         &quot;Reservar até&quot;, evitando que o cupão sirva para estadias de outro ano.
                                     </p>
                                 </div>
