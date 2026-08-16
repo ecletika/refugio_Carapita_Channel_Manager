@@ -74,26 +74,26 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Validade inclusiva em hora de Portugal: validade 29/08 = valido todo o dia 29,
-    // expirado a partir das 00:00 do dia 30. Tem de ser identico ao check em
-    // `reservas-criar`, senao um cupao aceite no site podia ser recusado ao gravar.
+    // 1) PRAZO PARA RESERVAR (data_validade). Inclusivo e em hora de Portugal:
+    //    validade 29/08 = pode reservar todo o dia 29, expira as 00:00 do dia 30.
     if (cupom.data_validade) {
       const validadeYMD = String(cupom.data_validade).split('T')[0];
-      const fimDoDia = fimDoDiaLisboa(validadeYMD);
-
-      // 1) O cupao ja expirou (prazo para reservar)
-      if (fimDoDia < new Date()) {
+      if (fimDoDiaLisboa(validadeYMD) < new Date()) {
         return new Response(JSON.stringify({ status: 'error', error: 'Este cupom ja expirou.' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
+    }
 
-      // 2) A ESTADIA tem de comecar dentro da validade. Sem isto, um hospede podia
-      //    usar hoje um cupao valido ate 29/08 para uma estadia em outubro ou no ano
-      //    seguinte. O check-in vem por query param (?checkIn=YYYY-MM-DD).
+    // 2) PERIODO DA ESTADIA (data_limite_estadia). Se nao estiver definido, usa a
+    //    data_validade — assim um cupao antigo nao pode ser usado para uma estadia
+    //    em outubro ou no ano seguinte. O check-in vem em ?checkIn=YYYY-MM-DD.
+    const limiteEstadia = cupom.data_limite_estadia || cupom.data_validade;
+    if (limiteEstadia) {
+      const limiteYMD = String(limiteEstadia).split('T')[0];
       const checkIn = url.searchParams.get('checkIn');
-      if (checkIn && checkIn > validadeYMD) {
-        const [a, m, dia] = validadeYMD.split('-');
+      if (checkIn && checkIn > limiteYMD) {
+        const [a, m, dia] = limiteYMD.split('-');
         return new Response(JSON.stringify({
           status: 'error',
           error: `Este cupom so e valido para estadias com inicio ate ${dia}/${m}/${a}.`,

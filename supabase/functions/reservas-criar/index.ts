@@ -213,16 +213,18 @@ Deno.serve(async (req: Request) => {
 
     let cupomValido: any = null;
     if (cupomDB && cupomDB.ativo) {
-      // Validade inclusiva em hora de Portugal: validade 29/08 = valido todo o dia 29,
-      // expirado a partir das 00:00 do dia 30. Identico ao check em `cupom-validar`.
-      // Alem disso a ESTADIA tem de comecar dentro da validade, senao um hospede podia
-      // usar hoje um cupao valido ate 29/08 para uma estadia em outubro ou noutro ano.
+      // Identico ao check em `cupom-validar`:
+      //  1) data_validade       = prazo para RESERVAR (inclusivo, hora de Portugal)
+      //  2) data_limite_estadia = ultima data de CHECK-IN abrangida; se nao estiver
+      //     definida usa data_validade, para um cupao nao servir para uma estadia
+      //     em outubro ou no ano seguinte.
       let validadeOk = true;
       if (cupomDB.data_validade) {
-        const validadeYMD = String(cupomDB.data_validade).split('T')[0];
-        const naoExpirou = fimDoDiaLisboa(validadeYMD) >= new Date();
-        const estadiaDentroDaValidade = String(checkIn).split('T')[0] <= validadeYMD;
-        validadeOk = naoExpirou && estadiaDentroDaValidade;
+        validadeOk = fimDoDiaLisboa(String(cupomDB.data_validade).split('T')[0]) >= new Date();
+      }
+      const limiteEstadia = cupomDB.data_limite_estadia || cupomDB.data_validade;
+      if (validadeOk && limiteEstadia) {
+        validadeOk = String(checkIn).split('T')[0] <= String(limiteEstadia).split('T')[0];
       }
       const usosOk = !cupomDB.limite_usos || cupomDB.usos_atuais < cupomDB.limite_usos;
       if (validadeOk && usosOk) {
