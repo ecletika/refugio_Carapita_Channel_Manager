@@ -67,7 +67,7 @@ class EmailService {
     static _aimaFormUrl = (token) => `${this._siteUrl()}/aima?token=${token}`;
 
     static async _sendTransactionalEmail({ to, subject, html }) {
-        const fromEmail = process.env.EMAIL_FROM || 'geral@refugiocarapita.pt';
+        const fromEmail = process.env.EMAIL_FROM || 'contacto@refugiocarapita.pt';
         const fromName = process.env.EMAIL_FROM_NAME || 'Refúgio Carapita';
 
         if (process.env.BREVO_API_KEY) {
@@ -95,7 +95,7 @@ class EmailService {
     }
 
     static async enviarFormularioAima(hospede, reserva, formularioUrl) {
-        const emailContato = process.env.EMAIL_CONTATO || 'geral@refugiocarapita.pt';
+        const emailContato = process.env.EMAIL_CONTATO || 'contacto@refugiocarapita.pt';
         const nomeHospede = `${hospede?.nome || ''} ${hospede?.sobrenome || ''}`.trim() || 'Hóspede';
         const codigoReserva = reserva.numero_reserva || reserva.id?.substring(0, 8).toUpperCase() || '';
         const checkIn = reserva.data_check_in
@@ -164,7 +164,7 @@ class EmailService {
         try {
             const valor50 = (Number(reserva.valor_total) * 0.5).toFixed(2);
             const mailOptions = {
-                from: '"Refúgio Carapita" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita" <contacto@refugiocarapita.pt>',
                 to: hospede.email,
                 subject: '🎉 A sua reserva foi encaminhada com sucesso! — Refúgio Carapita',
                 html: `
@@ -210,7 +210,7 @@ class EmailService {
         try {
             const valor50 = (Number(reserva.valor_total) * 0.5).toFixed(2);
             await this.transporter.sendMail({
-                from: '"Refúgio Carapita" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita" <contacto@refugiocarapita.pt>',
                 to: hospede.email,
                 subject: '⏰ Garanta a sua reserva! — Refúgio Carapita',
                 html: `<div style="${this._baseStyle}">
@@ -233,7 +233,7 @@ class EmailService {
         try {
             const valor50 = (Number(reserva.valor_total) * 0.5).toFixed(2);
             await this.transporter.sendMail({
-                from: '"Refúgio Carapita" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita" <contacto@refugiocarapita.pt>',
                 to: hospede.email,
                 subject: '⚡ Falta pouco! Garanta a sua reserva agora mesmo — Refúgio Carapita',
                 html: `<div style="${this._baseStyle}">
@@ -258,7 +258,7 @@ class EmailService {
         try {
             const valor50 = (Number(reserva.valor_total) * 0.5).toFixed(2);
             await this.transporter.sendMail({
-                from: '"Refúgio Carapita" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita" <contacto@refugiocarapita.pt>',
                 to: hospede.email,
                 subject: '🚨 A sua reserva está quase a expirar — garanta já! — Refúgio Carapita',
                 html: `<div style="${this._baseStyle}">
@@ -281,7 +281,7 @@ class EmailService {
         try {
             const valor50 = (Number(reserva.valor_total) * 0.5).toFixed(2);
             await this.transporter.sendMail({
-                from: '"Refúgio Carapita" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita" <contacto@refugiocarapita.pt>',
                 to: hospede.email,
                 subject: '🔴 Última oportunidade — garanta a sua reserva AGORA — Refúgio Carapita',
                 html: `<div style="${this._baseStyle}">
@@ -307,7 +307,7 @@ class EmailService {
     static async enviarEmailCancelamentoPagamentoInicial(hospede, reserva) {
         try {
             await this.transporter.sendMail({
-                from: '"Refúgio Carapita" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita" <contacto@refugiocarapita.pt>',
                 to: hospede.email,
                 subject: 'A sua reserva foi cancelada — Refúgio Carapita',
                 html: `<div style="${this._baseStyle}">
@@ -344,7 +344,7 @@ class EmailService {
             `).join('');
 
             await this.transporter.sendMail({
-                from: '"Refúgio Carapita" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita" <contacto@refugiocarapita.pt>',
                 to: hospede.email,
                 subject: '🌿 Obrigado! A sua reserva está confirmada — Refúgio Carapita',
                 html: `<div style="${this._baseStyle}">
@@ -413,7 +413,7 @@ class EmailService {
             };
 
             await EmailService.transporter.sendMail({
-                from: '"Refúgio Carapita" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita" <contacto@refugiocarapita.pt>',
                 to: hospede.email,
                 subject: subjects[diasAntes] || `⚠️ Pagamento pendente — ${diasAntes} dias para check-in — Refúgio Carapita`,
                 html: `<div style="${EmailService._baseStyle}">
@@ -453,7 +453,7 @@ class EmailService {
             `).join('');
 
             await this.transporter.sendMail({
-                from: '"Refúgio Carapita" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita" <contacto@refugiocarapita.pt>',
                 to: hospede.email,
                 subject: '🎊 A sua reserva está 100% confirmada! — Refúgio Carapita',
                 html: `<div style="${this._baseStyle}">
@@ -485,7 +485,7 @@ class EmailService {
     static async enviarEmailCancelamentoPagamentoFinal(hospede, reserva) {
         try {
             await this.transporter.sendMail({
-                from: '"Refúgio Carapita" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita" <contacto@refugiocarapita.pt>',
                 to: hospede.email,
                 subject: 'A sua reserva foi cancelada por falta do pagamento final — Refúgio Carapita',
                 html: `<div style="${this._baseStyle}">
@@ -511,7 +511,7 @@ class EmailService {
     static async enviarEmailContato(emailSite, nome, emailRemetente, assunto, mensagem) {
         try {
             await this.transporter.sendMail({
-                from: '"Refúgio Carapita (Site)" <geral@refugiocarapita.pt>',
+                from: '"Refúgio Carapita (Site)" <contacto@refugiocarapita.pt>',
                 to: emailSite,
                 replyTo: emailRemetente,
                 subject: `Nova Mensagem: ${assunto} — Refúgio Carapita`,

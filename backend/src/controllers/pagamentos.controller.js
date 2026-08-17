@@ -306,7 +306,7 @@ class PagamentosController {
                     nome: 'Refúgio Carapita',
                     nif: 'NIF: 260876640',
                     morada: 'R. Dom Afonso Quarto Conde de Ourém IV 450, 2490-480 Ourém',
-                    email: 'geral@refugiocarapita.pt',
+                    email: 'contacto@refugiocarapita.pt',
                     telefone: '+351 920 003 608',
                 },
                 // Cliente

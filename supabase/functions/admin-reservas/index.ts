@@ -11,7 +11,7 @@ const corsHeaders = {
 const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 const JWT_SECRET = new TextEncoder().encode(Deno.env.get('JWT_SECRET') || 'super-secret-key-carapita-2024');
 const BREVO_KEY = Deno.env.get('BREVO_API_KEY') || '';
-const EMAIL_CONTATO = Deno.env.get('EMAIL_CONTATO') || 'geral@refugiocarapita.pt';
+const EMAIL_CONTATO = Deno.env.get('EMAIL_CONTATO') || 'contacto@refugiocarapita.pt';
 const SITE = 'https://refugiocarapita.pt';
 
 const BASE_STYLE = `font-family:'Georgia',serif;color:#1E3932;max-width:620px;margin:auto;border:1px solid #D4C5A9;background:#FAF8F4;`;
@@ -60,7 +60,7 @@ async function sendBrevo(to: string, toName: string, subject: string, html: stri
       method: 'POST',
       headers: { 'api-key': BREVO_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        sender: { name: 'Refugio Carapita', email: 'geral@refugiocarapita.pt' },
+        sender: { name: 'Refugio Carapita', email: 'contacto@refugiocarapita.pt' },
         to: [{ email: to, name: toName }],
         subject,
         htmlContent: html,

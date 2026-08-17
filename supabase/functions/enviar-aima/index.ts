@@ -91,7 +91,7 @@ function buildXML(hospedes: Record<string, string>[], reserva: Record<string, st
     `<Telefone>${xmlEscape(tel)}</Telefone>`,
     `<Fax>${xmlEscape(tel)}</Fax>`,
     `<Nome_Contacto>${xmlEscape((cfg.nomeResponsavel || 'Responsavel').substring(0, 40))}</Nome_Contacto>`,
-    `<Email_Contacto>${xmlEscape((cfg.emailContato || 'geral@refugiocarapita.pt').substring(0, 140))}</Email_Contacto>`,
+    `<Email_Contacto>${xmlEscape((cfg.emailContato || 'contacto@refugiocarapita.pt').substring(0, 140))}</Email_Contacto>`,
   ].join('');
 
   // Local_Residencia_Origem é OBRIGATÓRIO no schema do SIBA. Se um hóspede não tiver
