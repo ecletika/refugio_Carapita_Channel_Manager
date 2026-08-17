@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
-import { Calendar, Home, Info, Tag, X, Send, FileText, CheckCircle, AlertCircle, Clock, ChevronDown, ChevronUp, Eye, ZoomIn, Download } from 'lucide-react';
+import { Calendar, Home, Info, Tag, X, Send, FileText, CheckCircle, AlertCircle, Clock, ChevronDown, ChevronUp, Eye, ZoomIn, Download, CreditCard } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
 const EDGE_URL = 'https://vuidkeygtxfbgxvmilya.supabase.co/functions/v1';
@@ -21,6 +21,41 @@ interface Reserva {
   canal: { nome_canal: string };
   criado_em: string;
   extras_ids?: string[] | null;
+  pagamento_inicial_em?: string | null;
+  pagamento_total_em?: string | null;
+  prazo_pagamento_ate?: string | null;
+  pagamento_metodo_registo?: string | null;
+  cupom_emitido?: { codigo: string; valor_desconto: number; usos_atuais: number } | null;
+}
+
+/** Estado do pagamento derivado das datas — o status da reserva não diz se foi pago. */
+function estadoPagamento(r: Reserva) {
+  const total = Number(r.valor_total || 0);
+  const metade = total / 2;
+  if (r.pagamento_total_em) {
+    return { nivel: 'pago' as const, rotulo: '100% pago', pago: total, detalhe: '', cor: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+  }
+  if (r.pagamento_inicial_em) {
+    const limite = new Date(r.data_check_in);
+    limite.setDate(limite.getDate() - 10);
+    return {
+      nivel: 'parcial' as const, rotulo: '50% pago', pago: metade,
+      detalhe: `falta €${metade.toFixed(2)} até ${limite.toLocaleDateString('pt-PT')}`,
+      cor: 'bg-amber-50 text-amber-700 border-amber-200',
+    };
+  }
+  // Sem pagamento: quanto falta até ao cancelamento automático
+  const prazo = r.prazo_pagamento_ate
+    ? new Date(r.prazo_pagamento_ate)
+    : new Date(new Date(r.criado_em).getTime() + 48 * 3600000);
+  const horas = Math.round((prazo.getTime() - Date.now()) / 3600000);
+  const detalhe = horas > 0
+    ? `expira em ${horas > 48 ? `${Math.round(horas / 24)}d` : `${horas}h`}${r.prazo_pagamento_ate ? ' (prazo alargado)' : ''}`
+    : 'prazo expirado';
+  return {
+    nivel: 'nenhum' as const, rotulo: 'Sem pagamento', pago: 0, detalhe,
+    cor: horas > 0 ? 'bg-gray-50 text-gray-600 border-gray-200' : 'bg-red-50 text-red-700 border-red-200',
+  };
 }
 
 interface AimaHospede {
@@ -74,6 +109,13 @@ export default function AdminReservas() {
   const [lightboxLabel, setLightboxLabel] = useState('');
   // Reenvio com confirmação explícita
   const [confirmarReenvio, setConfirmarReenvio] = useState(false);
+  // ── Gestão de pagamento ──
+  const [pagModal, setPagModal] = useState<Reserva | null>(null);
+  const [pagBusy, setPagBusy] = useState('');
+  const [pagResult, setPagResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [cupomPct, setCupomPct] = useState('10');
+  const [cupomDias, setCupomDias] = useState('7');
+  const [metodoManual, setMetodoManual] = useState('transferencia');
   const [baEnviado, setBaEnviado] = useState(false);
   const [baEnviadoEm, setBaEnviadoEm] = useState<string | null>(null);
 
@@ -90,6 +132,32 @@ export default function AdminReservas() {
   };
 
   useEffect(() => { fetchReservas(); }, []);
+
+  /** Ações de pagamento: reenviar link, cupão exclusivo, estender prazo, registar pagamento */
+  const acaoPagamento = async (endpoint: string, body: Record<string, unknown> = {}) => {
+    if (!pagModal) return;
+    setPagBusy(endpoint);
+    setPagResult(null);
+    try {
+      const token = localStorage.getItem('token');
+      const resp = await fetch(`${EDGE_URL}/admin-reservas/${pagModal.id}/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const data = await resp.json();
+      const ok = data.status === 'success';
+      setPagResult({ ok, msg: ok ? data.message : (data.error || 'Ocorreu um erro.') });
+      if (ok) {
+        await fetchReservas();
+        // manter o modal aberto mas com os dados atualizados
+        setPagModal(prev => prev ? { ...prev } : prev);
+      }
+    } catch { setPagResult({ ok: false, msg: 'Erro de comunicação com o servidor.' }); }
+    finally { setPagBusy(''); }
+  };
+
+  const fecharPagModal = () => { setPagModal(null); setPagResult(null); setPagBusy(''); };
 
   const updateStatus = async (id: string, endpoint: string) => {
     const token = localStorage.getItem('token');
@@ -308,6 +376,22 @@ export default function AdminReservas() {
                     <Tag size={12} className="text-carapita-gold/40" />
                     <span className="text-[10px] text-carapita-muted uppercase tracking-widest font-medium">{res.canal.nome_canal}</span>
                   </div>
+                  {/* Estado do pagamento — o status da reserva não diz se foi pago */}
+                  {(() => {
+                    const p = estadoPagamento(res);
+                    return (
+                      <div className={`flex flex-col gap-0.5 text-[9px] uppercase tracking-widest font-bold border px-2 py-1 w-fit mb-2 ${p.cor}`}>
+                        <span className="flex items-center gap-1.5">
+                          <CreditCard size={10} /> {p.rotulo}
+                          {res.pagamento_metodo_registo && res.pagamento_metodo_registo !== 'stripe' && (
+                            <span className="font-normal normal-case opacity-70">({res.pagamento_metodo_registo})</span>
+                          )}
+                        </span>
+                        {p.detalhe && <span className="font-normal normal-case tracking-normal opacity-80">{p.detalhe}</span>}
+                      </div>
+                    );
+                  })()}
+
                   {/* AIMA badge */}
                   {res.ba_enviado ? (
                     <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest font-bold text-blue-700 bg-blue-50 border border-blue-300 px-2 py-1 w-fit">
@@ -371,13 +455,194 @@ export default function AdminReservas() {
                   )
                 )}
                 {res.status !== 'CANCELADA' && res.status !== 'CHECK_OUT' && (
-                  <button onClick={() => updateStatus(res.id, 'cancelar')} className="w-full py-2 border border-red-200 text-red-500 text-[9px] uppercase tracking-widest hover:bg-red-50 transition-colors cursor-pointer">Cancelar</button>
+                  <>
+                    <button
+                      onClick={() => { setPagModal(res); setPagResult(null); }}
+                      className="w-full py-2 border border-[#C4A484] text-[#1E3932] bg-[#FAF8F4] text-[9px] uppercase tracking-widest font-bold hover:bg-[#C4A484] hover:text-white transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <CreditCard size={11} /> Gerir Pagamento
+                    </button>
+                    <button onClick={() => updateStatus(res.id, 'cancelar')} className="w-full py-2 border border-red-200 text-red-500 text-[9px] uppercase tracking-widest hover:bg-red-50 transition-colors cursor-pointer">Cancelar</button>
+                  </>
                 )}
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* ── Modal: Gestão de Pagamento ── */}
+      {pagModal && (() => {
+        const p = estadoPagamento(pagModal);
+        const total = Number(pagModal.valor_total || 0);
+        const metade = total / 2;
+        const semPagamento = !pagModal.pagamento_inicial_em;
+        const numero = pagModal.numero_reserva || pagModal.id.substring(0, 8).toUpperCase();
+        const busy = (k: string) => pagBusy === k;
+        const anyBusy = !!pagBusy;
+        return (
+          <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={fecharPagModal}>
+            <div className="bg-white w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+              {/* Cabeçalho */}
+              <div className="bg-[#1E3932] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+                <div>
+                  <h2 className="text-[#C4A484] font-serif text-lg uppercase tracking-widest">Gerir Pagamento</h2>
+                  <p className="text-white/40 text-[10px] tracking-widest mt-0.5 font-mono">{numero} · {pagModal.hospede.nome}</p>
+                </div>
+                <button onClick={fecharPagModal} className="text-white/40 hover:text-white cursor-pointer"><X size={18} /></button>
+              </div>
+
+              <div className="p-6 space-y-5">
+                {/* Resumo do estado */}
+                <div className={`border p-4 ${p.cor}`}>
+                  <p className="text-xs font-bold uppercase tracking-widest">{p.rotulo}</p>
+                  {p.detalhe && <p className="text-[11px] mt-1 opacity-80">{p.detalhe}</p>}
+                  <div className="grid grid-cols-3 gap-3 mt-3 text-center">
+                    <div><p className="text-[9px] uppercase tracking-widest opacity-60">Total</p><p className="text-sm font-bold">€{total.toFixed(2)}</p></div>
+                    <div><p className="text-[9px] uppercase tracking-widest opacity-60">Pago</p><p className="text-sm font-bold">€{p.pago.toFixed(2)}</p></div>
+                    <div><p className="text-[9px] uppercase tracking-widest opacity-60">Em aberto</p><p className="text-sm font-bold">€{(total - p.pago).toFixed(2)}</p></div>
+                  </div>
+                </div>
+
+                {/* Histórico — quando e como cada prestação foi paga */}
+                <div className="border border-gray-200">
+                  <p className="text-[9px] uppercase tracking-widest font-bold text-gray-400 px-4 pt-3 pb-2">Histórico do pagamento</p>
+                  {[
+                    { rot: '1.ª prestação — 50%', em: pagModal.pagamento_inicial_em },
+                    { rot: '2.ª prestação — 50%', em: pagModal.pagamento_total_em },
+                  ].map((linha, i) => (
+                    <div key={i} className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100">
+                      <div className="flex items-center gap-2">
+                        {linha.em
+                          ? <CheckCircle size={13} className="text-emerald-600" />
+                          : <Clock size={13} className="text-gray-300" />}
+                        <span className={`text-[12px] ${linha.em ? 'text-gray-800' : 'text-gray-400'}`}>{linha.rot}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-[12px] font-medium ${linha.em ? 'text-emerald-700' : 'text-gray-400'}`}>
+                          €{metade.toFixed(2)}
+                        </span>
+                        <p className="text-[10px] text-gray-400">
+                          {linha.em
+                            ? new Date(linha.em).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            : 'por pagar'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="px-4 py-2 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+                    <span className="text-[10px] uppercase tracking-widest text-gray-400">Origem</span>
+                    <span className="text-[11px] text-gray-600">
+                      {pagModal.pagamento_metodo_registo && pagModal.pagamento_metodo_registo !== 'stripe'
+                        ? `Registado à mão (${pagModal.pagamento_metodo_registo})`
+                        : (pagModal.pagamento_inicial_em ? 'Stripe (automático)' : '—')}
+                    </span>
+                  </div>
+                </div>
+
+                {pagResult && (
+                  <div className={`border p-3 text-[12px] leading-relaxed ${pagResult.ok ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                    {pagResult.msg}
+                  </div>
+                )}
+
+                {p.nivel === 'pago' ? (
+                  <p className="text-sm text-gray-500 text-center py-4">Esta reserva está totalmente paga — não há ações pendentes.</p>
+                ) : (
+                  <>
+                    {/* 1. Reenviar link */}
+                    <div className="border border-gray-200 p-4">
+                      <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-1">Reenviar link de pagamento</p>
+                      <p className="text-[11px] text-gray-500 mb-3">Envia um email ao hóspede com o link direto para pagar €{metade.toFixed(2)}.</p>
+                      <button onClick={() => acaoPagamento('reenviar-pagamento')} disabled={anyBusy}
+                        className="w-full py-2.5 bg-[#1E3932] text-[#C4A484] text-[10px] uppercase tracking-widest font-bold hover:bg-[#C4A484] hover:text-white transition-colors disabled:opacity-50 cursor-pointer">
+                        {busy('reenviar-pagamento') ? 'A enviar...' : 'Enviar email'}
+                      </button>
+                    </div>
+
+                    {/* 2. Cupão exclusivo */}
+                    {semPagamento && (
+                      <div className="border border-[#C4A484]/50 bg-[#FAF8F4] p-4">
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-[#1E3932] mb-1">Enviar cupão exclusivo</p>
+                        <p className="text-[11px] text-gray-500 mb-3">
+                          Cria um código único só para esta reserva (1 utilização, limitado a estas datas) e envia por email.
+                        </p>
+                        {pagModal.cupom_emitido && (
+                          <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1.5 mb-3">
+                            Já foi emitido: <strong className="font-mono">{pagModal.cupom_emitido.codigo}</strong> ({pagModal.cupom_emitido.valor_desconto}%)
+                            {Number(pagModal.cupom_emitido.usos_atuais) > 0 ? ' — já usado' : ' — por usar'}
+                          </p>
+                        )}
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <div>
+                            <label className="block text-[9px] uppercase tracking-widest text-gray-400 mb-1">Desconto (%)</label>
+                            <input type="number" min="1" max="100" value={cupomPct} onChange={e => setCupomPct(e.target.value)}
+                              className="w-full border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#C4A484]" />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] uppercase tracking-widest text-gray-400 mb-1">Válido (dias)</label>
+                            <input type="number" min="1" max="90" value={cupomDias} onChange={e => setCupomDias(e.target.value)}
+                              className="w-full border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#C4A484]" />
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-gray-500 mb-3">
+                          Novo total: <strong className="text-[#1E3932]">€{(total * (1 - Number(cupomPct || 0) / 100)).toFixed(2)}</strong>
+                          <span className="line-through ml-2 opacity-50">€{total.toFixed(2)}</span>
+                        </p>
+                        <button onClick={() => acaoPagamento('enviar-cupom', { percentagem: Number(cupomPct), dias_validade: Number(cupomDias) })} disabled={anyBusy}
+                          className="w-full py-2.5 bg-[#C4A484] text-[#1E3932] text-[10px] uppercase tracking-widest font-bold hover:bg-[#1E3932] hover:text-[#C4A484] transition-colors disabled:opacity-50 cursor-pointer">
+                          {busy('enviar-cupom') ? 'A criar e enviar...' : 'Criar e enviar cupão'}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 3. Estender prazo */}
+                    {semPagamento && (
+                      <div className="border border-gray-200 p-4">
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-1">Estender prazo</p>
+                        <p className="text-[11px] text-gray-500 mb-3">Adia o cancelamento automático e avisa o hóspede por email.</p>
+                        <div className="flex gap-2">
+                          {[24, 48, 72].map(h => (
+                            <button key={h} onClick={() => acaoPagamento('estender-prazo', { horas: h })} disabled={anyBusy}
+                              className="flex-1 py-2.5 border border-gray-300 text-gray-700 text-[10px] uppercase tracking-widest font-bold hover:bg-gray-50 transition-colors disabled:opacity-50 cursor-pointer">
+                              {busy('estender-prazo') ? '...' : `+${h}h`}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 4. Registar pagamento manual */}
+                    <div className="border border-gray-200 p-4">
+                      <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-1">Registar pagamento manual</p>
+                      <p className="text-[11px] text-gray-500 mb-3">
+                        Use quando o dinheiro entrou fora do Stripe (transferência, MB Way direto, numerário).
+                      </p>
+                      <select value={metodoManual} onChange={e => setMetodoManual(e.target.value)}
+                        className="w-full border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#C4A484] mb-3 bg-white cursor-pointer">
+                        <option value="transferencia">Transferência bancária</option>
+                        <option value="mbway">MB Way (direto)</option>
+                        <option value="numerario">Numerário</option>
+                        <option value="outro">Outro</option>
+                      </select>
+                      <button
+                        onClick={() => {
+                          const tipo = semPagamento ? 'inicial' : 'final';
+                          if (!confirm(`Registar o pagamento ${tipo} de €${metade.toFixed(2)} (${metodoManual})?\n\nEsta ação marca a reserva como paga.`)) return;
+                          acaoPagamento('registar-pagamento', { tipo, metodo: metodoManual });
+                        }}
+                        disabled={anyBusy}
+                        className="w-full py-2.5 bg-emerald-600 text-white text-[10px] uppercase tracking-widest font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 cursor-pointer">
+                        {busy('registar-pagamento') ? 'A registar...' : `Registar ${semPagamento ? '1.ª' : '2.ª'} prestação — €${metade.toFixed(2)}`}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── AIMA Modal ── */}
       {aimaModal && (

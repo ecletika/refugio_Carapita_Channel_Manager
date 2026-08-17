@@ -19,6 +19,8 @@ const BREVO_KEY = Deno.env.get('BREVO_API_KEY') || '';
 const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'reservas@refugiocarapita.com';
 const EMAIL_FROM_NAME = Deno.env.get('EMAIL_FROM_NAME') || 'Refúgio Carapita';
 const EMAIL_CONTATO = Deno.env.get('EMAIL_CONTATO') || 'contacto@refugiocarapita.pt';
+// Email que aparece no documento/comprovativo emitido ao hospede (contacto de faturacao)
+const EMAIL_FATURA = Deno.env.get('EMAIL_FATURA') || 'geral@refugiocarapita.pt';
 
 // Deno: usar cliente fetch e provider de crypto assíncrono (webhooks)
 const stripe = new Stripe(STRIPE_KEY, {
@@ -350,7 +352,7 @@ Deno.serve(async (req: Request) => {
         data: {
           numero: `RC-${String(reserva.id).substring(0, 8).toUpperCase()}`,
           data_emissao: new Date().toLocaleDateString('pt-PT'),
-          emitente: { nome: 'Refúgio Carapita', nif: 'NIF: 260876640', morada: 'R. Dom Afonso Quarto Conde de Ourém IV 450, 2490-480 Ourém', email: 'reservas@refugiocarapita.com', telefone: '+351 920 003 608' },
+          emitente: { nome: 'Refúgio Carapita', nif: 'NIF: 260876640', morada: 'R. Dom Afonso Quarto Conde de Ourém IV 450, 2490-480 Ourém', email: EMAIL_FATURA, telefone: '+351 920 003 608' },
           cliente: { nome: `${h?.nome || ''} ${h?.sobrenome || ''}`.trim(), email: h?.email || '', telefone: h?.telefone || '', morada: [h?.endereco1, h?.cidade, h?.pais].filter(Boolean).join(', '), nif: h?.numero_documento || '' },
           reserva: { id: reserva.id, quarto: reserva.Quarto?.nome || 'Alojamento', check_in: new Date(reserva.data_check_in).toLocaleDateString('pt-PT'), check_out: new Date(reserva.data_check_out).toLocaleDateString('pt-PT'), noites: Math.ceil((new Date(reserva.data_check_out).getTime() - new Date(reserva.data_check_in).getTime()) / 86400000) },
           financeiro: {
