@@ -452,13 +452,13 @@ class ReservasController {
 
             return res.json({
                 status: 'success',
-                message: 'Formulário AIMA enviado com sucesso para o hóspede e para contacto@refugiocarapita.pt.',
+                message: 'Formulário AIMA enviado com sucesso para o hóspede e para geral@refugiocarapita.pt.',
                 data: {
                     reservaId: reserva.id,
                     numero_reserva: reserva.numero_reserva,
                     aima_form_token: reserva.aima_form_token,
                     formulario_url: formularioUrl,
-                    enviado_para: [reserva.Hospede.email, process.env.EMAIL_CONTATO || 'contacto@refugiocarapita.pt']
+                    enviado_para: [reserva.Hospede.email, process.env.EMAIL_CONTATO || 'geral@refugiocarapita.pt']
                 }
             });
         } catch (error) {

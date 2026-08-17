@@ -9,7 +9,7 @@ const cors = {
 };
 
 const BREVO_KEY    = Deno.env.get('BREVO_API_KEY') || 'xkeysib-bd7927517b06ad3757d0caad2c71611949cb040c941';
-const EMAIL_ADMIN  = Deno.env.get('EMAIL_CONTATO') || 'contacto@refugiocarapita.pt';
+const EMAIL_ADMIN  = Deno.env.get('EMAIL_CONTATO') || 'geral@refugiocarapita.pt';
 const BASE_STYLE   = `font-family:'Georgia',serif;color:#1E3932;max-width:620px;margin:auto;border:1px solid #D4C5A9;background:#FAF8F4;`;
 
 const header = (subtitle = '') => `
@@ -54,7 +54,7 @@ async function sendBrevo(to: string, toName: string, subject: string, html: stri
       method: 'POST',
       headers: { 'api-key': BREVO_KEY, 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        sender: { name: 'Refugio Carapita', email: 'reservas@refugiocarapita.com' },
+        sender: { name: 'Refugio Carapita', email: 'geral@refugiocarapita.pt' },
         to: [{ email: to, name: toName }],
         subject,
         htmlContent: html,

@@ -30,7 +30,7 @@ export default function TratamentoDados() {
                             <li><strong>NIF:</strong> <span>260876640</span></li>
                             <li><strong>Morada:</strong> <span>Rua D. Afonso IV, 450, 2490-378 Ourém</span></li>
                             <li><strong>Telemóvel:</strong> <span>+351 920 003 608</span></li>
-                            <li><strong>E-mail:</strong> <span>contacto@refugiocarapita.pt</span></li>
+                            <li><strong>E-mail:</strong> <span>geral@refugiocarapita.pt</span></li>
                         </ul>
                     </section>
 
@@ -85,7 +85,7 @@ export default function TratamentoDados() {
                             <li>Solicitar o apagamento dos seus dados (Direito a Ser Esquecido), desde que tal não contrarie normas ou imposições legais;</li>
                             <li>Retirar o seu consentimento para comunicações de marketing a qualquer momento.</li>
                         </ul>
-                        <p className="mt-6">Para exercer qualquer um destes direitos, utilize o e-mail: <strong>contacto@refugiocarapita.pt</strong> indicando no assunto "Proteção de Dados".</p>
+                        <p className="mt-6">Para exercer qualquer um destes direitos, utilize o e-mail: <strong>geral@refugiocarapita.pt</strong> indicando no assunto "Proteção de Dados".</p>
                     </section>
 
                 </div>

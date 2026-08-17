@@ -52,7 +52,7 @@ class AimaService {
             Zona_Postal: '000',
             Telefone: '912345678',
             Nome_Contacto: 'Mauricio Junior'.substring(0, 40),
-            Email_Contacto: 'mauriciociao@gmail.com'.substring(0, 140)
+            Email_Contacto: 'geral@refugiocarapita.pt'.substring(0, 140)
         };
 
         const root = create({ version: '1.0', encoding: 'UTF-8', standalone: 'yes' })

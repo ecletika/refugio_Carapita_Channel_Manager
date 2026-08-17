@@ -151,7 +151,7 @@ export default function AdminConfiguracoes() {
 
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold flex items-center gap-2"><Mail size={12} /> E-mail Público</label>
-                            <input name="emailContato" value={configs.emailContato} onChange={handleChange} className="border-b border-gray-200 py-2 outline-none focus:border-[#C4A484] text-sm" placeholder="contacto@refugiocarapita.pt" />
+                            <input name="emailContato" value={configs.emailContato} onChange={handleChange} className="border-b border-gray-200 py-2 outline-none focus:border-[#C4A484] text-sm" placeholder="geral@refugiocarapita.pt" />
                         </div>
 
                         <div className="flex flex-col gap-2">

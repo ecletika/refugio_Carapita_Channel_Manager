@@ -129,7 +129,7 @@ class SiteController {
             // Enviar notificação por email para o Admin
             try {
                 const { data: configs } = await supabase.from('Configuracao').select('*').eq('chave', 'emailContato');
-                let emailDestino = 'contacto@refugiocarapita.com';
+                let emailDestino = 'geral@refugiocarapita.pt';
                 if (configs && configs.length > 0 && configs[0].valor) {
                     emailDestino = configs[0].valor;
                 }

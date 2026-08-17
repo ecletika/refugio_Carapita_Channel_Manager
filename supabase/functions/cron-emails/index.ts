@@ -17,7 +17,7 @@ async function sendBrevo(to: string, toName: string, subject: string, html: stri
       method: 'POST',
       headers: { 'api-key': BREVO_KEY, 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        sender: { name: 'Refúgio Carapita', email: 'reservas@refugiocarapita.com' },
+        sender: { name: 'Refúgio Carapita', email: 'geral@refugiocarapita.pt' },
         to: [{ email: to, name: toName }],
         subject,
         htmlContent: html,

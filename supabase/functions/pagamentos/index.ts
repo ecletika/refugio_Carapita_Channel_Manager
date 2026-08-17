@@ -16,9 +16,9 @@ const WEBHOOK_SECRET = (Deno.env.get('STRIPE_WEBHOOK_SECRET') || '').trim();
 const JWT_SECRET = new TextEncoder().encode(Deno.env.get('JWT_SECRET') || 'super-secret-key-carapita-2024');
 const FRONTEND_URL = (Deno.env.get('FRONTEND_URL') || 'https://refugiocarapita.pt').replace(/\/$/, '');
 const BREVO_KEY = Deno.env.get('BREVO_API_KEY') || '';
-const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'reservas@refugiocarapita.com';
+const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'geral@refugiocarapita.pt';
 const EMAIL_FROM_NAME = Deno.env.get('EMAIL_FROM_NAME') || 'Refúgio Carapita';
-const EMAIL_CONTATO = Deno.env.get('EMAIL_CONTATO') || 'contacto@refugiocarapita.pt';
+const EMAIL_CONTATO = Deno.env.get('EMAIL_CONTATO') || 'geral@refugiocarapita.pt';
 // Email que aparece no documento/comprovativo emitido ao hospede (contacto de faturacao)
 const EMAIL_FATURA = Deno.env.get('EMAIL_FATURA') || 'geral@refugiocarapita.pt';
 

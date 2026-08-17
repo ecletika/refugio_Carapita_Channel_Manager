@@ -9,9 +9,9 @@ const corsHeaders = {
 // Mesmo fallback usado em reservas-criar para garantir funcionamento
 const BREVO_KEY = Deno.env.get('BREVO_API_KEY') || 'xkeysib-bd7927517b06ad3757d0caad2c71611949cb040c941';
 // Remetente verificado no Brevo (mesma conta que reservas-criar usa)
-const EMAIL_FROM      = Deno.env.get('EMAIL_FROM')      || 'reservas@refugiocarapita.com';
+const EMAIL_FROM      = Deno.env.get('EMAIL_FROM')      || 'geral@refugiocarapita.pt';
 const EMAIL_FROM_NAME = Deno.env.get('EMAIL_FROM_NAME') || 'Refúgio Carapita';
-const EMAIL_CONTATO   = Deno.env.get('EMAIL_CONTATO')   || 'contacto@refugiocarapita.pt';
+const EMAIL_CONTATO   = Deno.env.get('EMAIL_CONTATO')   || 'geral@refugiocarapita.pt';
 const FRONTEND_URL    = (Deno.env.get('FRONTEND_URL')   || 'https://refugiocarapita.pt').replace(/\/$/, '');
 
 function gerarAimaFormToken(): string {

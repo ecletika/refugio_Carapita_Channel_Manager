@@ -150,7 +150,7 @@ function PagamentosContent() {
             const res = await fetch(pagamentosUrl(`/fatura/${reservaSelecionada}`), { headers: { Authorization: `Bearer ${token}` } });
             const data = await res.json();
             if (data.status === 'success') { setFatura(data.data); setShowFatura(true); }
-            else showToast('error', data.error || 'Erro ao gerar fatura.');
+            else showToast('error', data.error || 'Erro ao gerar comprovativo.');
         } catch (e) { showToast('error', 'Erro de ligação.'); }
         finally { setLoadingFatura(false); }
     };
@@ -387,11 +387,11 @@ function PagamentosContent() {
                                 </div>
                             )}
 
-                            {/* Fatura */}
+                            {/* Comprovativo de pagamento */}
                             <div className="bg-carapita-dark/40 border border-white/10 p-6">
                                 <div className="flex items-center justify-between mb-4">
                                     <div>
-                                        <h4 className="text-white font-semibold text-sm">Comprovativo / Fatura</h4>
+                                        <h4 className="text-white font-semibold text-sm">Comprovativo de Pagamento</h4>
                                         <p className="text-white/40 text-xs mt-0.5">Emitir documento com dados do cliente e do Refúgio Carapita</p>
                                     </div>
                                     <FileText className="text-carapita-gold" size={24} />
@@ -402,7 +402,7 @@ function PagamentosContent() {
                                     className="w-full border border-carapita-gold/50 text-carapita-gold hover:bg-carapita-gold hover:text-carapita-dark transition-all py-3 text-xs uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     {loadingFatura ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
-                                    {loadingFatura ? 'A gerar...' : 'Ver / Imprimir Fatura'}
+                                    {loadingFatura ? 'A gerar...' : 'Ver / Imprimir Comprovativo'}
                                 </button>
                             </div>
                         </>
@@ -446,7 +446,7 @@ function PagamentosContent() {
                             {/* Dados Cliente */}
                             <div className="grid grid-cols-2 gap-8 mb-8">
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Faturado a</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Cliente</p>
                                     <p className="font-bold text-gray-800">{fatura.cliente.nome}</p>
                                     <p className="text-sm text-gray-600">{fatura.cliente.email}</p>
                                     {fatura.cliente.telefone && <p className="text-sm text-gray-600">{fatura.cliente.telefone}</p>}

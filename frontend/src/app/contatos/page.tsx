@@ -141,7 +141,7 @@ export default function ContactosPage() {
                             <div>
                                 <h4 className="text-white font-medium mb-1 uppercase tracking-widest text-xs">E-mail</h4>
                                 <p className="text-white/60 font-light leading-relaxed">
-                                    {siteConfigs.emailContato || 'contacto@refugiocarapita.com'}
+                                    {siteConfigs.emailContato || 'geral@refugiocarapita.pt'}
                                 </p>
                             </div>
                         </div>
