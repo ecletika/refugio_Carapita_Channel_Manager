@@ -316,6 +316,28 @@ export default function PerfilHospede() {
                                             <input type="text" value={hospede?.pais_emissor_documento || ''} onChange={e => setHospede({ ...hospede, pais_emissor_documento: e.target.value })} className="p-3 border border-white/20 outline-none text-sm bg-black/20 text-white placeholder-white/20 focus:border-carapita-gold transition-colors" placeholder="Ex: Portugal" />
                                         </div>
                                     </div>
+
+                                    {/* NIF — só para faturação. É diferente do nº de documento: se ficar
+                                        vazio, o comprovativo mostra o documento de identificação. */}
+                                    <div className="mt-6 pt-6 border-t border-white/10">
+                                        <div className="flex flex-col gap-2 max-w-md">
+                                            <label className="text-[10px] uppercase font-bold tracking-widest text-white/50">
+                                                NIF — Contribuinte (opcional)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                value={hospede?.nif || ''}
+                                                onChange={e => setHospede({ ...hospede, nif: e.target.value })}
+                                                className="p-3 border border-white/20 outline-none text-sm bg-black/20 text-white placeholder-white/20 focus:border-carapita-gold transition-colors"
+                                                placeholder="Ex: 123456789"
+                                            />
+                                            <p className="text-[11px] text-white/40 leading-relaxed">
+                                                Preencha se pretender o <strong className="text-white/60">NIF no comprovativo de pagamento</strong>.
+                                                Se deixar em branco, aparecerá o seu documento de identificação.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="mt-6 flex justify-end">

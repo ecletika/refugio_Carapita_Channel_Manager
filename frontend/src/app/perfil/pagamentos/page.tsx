@@ -451,7 +451,13 @@ function PagamentosContent() {
                                     <p className="text-sm text-gray-600">{fatura.cliente.email}</p>
                                     {fatura.cliente.telefone && <p className="text-sm text-gray-600">{fatura.cliente.telefone}</p>}
                                     {fatura.cliente.morada && <p className="text-sm text-gray-600">{fatura.cliente.morada}</p>}
-                                    {fatura.cliente.nif && <p className="text-sm text-gray-600">NIF: {fatura.cliente.nif}</p>}
+                                    {fatura.cliente.nif
+                                        ? <p className="text-sm text-gray-600">NIF: {fatura.cliente.nif}</p>
+                                        : fatura.cliente.documento_numero && (
+                                            <p className="text-sm text-gray-600">
+                                                {fatura.cliente.documento_tipo || 'Documento de Identificação'}: {fatura.cliente.documento_numero}
+                                            </p>
+                                        )}
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Detalhes da Estadia</p>

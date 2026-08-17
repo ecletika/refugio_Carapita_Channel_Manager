@@ -353,7 +353,19 @@ Deno.serve(async (req: Request) => {
           numero: `RC-${String(reserva.id).substring(0, 8).toUpperCase()}`,
           data_emissao: new Date().toLocaleDateString('pt-PT'),
           emitente: { nome: 'Refúgio Carapita', nif: 'NIF: 260876640', morada: 'R. Dom Afonso Quarto Conde de Ourém IV 450, 2490-480 Ourém', email: EMAIL_FATURA, telefone: '+351 920 003 608' },
-          cliente: { nome: `${h?.nome || ''} ${h?.sobrenome || ''}`.trim(), email: h?.email || '', telefone: h?.telefone || '', morada: [h?.endereco1, h?.cidade, h?.pais].filter(Boolean).join(', '), nif: h?.numero_documento || '' },
+          // NIF e numero de documento sao coisas diferentes: o NIF (contribuinte) so
+          // aparece se o hospede o tiver preenchido para efeitos de faturacao. Caso
+          // contrario mostramos o documento de identificacao, devidamente identificado
+          // como tal — nunca um numero de passaporte/CC rotulado como NIF.
+          cliente: {
+            nome: `${h?.nome || ''} ${h?.sobrenome || ''}`.trim(),
+            email: h?.email || '',
+            telefone: h?.telefone || '',
+            morada: [h?.endereco1, h?.cidade, h?.pais].filter(Boolean).join(', '),
+            nif: (h?.nif || '').trim(),
+            documento_tipo: h?.tipo_documento || '',
+            documento_numero: h?.numero_documento || '',
+          },
           reserva: { id: reserva.id, quarto: reserva.Quarto?.nome || 'Alojamento', check_in: new Date(reserva.data_check_in).toLocaleDateString('pt-PT'), check_out: new Date(reserva.data_check_out).toLocaleDateString('pt-PT'), noites: Math.ceil((new Date(reserva.data_check_out).getTime() - new Date(reserva.data_check_in).getTime()) / 86400000) },
           financeiro: {
             valor_total: valorTotal, valor_inicial_pago: pagoInicial, valor_final_pago: pagoFinal,
