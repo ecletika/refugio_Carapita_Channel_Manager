@@ -13,6 +13,23 @@ interface Quarto {
     ical_booking: string | null;
 }
 
+/**
+ * Estado da última sincronização de um canal, vindo de `sync-ical/estado`.
+ * Existe porque, até 19/09/2026, uma sincronização podia falhar durante semanas
+ * sem que nada no painel o mostrasse — foi assim que uma reserva de um hóspede
+ * que já estava na casa desapareceu sem ninguém dar por isso.
+ */
+interface EstadoSync {
+    quarto_id: string;
+    canal: string;
+    executado_em: string;
+    ok: boolean;
+    eventos_no_feed: number;
+    criadas: number;
+    canceladas: number;
+    erro: string | null;
+}
+
 interface RoomState {
     airbnb: string;
     booking: string;
@@ -93,6 +110,30 @@ const IcalInput = ({
     </div>
 );
 
+// ── Estado da última sincronização de um canal ────────────────────────────────
+const EstadoCanal = ({ estado }: { estado?: EstadoSync }) => {
+    if (!estado) {
+        return <p className="text-[10px] text-gray-400">Ainda sem registo de sincronização.</p>;
+    }
+    const quando = new Date(estado.executado_em).toLocaleString('pt-PT', {
+        dateStyle: 'short', timeStyle: 'short',
+    });
+    if (!estado.ok) {
+        return (
+            <p className="text-[10px] text-red-600 leading-relaxed">
+                <span className="font-bold">✕ {quando}</span> — {estado.erro}
+            </p>
+        );
+    }
+    return (
+        <p className="text-[10px] text-emerald-600 leading-relaxed">
+            <span className="font-bold">✓ {quando}</span> — {estado.eventos_no_feed} reserva(s) no calendário
+            {estado.criadas > 0 && ` · ${estado.criadas} nova(s)`}
+            {estado.canceladas > 0 && ` · ${estado.canceladas} cancelada(s)`}
+        </p>
+    );
+};
+
 export default function IntegracoesOTA() {
     const [quartos, setQuartos] = useState<Quarto[]>([]);
     const [loading, setLoading] = useState(true);
@@ -100,6 +141,7 @@ export default function IntegracoesOTA() {
     const [syncingAll, setSyncingAll] = useState(false);
     const [syncAllMsg, setSyncAllMsg] = useState<string | null>(null);
     const [roomStates, setRoomStates] = useState<Record<string, RoomState>>({});
+    const [estados, setEstados] = useState<EstadoSync[]>([]);
 
     // ── Instagram state ──────────────────────────────────────────────────────
     const [igToken, setIgToken]           = useState('');
@@ -144,8 +186,21 @@ export default function IntegracoesOTA() {
         }
     };
 
+    /** Estado da última sincronização de cada canal (não sincroniza, só lê). */
+    const fetchEstados = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const resp = await fetch(`${EDGE_URL}/sync-ical/estado`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const json = await resp.json();
+            if (json.status === 'success') setEstados(json.ultimos || []);
+        } catch { /* o painel funciona à mesma sem o estado */ }
+    };
+
     useEffect(() => {
         fetchQuartos();
+        fetchEstados();
         // Check current Instagram cache status + load saved Feed ID
         (async () => {
             try {
@@ -178,6 +233,16 @@ export default function IntegracoesOTA() {
     const updateRoom = (id: string, patch: Partial<RoomState>) => {
         setRoomStates(prev => ({ ...prev, [id]: { ...prev[id], ...patch } }));
     };
+
+    const estadoDe = (quartoId: string, canal: string) =>
+        estados.find(e => e.quarto_id === quartoId && e.canal === canal);
+
+    const horasDesde = (iso: string) => (Date.now() - new Date(iso).getTime()) / 3600000;
+
+    // Um canal está "mudo" se a última sincronização correu bem mas já foi há
+    // muito: o cron corre de hora a hora, mais de 3h sem registo é sinal de que
+    // deixou de correr.
+    const canaisComProblema = estados.filter(e => !e.ok || horasDesde(e.executado_em) > 3);
 
     const saveIcal = async (q: Quarto) => {
         const s = roomStates[q.id];
@@ -221,10 +286,13 @@ export default function IntegracoesOTA() {
                 body: JSON.stringify({ quartoId: q.id, url, canalNome: label })
             });
             const json = await resp.json();
-            const msg = json.status === 'success' ? `${label}: sincronizado!` : `Erro (${label}): ${json.error || 'falhou'}`;
+            const msg = json.status === 'success'
+                ? `${label}: ${json.eventos} reserva(s) no calendário, ${json.criadas} nova(s).`
+                : `${label}: ${json.erro || json.error || 'a sincronização não trouxe dados'}`;
             if (channel === 'airbnb') updateRoom(q.id, { syncingAirbnb: false, syncMsg: msg });
             else updateRoom(q.id, { syncingBooking: false, syncMsg: msg });
-            setTimeout(() => updateRoom(q.id, { syncMsg: null }), 4000);
+            fetchEstados();
+            setTimeout(() => updateRoom(q.id, { syncMsg: null }), 8000);
         } catch {
             const msg = `Erro de conexão (${label})`;
             if (channel === 'airbnb') updateRoom(q.id, { syncingAirbnb: false, syncMsg: msg });
@@ -270,12 +338,17 @@ export default function IntegracoesOTA() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const json = await resp.json();
-            setSyncAllMsg(json.status === 'success' ? 'Todos os canais sincronizados!' : (json.error || 'Erro na sincronização'));
+            setSyncAllMsg(
+                json.status === 'success'
+                    ? 'Todos os canais sincronizados!'
+                    : (json.error || `${json.falhas} canal(is) sem dados — ver detalhe abaixo`)
+            );
+            fetchEstados();
         } catch {
             setSyncAllMsg('Erro de conexão');
         } finally {
             setSyncingAll(false);
-            setTimeout(() => setSyncAllMsg(null), 5000);
+            setTimeout(() => setSyncAllMsg(null), 8000);
         }
     };
 
@@ -308,7 +381,7 @@ export default function IntegracoesOTA() {
                             {syncingAll ? 'A sincronizar…' : 'Sincronizar Todos'}
                         </BtnPrimary>
                         {syncAllMsg && (
-                            <span className={`text-[11px] font-medium ${syncAllMsg.includes('Erro') ? 'text-red-500' : 'text-emerald-600'}`}>
+                            <span className={`text-[11px] font-medium ${syncAllMsg.includes('sincronizados') ? 'text-emerald-600' : 'text-red-500'}`}>
                                 {syncAllMsg}
                             </span>
                         )}
@@ -327,6 +400,36 @@ export default function IntegracoesOTA() {
                         >
                             Tentar novamente
                         </button>
+                    </div>
+                )}
+
+                {/* ── Aviso: canais que não estão a trazer reservas ──
+                    Sem isto, uma sincronização pode falhar durante semanas em
+                    silêncio — e o site continua a mostrar as datas livres. */}
+                {canaisComProblema.length > 0 && (
+                    <div className="bg-red-50 border border-red-200 p-5 mb-6">
+                        <div className="flex items-center gap-2 mb-3">
+                            <AlertCircle size={18} className="text-red-500 flex-shrink-0" />
+                            <span className="text-[11px] uppercase tracking-widest font-bold text-red-700">
+                                {canaisComProblema.length === 1
+                                    ? '1 canal não está a trazer reservas'
+                                    : `${canaisComProblema.length} canais não estão a trazer reservas`}
+                            </span>
+                        </div>
+                        <ul className="space-y-2">
+                            {canaisComProblema.map(e => (
+                                <li key={`${e.quarto_id}-${e.canal}`} className="text-[12px] text-red-800 leading-relaxed">
+                                    <span className="font-bold">{e.canal}</span>
+                                    {' — '}
+                                    {e.erro || `sem sincronizar há ${Math.round(horasDesde(e.executado_em))}h`}
+                                </li>
+                            ))}
+                        </ul>
+                        <p className="text-[11px] text-red-700 mt-3 leading-relaxed">
+                            Nenhuma reserva foi cancelada ou apagada. Enquanto isto durar, as reservas
+                            deste canal <strong>não entram sozinhas</strong> — confirme o calendário à mão
+                            e verifique na extranet se a exportação continua ligada.
+                        </p>
                     </div>
                 )}
 
@@ -372,6 +475,7 @@ export default function IntegracoesOTA() {
                                             placeholder="https://www.airbnb.com/calendar/ical/…"
                                             onChange={v => updateRoom(q.id, { airbnb: v })}
                                         />
+                                        {s.airbnb && <EstadoCanal estado={estadoDe(q.id, 'AIRBNB')} />}
                                         {s.airbnb && (
                                             <BtnGold
                                                 onClick={() => syncChannel(q, 'airbnb')}
@@ -392,6 +496,7 @@ export default function IntegracoesOTA() {
                                             placeholder="https://ics.booking.com/…"
                                             onChange={v => updateRoom(q.id, { booking: v })}
                                         />
+                                        {s.booking && <EstadoCanal estado={estadoDe(q.id, 'BOOKING')} />}
                                         {s.booking && (
                                             <BtnGold
                                                 onClick={() => syncChannel(q, 'booking')}
