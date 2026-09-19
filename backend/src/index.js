@@ -75,77 +75,35 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'API do Refúgio Carapita Channel Manager online.' });
 });
 
-// Rota de diagnóstico iCal (temporária)
-app.get('/api/ical-diag', async (req, res) => {
-    try {
-        const axios = require('axios');
-        const ical = require('node-ical');
-        const BOOKING_URL = 'https://ical.booking.com/v1/export/t/32acda04-671c-456f-8d2d-8cb20d9b504f.ics';
-
-        // 1. Testar fetch
-        let icalData;
-        try {
-            const response = await axios.get(BOOKING_URL, { timeout: 15000 });
-            icalData = response.data;
-        } catch (e) {
-            return res.json({ step: 'fetch', error: e.message });
-        }
-
-        // 2. Testar parse
-        let eventos;
-        try {
-            eventos = ical.sync.parseICS(icalData);
-        } catch (e) {
-            return res.json({ step: 'parse', error: e.message });
-        }
-
-        const vevents = Object.values(eventos).filter(e => e.type === 'VEVENT');
-
-        // 3. Testar sync completo
-        const IcalService = require('./services/ical.service');
-        const resultados = await IcalService.syncAllQuartos();
-
-        return res.json({
-            fetch: 'ok',
-            parse: 'ok',
-            eventos_encontrados: vevents.length,
-            eventos: vevents.map(e => ({
-                uid: e.uid,
-                summary: e.summary,
-                start: e.start,
-                end: e.end
-            })),
-            sync_resultado: resultados
-        });
-    } catch (e) {
-        return res.json({ error: e.message });
-    }
-});
+// ── REMOVIDO: rota /api/ical-diag ────────────────────────────────────────────
+// Tinha o token de exportação iCal do Booking escrito em claro no código, o que
+// dava a quem tivesse acesso ao repositório a leitura do calendário de reservas.
+// O diagnóstico do iCal faz-se agora pelo painel (Integrações → estado de cada
+// canal) e pela tabela SyncLog, que regista cada sincronização.
+//
+// NOTA: se esse token alguma vez foi partilhado, gere um link novo na extranet
+// do Booking — o antigo continua válido até ser revogado.
 
 app.listen(PORT, () => {
     console.log(`🏨 Servidor rodando na porta ${PORT}`);
     console.log(`Acesse http://localhost:${PORT}/api/health`);
 
-    // ── Automação: Sincronização iCal (A cada 30 minutos) ──────────────────
-    const IcalService = require('./services/ical.service');
-    setInterval(async () => {
-        try {
-            await IcalService.syncAllQuartos();
-        } catch (error) {
-            console.error('Erro na sincronização automática:', error.message);
-        }
-    }, 15 * 60 * 1000);
-
-    // Executar sync iCal imediatamente no arranque (após 10s)
-    setTimeout(async () => {
-        try {
-            console.log('🔄 Sync iCal inicial...');
-            const resultados = await IcalService.syncAllQuartos();
-            console.log('✅ Sync iCal inicial concluído:', JSON.stringify(resultados));
-        } catch (error) {
-            console.error('❌ Erro sync iCal inicial:', error.message);
-        }
-    }, 10000);
+    // ── Sincronização iCal: DESLIGADA neste backend ────────────────────────
+    // Em produção quem sincroniza é a edge function `sync-ical`, chamada pelo
+    // cron do Supabase de hora a hora. Este backend corria na máquina local e
+    // escrevia nas MESMAS tabelas, num formato diferente (gravava o UID do iCal
+    // em codigo_reserva_externo em vez de ical_uid), o que criava reservas que
+    // a edge function nem reconhecia nem conseguia manter actualizadas.
+    //
+    // Duas fontes a escrever reservas sem se conhecerem é como se chega a
+    // importações duplicadas e a estados impossíveis de explicar. As reservas
+    // de Booking/Airbnb que restavam na base de dados a 19/09/2026 tinham
+    // vindo daqui — e pararam a 31/08/2026, quando esta máquina deixou de
+    // correr, sem ninguém dar por isso.
+    //
+    // A sincronização manual continua disponível em /api/sync/:quartoId para
+    // uso pontual, mas nada aqui corre sozinho.
+    console.log('ℹ️  Sync iCal automático desligado neste backend (corre na edge function sync-ical).');
 
     // ── Automação: Scheduler de Pagamentos e Emails (A cada 15 minutos) ────
     const SchedulerService = require('./services/scheduler.service');
